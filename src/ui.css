@@ -10,7 +10,6 @@
 @import "./home-premium.css";
 
 /* Ajustes de Home y móvil */
-@import "./quick-icons-polish.css";
 @import "./mobile-premium-fix.css";
 @import "./mobile-compact-hotfix.css";
 
@@ -20,10 +19,8 @@
 /* Capas históricas de compatibilidad visual */
 @import "./premium-max-overhaul.css";
 @import "./prototype-exact-mobile.css";
-@import "./secondary-views-premium.css";
 @import "./three-pages-final.css";
 @import "./explore-chip-hotfix.css";
-@import "./secondary-content-max.css";
 
 /* Estructura y vistas principales */
 @import "./structure-overhaul.css";

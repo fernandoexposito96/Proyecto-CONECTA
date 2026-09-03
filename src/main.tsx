@@ -10,6 +10,8 @@ import "./quick-icons-polish";
 import "./secondary-views-premium";
 import "./secondary-content-max";
 import "./structure-overhaul";
+import "./conecta-calm-enhancer.css";
+import "./conecta-calm-enhancer";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 const savedTheme = window.localStorage.getItem("conecta-theme");

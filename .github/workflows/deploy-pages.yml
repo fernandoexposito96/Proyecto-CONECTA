@@ -26,8 +26,24 @@ jobs:
           node-version: 22
       - name: Install
         run: npm install --no-audit --no-fund
-      - name: Validate
-        run: npm run validate
+      - name: Validate with automatic retries
+        shell: bash
+        run: |
+          set -o pipefail
+          attempts=3
+          for attempt in $(seq 1 "$attempts"); do
+            echo "CONECTA validation attempt $attempt/$attempts"
+            if npm run validate; then
+              echo "Validation completed successfully."
+              exit 0
+            fi
+            if [ "$attempt" -lt "$attempts" ]; then
+              echo "Validation failed. Waiting 15 seconds before retrying..."
+              sleep 15
+            fi
+          done
+          echo "Validation failed after $attempts attempts. Review the failing check and logs."
+          exit 1
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:

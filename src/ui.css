@@ -8,6 +8,7 @@
 /* Base visual */
 @import "./conecta-premium.css";
 @import "./home-premium.css";
+@import "./home-fused-hero.css";
 
 /* Ajustes de Home y móvil */
 @import "./mobile-premium-fix.css";

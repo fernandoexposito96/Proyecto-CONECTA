@@ -10,8 +10,9 @@
     "lint": "eslint src vite.config.ts",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:performance": "node scripts/performance-contracts.mjs",
-    "test": "npm run build && npm run test:smoke && npm run test:performance",
-    "validate": "npm run check && npm run build && npm run test:smoke && npm run test:performance"
+    "test:security": "node scripts/security-contracts.mjs",
+    "test": "npm run build && npm run test:smoke && npm run test:performance && npm run test:security",
+    "validate": "npm run check && npm run build && npm run test:smoke && npm run test:performance && npm run test:security"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.4",

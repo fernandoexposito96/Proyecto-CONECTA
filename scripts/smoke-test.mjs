@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, access } from "node:fs/promises";
+import { readFile, access, readdir } from "node:fs/promises";
 
 const read = (path) => readFile(path, "utf8");
 const exists = async (path) => { try { await access(path); return true; } catch { return false; } };
@@ -26,14 +26,28 @@ test("PWA manifest is installable", async () => {
   assert.ok(manifest.icons.some((icon) => icon?.src && (icon.sizes === "any" || typeof icon.sizes === "string")), "PWA icon metadata is invalid");
 });
 
-test("service worker uses fast versioned-asset caching", async () => {
+test("service worker uses persistent asset caches", async () => {
   const sw = await read("public/sw.js");
-  assert.match(sw, /conecta-v1/);
+  assert.match(sw, /conecta-v1-shell-/);
+  assert.match(sw, /conecta-v1-assets/);
+  assert.match(sw, /conecta-v1-images/);
   assert.match(sw, /cacheFirst/);
   assert.match(sw, /staleWhileRevalidate/);
   assert.match(sw, /\/assets\//);
+  assert.match(sw, /startsWith\(['"]conecta-v1-shell-/);
   assert.match(sw, /request\.mode===['"]navigate['"]/);
   assert.doesNotMatch(sw, /Index1996|raw\.githack/i);
+});
+
+test("stable vendor chunks remain split", async () => {
+  const vite = await read("vite.config.ts");
+  for (const chunk of ["vendor-react", "vendor-supabase", "vendor-icons", "vendor-qrcode"]) {
+    assert.ok(vite.includes(chunk), `${chunk} manual chunk is missing`);
+  }
+  const assets = await readdir("dist/assets");
+  for (const chunk of ["vendor-react", "vendor-supabase", "vendor-icons", "vendor-qrcode"]) {
+    assert.ok(assets.some((file) => file.startsWith(`${chunk}-`) && file.endsWith(".js")), `${chunk} was not emitted as its own JS chunk`);
+  }
 });
 
 test("initial Supabase loading scopes relationship-heavy rows", async () => {

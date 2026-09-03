@@ -8,6 +8,7 @@ import "./conecta-premium.css";
 import "./home-premium.css";
 import "./homePremiumEnhancer";
 import "./mobile-premium-fix.css";
+import "./mobile-compact-hotfix.css";
 import "./accessibility.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.

@@ -18,21 +18,65 @@ input,textarea,select,button{max-width:100%}
 .content-wrap{width:min(100%,var(--responsive-content-max))!important;max-width:100%!important;margin-inline:auto!important;padding-left:var(--responsive-page-gap)!important;padding-right:var(--responsive-page-gap)!important}
 .view-page,.section-block,.page-hero{max-width:100%;min-width:0}
 
+/* Reduce off-screen rendering work without changing layout or behaviour. */
+:where(.section-block,.plan-card,.person-card,.group-card,.community-card,.product-action,.action-card,.feature-card){
+  content-visibility:auto;
+  contain-intrinsic-size:auto 360px;
+}
+
 /* Any old fixed card/grid widths become fluid. */
 .plans-grid,.people-grid,.groups-grid,.discovery-grid,.action-card-grid,.product-action-grid,.feature-matrix,.audience-grid,.mode-actions,.security-grid,.emergency-layout,.life-dashboard,.robot-overview,.profile-layout,.calendar-layout,.home-split,.filter-layout,.map-layout,.chat-layout,.form-grid{min-width:0;max-width:100%}
-.plans-grid,.people-grid,.groups-grid,.discovery-grid{grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))!important}
-.action-card-grid,.product-action-grid,.feature-matrix,.audience-grid,.mode-actions{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))!important}
+.plans-grid,.people-grid,.groups-grid,.discovery-grid{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))!important}
+.action-card-grid,.product-action-grid,.feature-matrix,.audience-grid,.mode-actions{grid-template-columns:repeat(auto-fit,minmax(min(270px,100%),1fr))!important}
 
-.plan-card,.person-card,.group-card,.profile-card,.product-action,.action-card,.feature-card{width:100%;max-width:100%;min-width:0}
+.plan-card,.person-card,.group-card,.community-card,.profile-card,.product-action,.action-card,.feature-card{width:100%;max-width:100%;min-width:0}
 .plan-body,.person-info,.action-card>div,.product-action>*{min-width:0}
 .plan-title h3,.section-title h2,.page-hero h1,.welcome-row h1{overflow-wrap:anywhere}
+
+/* Keep navigation and compact labels readable instead of splitting words. */
+.side-nav button span,.brand strong,.profile-mini strong,.email-ready-card strong{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  overflow-wrap:normal;
+}
 
 /* Media never forces the viewport wider than its container. */
 .plan-image,.person-card,.hero-card,.map-canvas{max-width:100%;overflow:hidden}
 .plan-image img,.person-card>img,.hero-card>img,.profile-cover img{width:100%;height:100%;object-fit:cover}
 
-/* Horizontal chip rows may scroll internally, never the entire page. */
-.category-row,.filter-pills,.group-chips,.time-chips{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
+/* Horizontal chip rows scroll internally; labels never break letter-by-letter. */
+.category-row,.filter-pills,.group-chips,.time-chips{
+  display:flex;
+  flex-wrap:nowrap!important;
+  gap:10px;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-inline:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding-bottom:2px;
+}
+.category-row::-webkit-scrollbar,.filter-pills::-webkit-scrollbar,.group-chips::-webkit-scrollbar,.time-chips::-webkit-scrollbar{display:none}
+.category-row>* , .filter-pills>* , .group-chips>* , .time-chips>*{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:max-content!important;
+  white-space:nowrap!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+}
+.category-row button,.filter-pills button,.group-chips button,.time-chips button{
+  padding-inline:12px!important;
+}
+
+/* Descriptive card copy stays readable, never squeezed into tiny columns. */
+:where(.plan-card,.group-card,.community-card,.person-card) :where(p,small,span,strong,h3){
+  word-break:normal;
+  overflow-wrap:break-word;
+}
+:where(.group-card,.community-card) p{line-height:1.42}
 
 /* Dialogs, drawers and sheets must fit installed-app windows too. */
 [role="dialog"],[data-radix-dialog-content],[data-radix-sheet-content],.notification-sheet,.mobile-menu-sheet{max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;overflow:auto!important}
@@ -47,12 +91,13 @@ input,textarea,select,button{max-width:100%}
   .map-layout,.chat-layout{grid-template-columns:minmax(270px,330px) minmax(0,1fr)!important}
   .calendar-layout{grid-template-columns:minmax(0,1fr) minmax(300px,420px)!important}
   .profile-layout{grid-template-columns:minmax(0,1fr) minmax(280px,340px)!important}
+  .groups-grid,.plans-grid{gap:18px!important}
 }
 
 /* Small desktop / laptop / landscape tablet: compact sidebar and flexible panels. */
 @media (min-width:901px) and (max-width:1199px){
-  .sidebar{width:210px!important;padding-inline:10px!important}
-  .main-content{margin-left:210px!important;width:calc(100% - 210px)!important}
+  .sidebar{width:220px!important;padding-inline:10px!important}
+  .main-content{margin-left:220px!important;width:calc(100% - 220px)!important}
   .brand small,.email-ready-card small,.side-nav.compact em{display:none!important}
   .topbar{gap:10px!important;padding-inline:16px!important}
   .search{width:auto!important;flex:1 1 260px;min-width:160px}
@@ -62,6 +107,7 @@ input,textarea,select,button{max-width:100%}
   .filter-layout{grid-template-columns:210px minmax(0,1fr)!important}
   .map-layout,.chat-layout{grid-template-columns:280px minmax(0,1fr)!important}
   .calendar-layout,.profile-layout{grid-template-columns:minmax(0,1fr) 300px!important}
+  .plans-grid,.people-grid,.groups-grid,.discovery-grid{grid-template-columns:repeat(auto-fit,minmax(min(245px,100%),1fr))!important}
 }
 
 /* Tablet and narrow app windows: switch to mobile chrome before clipping begins. */

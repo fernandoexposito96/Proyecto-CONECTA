@@ -17,6 +17,13 @@ function throwIfError(error: { message: string } | null) {
   if (error) throw new Error(error.message);
 }
 
+async function requireUserId(): Promise<string> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw new Error(error.message);
+  if (!data.user) throw new Error("No hay una sesión autenticada activa");
+  return data.user.id;
+}
+
 export async function refreshPlanMembers(): Promise<PlanMember[]> {
   const { data, error } = await supabase
     .from("plan_members")
@@ -38,9 +45,11 @@ export async function refreshSavedItems(userId: string): Promise<SavedItem[]> {
 }
 
 export async function refreshConnections(): Promise<Connection[]> {
+  const userId = await requireUserId();
   const { data, error } = await supabase
     .from("connections")
     .select(CONNECTION_COLUMNS)
+    .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
     .order("created_at", { ascending: false })
     .limit(SLICE_LIMITS.connections);
   throwIfError(error);
@@ -48,9 +57,24 @@ export async function refreshConnections(): Promise<Connection[]> {
 }
 
 export async function refreshConversations(): Promise<Conversation[]> {
+  const userId = await requireUserId();
+  const { data: memberships, error: membershipsError } = await supabase
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("user_id", userId)
+    .limit(SLICE_LIMITS.conversations);
+  throwIfError(membershipsError);
+
+  const conversationIds = ((memberships as Array<{ conversation_id: string }> | null) ?? [])
+    .map((membership) => membership.conversation_id)
+    .filter(Boolean);
+
+  if (!conversationIds.length) return [];
+
   const { data, error } = await supabase
     .from("conversations")
     .select(CONVERSATION_COLUMNS)
+    .in("id", conversationIds)
     .order("created_at", { ascending: false })
     .limit(SLICE_LIMITS.conversations);
   throwIfError(error);

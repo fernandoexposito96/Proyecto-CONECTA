@@ -1,0 +1,9 @@
+import type { ReactNode } from "react";
+import { ChevronRight, Plus } from "lucide-react";
+
+export function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="field"><span>{label}</span>{children}</label>; }
+export function SectionTitle({ eyebrow, title, action, onAction }: { eyebrow: string; title: string; action?: string; onAction?: () => void }) { return <div className="section-title"><div><span>{eyebrow}</span><h2>{title}</h2></div>{action && <button onClick={onAction}>{action} <ChevronRight /></button>}</div>; }
+export function PageHero({ eyebrow, title, text, icon, action }: { eyebrow: string; title: string; text: string; icon: ReactNode; action?: ReactNode }) { return <section className="page-hero"><span className="page-hero-icon">{icon}</span><div><p>{eyebrow}</p><h1>{title}</h1><span>{text}</span></div>{action && <div className="page-hero-action">{action}</div>}</section>; }
+export function EmptyCompact({ icon, title, text }: { icon: ReactNode; title: string; text: string }) { return <div className="empty-compact"><span>{icon}</span><div><strong>{title}</strong><p>{text}</p></div></div>; }
+export function EmptyFeature({ icon, title, text, action, onAction }: { icon: ReactNode; title: string; text: string; action?: string; onAction?: () => void }) { return <div className="empty-feature"><span>{icon}</span><h2>{title}</h2><p>{text}</p>{action && <button onClick={onAction}><Plus /> {action}</button>}</div>; }
+export function PlansEmpty({ onCreate }: { onCreate?: () => void }) { return <div className="plans-empty"><h2>Aún no hay planes disponibles</h2><p>Cuando se publiquen planes reales aparecerán aquí, sin contenido ficticio mezclado.</p>{onCreate && <button onClick={onCreate}><Plus /> Crear el primer plan</button>}</div>; }

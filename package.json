@@ -9,8 +9,9 @@
     "check": "tsc --noEmit",
     "lint": "eslint src vite.config.ts",
     "test:smoke": "node scripts/smoke-test.mjs",
-    "test": "npm run build && npm run test:smoke",
-    "validate": "npm run check && npm run build && npm run test:smoke"
+    "test:performance": "node scripts/performance-contracts.mjs",
+    "test": "npm run build && npm run test:smoke && npm run test:performance",
+    "validate": "npm run check && npm run build && npm run test:smoke && npm run test:performance"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.4",

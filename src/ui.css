@@ -1,0 +1,39 @@
+/*
+ * CONECTA — entrada única de estilos
+ *
+ * Este archivo centraliza el orden de carga para evitar que main.tsx
+ * acumule hotfixes y que un cambio accidental de orden rompa el móvil.
+ * Los estilos antiguos se mantienen temporalmente como módulos internos
+ * para conservar exactamente la apariencia mientras se consolidan.
+ */
+
+/* Base visual */
+@import "./conecta-premium.css";
+@import "./home-premium.css";
+
+/* Ajustes de Home y móvil */
+@import "./quick-icons-polish.css";
+@import "./mobile-premium-fix.css";
+@import "./mobile-compact-hotfix.css";
+@import "./mobile-nav-polish.css";
+
+/* Accesibilidad antes de las capas visuales finales, igual que hasta ahora */
+@import "./accessibility.css";
+
+/* Capas históricas de compatibilidad visual */
+@import "./premium-max-overhaul.css";
+@import "./prototype-exact-mobile.css";
+@import "./secondary-views-premium.css";
+@import "./three-pages-final.css";
+@import "./explore-chip-hotfix.css";
+@import "./secondary-content-max.css";
+
+/* Estructura y vistas principales */
+@import "./structure-overhaul.css";
+@import "./core-views-visual.css";
+@import "./premium-social-experience.css";
+
+/* Menú, diálogos y confirmaciones: siempre al final */
+@import "./drawer-reference-premium.css";
+@import "./mobile-dialogs-safe.css";
+@import "./confirmation-final-polish.css";

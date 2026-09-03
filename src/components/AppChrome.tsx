@@ -40,13 +40,21 @@ export function Topbar({ query, setQuery, profile, notifications, dataLoading, o
 }
 
 export function MobileNavigation({ active, go, onCreate }: { active: View; go: (view: View) => void; onCreate: () => void }) {
-  const items: Array<{ label: string; view: View; icon: typeof Home }> = [{ label: "Inicio", view: "Inicio", icon: Home },{ label: "Explorar", view: "Explorar", icon: Compass },{ label: "Conectar", view: "Conecta+", icon: Heart },{ label: "Chat", view: "Chat", icon: MessageCircle }];
+  const items: Array<{ label: string; view: View; icon: typeof Home }> = [
+    { label: "Inicio", view: "Inicio", icon: Home },
+    { label: "Explorar", view: "Explorar", icon: Compass },
+    { label: "Conectar", view: "Conecta+", icon: Heart },
+    { label: "Chat", view: "Chat", icon: MessageCircle },
+  ];
   if (typeof document === "undefined") return null;
   return createPortal(
-    <>
-      <nav className="bottom-nav" aria-label="Navegación móvil">{items.map(({ label, view, icon: Icon }) => <button key={label} className={active === view ? "active" : ""} onClick={() => go(view)}><Icon /><span>{label}</span></button>)}</nav>
+    <nav className="bottom-nav" aria-label="Navegación móvil">
+      <button className={active === items[0].view ? "active" : ""} onClick={() => go(items[0].view)}><Home /><span>Inicio</span></button>
+      <button className={active === items[1].view ? "active" : ""} onClick={() => go(items[1].view)}><Compass /><span>Explorar</span></button>
       <button className="floating-create" onClick={onCreate} aria-label="Crear plan"><Plus /></button>
-    </>,
+      <button className={active === items[2].view ? "active" : ""} onClick={() => go(items[2].view)}><Heart /><span>Conectar</span></button>
+      <button className={active === items[3].view ? "active" : ""} onClick={() => go(items[3].view)}><MessageCircle /><span>Chat</span></button>
+    </nav>,
     document.body,
   );
 }

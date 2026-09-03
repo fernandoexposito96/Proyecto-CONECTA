@@ -23,6 +23,7 @@ import "./secondary-content-max.css";
 import "./secondary-content-max";
 import "./structure-overhaul.css";
 import "./structure-overhaul";
+import "./core-views-visual.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 document.documentElement.dataset.theme = "light";

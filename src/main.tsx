@@ -4,6 +4,7 @@ import App from "./App";
 import { AppErrorBoundary, NetworkStatusBanner } from "./components/AppResilience";
 import { offlineVisual } from "./offlineVisuals";
 import { scheduleIdlePrefetch } from "./idle-prefetch";
+import { startImagePerformance } from "./image-performance";
 import { startTelemetry } from "./telemetry";
 import "./ui.css";
 import "./homePremiumEnhancer";
@@ -43,6 +44,9 @@ createRoot(root).render(
     </AppErrorBoundary>
   </StrictMode>,
 );
+
+// Ajusta imágenes renderizadas por React sin bloquear el primer pintado.
+startImagePerformance();
 
 // Mantén la presentación visible durante 5 s y no reveles la app hasta el final.
 // Así iOS nunca llega a enseñar iconos o elementos sin estilos durante el arranque.

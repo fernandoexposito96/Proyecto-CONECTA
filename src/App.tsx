@@ -63,6 +63,7 @@ import {
 import { supabase } from "./supabase";
 import { demoProfiles, isDemoModeEnabled, setDemoModeEnabled } from "./demoMode";
 import { loadConectaData } from "./data/loadConectaData";
+import { refreshConnections, refreshConversations, refreshPlanMembers, refreshSavedItems } from "./data/refreshConectaSlices";
 import { exportSocialCalendar } from "./socialCalendar";
 import { categories, categoryColor, categoryImage, planTemplates } from "./catalog";
 import { EmptyCompact, EmptyFeature, Field, PageHero, PlansEmpty, SectionTitle } from "./components/common";
@@ -350,7 +351,7 @@ export default function ConectaApp() {
     }
     toast.success(membership ? "Has salido del plan" : "Tu asistencia se ha registrado");
     if (!membership && "vibrate" in navigator) navigator.vibrate([35, 25, 55]);
-    await loadData(user);
+    setPlanMembers(await refreshPlanMembers());
   };
 
   const savePlan = async (plan: Plan) => {
@@ -365,7 +366,7 @@ export default function ConectaApp() {
       return;
     }
     toast.success(saved ? "Plan eliminado de guardados" : "Plan guardado");
-    await loadData(user);
+    setSavedItems(await refreshSavedItems(user.id));
   };
 
   const connectWith = async (person: Profile) => {
@@ -388,14 +389,14 @@ export default function ConectaApp() {
       if (error) return toast.error(error.message);
       toast.success("Solicitud enviada");
     }
-    await loadData(user);
+    setConnections(await refreshConnections());
   };
 
   const openDirectChat = async (person: Profile) => {
     if (!user) return;
     const { data, error } = await supabase.rpc("get_or_create_direct_conversation", { other_user: person.id });
     if (error) return toast.error(error.message);
-    await loadData(user);
+    setConversations(await refreshConversations());
     setSelectedConversation(String(data));
     setActive("Chat");
   };
@@ -419,7 +420,7 @@ export default function ConectaApp() {
     if (error) return toast.error(error.message);
     await supabase.from("connections").delete().or(`and(requester_id.eq.${user.id},receiver_id.eq.${person.id}),and(requester_id.eq.${person.id},receiver_id.eq.${user.id})`);
     toast.success(`${person.display_name ?? "Usuario"} ha sido bloqueado y retirado de tus conexiones`);
-    await loadData(user);
+    setConnections(await refreshConnections());
   };
 
   if (!authReady) return <LoadingScreen label="Preparando tu comunidad" />;

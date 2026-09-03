@@ -1,4 +1,5 @@
 import { Activity, BadgeCheck, Bell, CalendarDays, ChevronRight, Compass, Heart, Home, ListChecks, MailCheck, Map, Menu, MessageCircle, Moon, Plus, RefreshCw, Search, Shield, Sparkles, Sun, UserCheck, UsersRound, Zap } from "lucide-react";
+import { createPortal } from "react-dom";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../ui";
 import { EmptyCompact } from "./common";
 import type { NotificationRecord, Profile, View } from "../types";
@@ -40,5 +41,12 @@ export function Topbar({ query, setQuery, profile, notifications, dataLoading, o
 
 export function MobileNavigation({ active, go, onCreate }: { active: View; go: (view: View) => void; onCreate: () => void }) {
   const items: Array<{ label: string; view: View; icon: typeof Home }> = [{ label: "Inicio", view: "Inicio", icon: Home },{ label: "Explorar", view: "Explorar", icon: Compass },{ label: "Conectar", view: "Conecta+", icon: Heart },{ label: "Chat", view: "Chat", icon: MessageCircle }];
-  return <><nav className="bottom-nav" aria-label="Navegación móvil">{items.map(({ label, view, icon: Icon }) => <button key={label} className={active === view ? "active" : ""} onClick={() => go(view)}><Icon /><span>{label}</span></button>)}</nav><button className="floating-create" onClick={onCreate} aria-label="Crear plan"><Plus /></button></>;
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <>
+      <nav className="bottom-nav" aria-label="Navegación móvil">{items.map(({ label, view, icon: Icon }) => <button key={label} className={active === view ? "active" : ""} onClick={() => go(view)}><Icon /><span>{label}</span></button>)}</nav>
+      <button className="floating-create" onClick={onCreate} aria-label="Crear plan"><Plus /></button>
+    </>,
+    document.body,
+  );
 }

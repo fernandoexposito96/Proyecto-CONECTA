@@ -1,14 +1,29 @@
-const SHELL_CACHE='conecta-v1-shell-3';
+const SHELL_CACHE='conecta-v1-shell-4';
 const ASSET_CACHE='conecta-v1-assets';
 const IMAGE_CACHE='conecta-v1-images';
 const APP_ROOT='/Proyecto-CONECTA/';
 const APP_INDEX='/Proyecto-CONECTA/index.html';
 const CORE=[APP_ROOT,APP_INDEX,'/Proyecto-CONECTA/manifest.json','/Proyecto-CONECTA/conecta-icon.svg'];
+const CACHE_LIMITS={
+  [ASSET_CACHE]:120,
+  [IMAGE_CACHE]:80,
+};
+
+const trimCache=async(cacheName)=>{
+  const limit=CACHE_LIMITS[cacheName];
+  if(!limit) return;
+  const cache=await caches.open(cacheName);
+  const requests=await cache.keys();
+  const overflow=requests.length-limit;
+  if(overflow<=0) return;
+  await Promise.all(requests.slice(0,overflow).map(request=>cache.delete(request)));
+};
 
 const put=async(cacheName,request,response)=>{
   if(!response?.ok) return response;
   const cache=await caches.open(cacheName);
   await cache.put(request,response.clone());
+  await trimCache(cacheName);
   return response;
 };
 
@@ -43,6 +58,7 @@ self.addEventListener('activate',event=>{
   event.waitUntil(
     caches.keys()
       .then(keys=>Promise.all(keys.filter(key=>key.startsWith('conecta-v1-shell-')&&key!==SHELL_CACHE).map(key=>caches.delete(key))))
+      .then(()=>Promise.all([trimCache(ASSET_CACHE),trimCache(IMAGE_CACHE)]))
       .then(()=>self.clients.claim()),
   );
 });

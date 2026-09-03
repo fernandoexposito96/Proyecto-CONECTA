@@ -42,6 +42,16 @@ createRoot(root).render(
     </AppErrorBoundary>
   </StrictMode>,
 );
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    const splash = document.getElementById("boot-splash");
+    if (!splash) return;
+    splash.classList.add("boot-hide");
+    window.setTimeout(() => splash.remove(), 260);
+  });
+});
+
 void startTelemetry();
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {

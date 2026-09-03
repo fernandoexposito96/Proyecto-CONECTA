@@ -144,8 +144,8 @@ export type Community = {
 export type CommunityMember = {
   community_id: string;
   user_id: string;
-  role: "member" | "coorganizer" | "admin" | "owner";
-  status: "pending" | "active" | "rejected" | "banned";
+  role: "owner" | "moderator" | "member";
+  status: "requested" | "active" | "muted" | "removed";
   joined_at: string;
 };
 

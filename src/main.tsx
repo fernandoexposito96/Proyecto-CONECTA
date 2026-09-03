@@ -58,9 +58,11 @@ window.setTimeout(() => {
   window.setTimeout(() => splash.remove(), 280);
 }, 5_000);
 
-// Prepara vistas pesadas solo cuando el navegador está libre y el arranque ya terminó.
+// Trabajo no crítico: siempre después de revelar la aplicación.
 scheduleIdlePrefetch();
-void startTelemetry();
+window.setTimeout(() => {
+  void startTelemetry();
+}, 5_250);
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {

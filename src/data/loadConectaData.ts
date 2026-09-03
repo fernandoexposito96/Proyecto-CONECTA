@@ -53,15 +53,19 @@ const NOTIFICATION_COLUMNS = "id,user_id,actor_id,type,title,body,entity_type,en
 const SAVED_ITEM_COLUMNS = "id,user_id,item_type,item_id,created_at";
 
 export async function loadConectaData(currentUser: User, demoModeEnabled: boolean): Promise<ConectaDataSnapshot> {
+  /*
+   * Phase 1 loads independent slices in parallel. Relationship-heavy slices are
+   * intentionally deferred until we know which plans/communities are actually
+   * visible. This avoids fetching hundreds of unrelated membership rows and
+   * makes the first screen faster and more deterministic as the database grows.
+   */
   const [
     profileResult,
     trustResult,
     plansResult,
-    membersResult,
     profilesResult,
     connectionsResult,
     communitiesResult,
-    communityMembersResult,
     conversationsResult,
     notificationsResult,
     savedResult,
@@ -69,38 +73,50 @@ export async function loadConectaData(currentUser: User, demoModeEnabled: boolea
     supabase.from("profiles").select(PROFILE_COLUMNS).eq("id", currentUser.id).maybeSingle(),
     supabase.from("profile_trust").select(TRUST_COLUMNS).eq("user_id", currentUser.id).maybeSingle(),
     supabase.from("plans").select(PLAN_COLUMNS).in("status", ["published", "full"]).order("starts_at", { ascending: true }).limit(INITIAL_LIMITS.plans),
-    supabase.from("plan_members").select(PLAN_MEMBER_COLUMNS).order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.planMembers),
     supabase.from("profiles").select(PROFILE_COLUMNS).neq("id", currentUser.id).limit(INITIAL_LIMITS.profiles),
-    supabase.from("connections").select(CONNECTION_COLUMNS).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.connections),
+    supabase.from("connections").select(CONNECTION_COLUMNS).or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.connections),
     supabase.from("communities").select(COMMUNITY_COLUMNS).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.communities),
-    supabase.from("community_members").select(COMMUNITY_MEMBER_COLUMNS).order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.communityMembers),
     supabase.from("conversations").select(CONVERSATION_COLUMNS).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.conversations),
     supabase.from("notifications").select(NOTIFICATION_COLUMNS).eq("user_id", currentUser.id).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.notifications),
     supabase.from("saved_items").select(SAVED_ITEM_COLUMNS).eq("user_id", currentUser.id).limit(INITIAL_LIMITS.savedItems),
+  ]);
+
+  const realPlans = (plansResult.data as unknown as Plan[] | null) ?? [];
+  const realCommunities = (communitiesResult.data as unknown as Community[] | null) ?? [];
+  const planIds = realPlans.map((plan) => plan.id);
+  const communityIds = realCommunities.map((community) => community.id);
+
+  const [membersResult, communityMembersResult] = await Promise.all([
+    planIds.length
+      ? supabase.from("plan_members").select(PLAN_MEMBER_COLUMNS).in("plan_id", planIds).order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.planMembers)
+      : Promise.resolve({ data: [] as PlanMember[], error: null }),
+    communityIds.length
+      ? supabase.from("community_members").select(COMMUNITY_MEMBER_COLUMNS).in("community_id", communityIds).order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.communityMembers)
+      : Promise.resolve({ data: [] as CommunityMember[], error: null }),
   ]);
 
   const firstError = [
     profileResult.error,
     trustResult.error,
     plansResult.error,
-    membersResult.error,
     profilesResult.error,
     connectionsResult.error,
     communitiesResult.error,
-    communityMembersResult.error,
     conversationsResult.error,
     notificationsResult.error,
     savedResult.error,
+    membersResult.error,
+    communityMembersResult.error,
   ].find(Boolean);
 
   return {
     profile: (profileResult.data as Profile | null) ?? null,
     trust: (trustResult.data as ProfileTrust | null) ?? null,
-    plans: mergeDemoPlans((plansResult.data as unknown as Plan[] | null) ?? [], demoModeEnabled),
+    plans: mergeDemoPlans(realPlans, demoModeEnabled),
     planMembers: (membersResult.data as unknown as PlanMember[] | null) ?? [],
     profiles: mergeDemoProfiles((profilesResult.data as unknown as Profile[] | null) ?? [], demoModeEnabled),
     connections: (connectionsResult.data as unknown as Connection[] | null) ?? [],
-    communities: mergeDemoCommunities((communitiesResult.data as unknown as Community[] | null) ?? [], demoModeEnabled),
+    communities: mergeDemoCommunities(realCommunities, demoModeEnabled),
     communityMembers: (communityMembersResult.data as unknown as CommunityMember[] | null) ?? [],
     conversations: (conversationsResult.data as unknown as Conversation[] | null) ?? [],
     notifications: (notificationsResult.data as unknown as NotificationRecord[] | null) ?? [],

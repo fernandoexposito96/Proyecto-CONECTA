@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AppErrorBoundary, NetworkStatusBanner } from "./components/AppResilience";
 import { offlineVisual } from "./offlineVisuals";
+import { scheduleIdlePrefetch } from "./idle-prefetch";
 import { startTelemetry } from "./telemetry";
 import "./ui.css";
 import "./homePremiumEnhancer";
@@ -53,6 +54,8 @@ window.setTimeout(() => {
   window.setTimeout(() => splash.remove(), 280);
 }, 5_000);
 
+// Prepara vistas pesadas solo cuando el navegador está libre y el arranque ya terminó.
+scheduleIdlePrefetch();
 void startTelemetry();
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {

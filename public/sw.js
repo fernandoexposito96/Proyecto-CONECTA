@@ -1,4 +1,4 @@
-const CACHE='conecta-prototype-v4';
+const CACHE='conecta-v1';
 const APP_ROOT='/Proyecto-CONECTA/';
 const APP_INDEX='/Proyecto-CONECTA/index.html';
 const CORE=[APP_ROOT,APP_INDEX,'/Proyecto-CONECTA/manifest.json','/Proyecto-CONECTA/conecta-icon.svg'];

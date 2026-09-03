@@ -67,12 +67,14 @@ jobs:
           s = s[:start] + replacement + s[end:]
           p.write_text(s)
           PY
-      - name: Validate
-        run: |
-          npm install
-          npx tsc --noEmit
-          npm run build
-          npm run smoke
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: TypeScript
+        run: npm run check
+      - name: Build
+        run: npm run build
+      - name: Automated smoke tests
+        run: npm run test:smoke
       - name: Commit wiring
         run: |
           git config user.name 'conecta-robot'

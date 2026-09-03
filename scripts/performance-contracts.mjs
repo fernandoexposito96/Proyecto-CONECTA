@@ -34,6 +34,28 @@ assert.match(images, /loading = "lazy"/);
 assert.match(images, /fetchPriority = "low"/);
 assert.match(images, /fetchPriority = "high"/);
 
+// Data synchronization must stay scoped to the authenticated user's graph.
+const initialLoader = await read("src/data/loadConectaData.ts");
+assert.match(initialLoader, /from\("conversation_members"\)[\s\S]*\.eq\("user_id", currentUser\.id\)/);
+assert.match(initialLoader, /from\("conversations"\)[\s\S]*\.in\("id", conversationIds\)/);
+assert.match(initialLoader, /from\("connections"\)[\s\S]*requester_id\.eq\.\$\{currentUser\.id\},receiver_id\.eq\.\$\{currentUser\.id\}/);
+
+const refreshes = await read("src/data/refreshConectaSlices.ts");
+assert.match(refreshes, /from\("conversation_members"\)[\s\S]*\.eq\("user_id", userId\)/);
+assert.match(refreshes, /from\("conversations"\)[\s\S]*\.in\("id", conversationIds\)/);
+assert.match(refreshes, /from\("connections"\)[\s\S]*requester_id\.eq\.\$\{userId\},receiver_id\.eq\.\$\{userId\}/);
+assert.match(refreshes, /from\("plans"\)[\s\S]*\.in\("status", \["published", "full"\]\)[\s\S]*from\("plan_members"\)[\s\S]*\.in\("plan_id", planIds\)/);
+
+// Demo remains available for product QA but is clearly namespaced and deduplicated.
+const demo = await read("src/demoMode.ts");
+assert.match(demo, /DEMO_MODE_DEFAULT = true/);
+assert.match(demo, /DEMO_ID_PREFIX = "demo-"/);
+assert.match(demo, /demoProfiles:[\s\S]*demo-profile-/);
+assert.match(demo, /demoPlans:[\s\S]*demo-plan-/);
+assert.match(demo, /demoCommunities:[\s\S]*demo-community-/);
+assert.match(demo, /mergeUnique/);
+assert.match(demo, /localStorage\.setItem\(DEMO_STORAGE_KEY/);
+
 // Production bundle budgets. These are intentionally generous enough for the
 // current Premium product, but strict enough to catch accidental bundle bloat.
 const assetNames = await readdir("dist/assets");

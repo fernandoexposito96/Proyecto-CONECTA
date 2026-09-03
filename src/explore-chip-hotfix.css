@@ -1,0 +1,150 @@
+/* Hotfix visual para Explorar en móvil. Corrige los chips comprimidos que se ven letra a letra. */
+@media (max-width: 820px) {
+  .view-page[data-premium-view="explorar"] .explore-results {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .explore-sort {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    margin: 10px 0 8px !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .explore-sort strong,
+  .view-page[data-premium-view="explorar"] .explore-sort select {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .filter-pills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 4px 2px 10px !important;
+    margin: 0 !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x proximity !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .filter-pills::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .filter-pills button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+    min-height: 38px !important;
+    height: 38px !important;
+    padding: 0 14px !important;
+    border-radius: 999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    line-height: 1 !important;
+    font-size: 13px !important;
+    scroll-snap-align: start !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .filter-pills button * {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+    writing-mode: horizontal-tb !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .switch-row {
+    display: grid !important;
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 58px !important;
+    padding: 10px 12px !important;
+    overflow: hidden !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .switch-row input {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .switch-row span {
+    display: grid !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .switch-row strong,
+  .view-page[data-premium-view="explorar"] .switch-row small {
+    display: block !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    line-height: 1.2 !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .switch-row strong {
+    font-size: 14px !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .switch-row small {
+    font-size: 11px !important;
+    color: #7c8496 !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .explore-tabs {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .explore-tabs [role="tablist"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 4px !important;
+    border-radius: 18px !important;
+  }
+
+  .view-page[data-premium-view="explorar"] .explore-tabs [role="tab"] {
+    min-width: 0 !important;
+    width: 100% !important;
+    min-height: 42px !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    border-radius: 14px !important;
+    font-size: 13px !important;
+  }
+
+  .view-page[data-premium-view="explorar"] h1,
+  .view-page[data-premium-view="explorar"] h2,
+  .view-page[data-premium-view="explorar"] h3,
+  .view-page[data-premium-view="explorar"] button,
+  .view-page[data-premium-view="explorar"] span,
+  .view-page[data-premium-view="explorar"] strong,
+  .view-page[data-premium-view="explorar"] small {
+    word-break: normal;
+  }
+}

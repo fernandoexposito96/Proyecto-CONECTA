@@ -49,6 +49,15 @@ test("responsive layer is loaded last and imports stay valid", async () => {
   assert.equal(await exists("src/universal-responsive.css"), true, "responsive safeguard file is missing");
 });
 
+test("desktop labels stay readable and offscreen rendering is bounded", async () => {
+  const css = await read("src/universal-responsive.css");
+  assert.match(css, /white-space:nowrap!important/);
+  assert.match(css, /min-width:max-content!important/);
+  assert.match(css, /content-visibility:auto/);
+  assert.match(css, /contain-intrinsic-size:auto 360px/);
+  assert.match(css, /grid-template-columns:repeat\(auto-fit,minmax\(min\(260px,100%\),1fr\)\)!important/);
+});
+
 test("startup splash stays simple and five seconds", async () => {
   const html = await read("index.html");
   const main = await read("src/main.tsx");

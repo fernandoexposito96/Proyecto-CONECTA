@@ -1,0 +1,237 @@
+/* Premium left drawer inspired by the approved reference: clean, vertical and touch-first. */
+.mobile-menu-sheet.conecta-premium-drawer {
+  width: min(88vw, 360px) !important;
+  max-width: 360px !important;
+  padding: 0 !important;
+  border-radius: 0 26px 26px 0 !important;
+  border-right: 1px solid rgba(118,87,246,.12) !important;
+  background: color-mix(in srgb, Canvas 98%, var(--conecta-accent) 2%) !important;
+  box-shadow: 18px 0 60px rgba(22,26,45,.16) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+.mobile-menu-sheet.conecta-premium-drawer > button[data-radix-dialog-close] {
+  top: 18px !important;
+  right: 16px !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  background: rgba(127,127,145,.08) !important;
+}
+
+.conecta-drawer-intro {
+  padding: calc(18px + env(safe-area-inset-top)) 18px 4px;
+}
+
+.conecta-drawer-brand {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-right: 42px;
+}
+.conecta-drawer-brandmark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--conecta-accent), color-mix(in srgb, var(--conecta-accent) 68%, #ff6c9d));
+  color: #fff;
+  font-size: 22px;
+  font-weight: 950;
+  box-shadow: 0 9px 24px color-mix(in srgb, var(--conecta-accent) 28%, transparent);
+}
+.conecta-drawer-brand > div,
+.conecta-drawer-greeting > div { min-width: 0; display: grid; gap: 1px; }
+.conecta-drawer-brand strong {
+  font-size: 18px;
+  line-height: 1.05;
+  letter-spacing: -.035em;
+}
+.conecta-drawer-brand small,
+.conecta-drawer-greeting small {
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: .55;
+}
+
+.conecta-drawer-greeting {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 10px 0 18px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--conecta-accent) 10%, transparent);
+  border-radius: 15px;
+  background: color-mix(in srgb, Canvas 95%, var(--conecta-accent) 5%);
+}
+.conecta-drawer-greeting > span { font-size: 20px; }
+.conecta-drawer-greeting strong { font-size: 13px; }
+
+.conecta-drawer-section-label,
+.conecta-control-center__title {
+  margin: 8px 10px 7px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  letter-spacing: .13em !important;
+  text-transform: uppercase !important;
+  opacity: .45 !important;
+}
+
+/* Main navigation becomes a simple vertical list like a real settings drawer. */
+.mobile-menu-sheet.conecta-premium-drawer .mobile-menu-list {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 4px !important;
+  padding: 0 12px 10px !important;
+}
+.mobile-menu-sheet.conecta-premium-drawer .mobile-menu-list button {
+  width: 100% !important;
+  min-height: 49px !important;
+  padding: 9px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  border-radius: 13px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-size: 13px !important;
+  font-weight: 720 !important;
+  text-align: left !important;
+}
+.mobile-menu-sheet.conecta-premium-drawer .mobile-menu-list button:hover,
+.mobile-menu-sheet.conecta-premium-drawer .mobile-menu-list button:focus-visible {
+  background: color-mix(in srgb, Canvas 90%, var(--conecta-accent) 10%) !important;
+}
+.mobile-menu-sheet.conecta-premium-drawer .mobile-menu-list button.active {
+  background: color-mix(in srgb, Canvas 86%, var(--conecta-accent) 14%) !important;
+  color: var(--conecta-accent) !important;
+  box-shadow: inset 3px 0 0 var(--conecta-accent) !important;
+}
+.mobile-menu-sheet.conecta-premium-drawer .mobile-menu-list button svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+  color: var(--conecta-accent);
+}
+
+.conecta-control-center {
+  padding: 4px 12px calc(20px + env(safe-area-inset-bottom)) !important;
+  display: grid !important;
+  gap: 15px !important;
+  border-top: 1px solid rgba(127,127,145,.10);
+}
+.conecta-control-center__section { display: grid !important; gap: 5px !important; }
+.conecta-control-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 4px !important;
+}
+.conecta-control-button {
+  min-height: 50px !important;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.conecta-control-button:hover,
+.conecta-control-button:focus-visible {
+  background: color-mix(in srgb, Canvas 90%, var(--conecta-accent) 10%) !important;
+}
+.conecta-control-button__icon {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 11px !important;
+  background: color-mix(in srgb, Canvas 82%, var(--conecta-accent) 18%) !important;
+  font-size: 16px;
+}
+.conecta-control-button__copy strong { font-size: 12.5px !important; line-height: 1.15 !important; }
+.conecta-control-button__copy small { font-size: 9.5px !important; line-height: 1.25 !important; opacity: .52 !important; }
+
+.conecta-theme-card {
+  padding: 12px !important;
+  display: grid !important;
+  gap: 12px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(127,127,145,.12) !important;
+  background: color-mix(in srgb, Canvas 96%, var(--conecta-accent) 4%) !important;
+  box-shadow: none !important;
+}
+.conecta-theme-card__head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+.conecta-theme-copy { min-width: 0; display: grid; gap: 2px; }
+.conecta-theme-copy strong { font-size: 12px; }
+.conecta-theme-copy small { font-size: 9.5px; opacity: .52; }
+.conecta-theme-toggle {
+  min-width: 70px;
+  min-height: 32px;
+  padding: 6px 11px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--conecta-accent) !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+}
+.conecta-setting-label {
+  margin: 0 !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  opacity: .52 !important;
+}
+.conecta-color-picker { display: flex !important; align-items: center !important; gap: 10px !important; }
+.conecta-color-swatch {
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px;
+  border: 3px solid Canvas !important;
+  border-radius: 50% !important;
+  outline: 1px solid rgba(127,127,145,.22) !important;
+  box-shadow: 0 2px 8px rgba(25,28,40,.09);
+}
+.conecta-color-swatch[aria-pressed="true"] {
+  outline: 2px solid currentColor !important;
+  outline-offset: 2px !important;
+  transform: scale(1.08);
+}
+.conecta-density-toggle {
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  gap: 6px !important;
+}
+.conecta-density-toggle button {
+  min-height: 36px !important;
+  border-radius: 10px !important;
+  font-size: 10px !important;
+}
+
+.conecta-quick-grid .conecta-control-button__copy small { display: none; }
+.conecta-quick-grid .conecta-control-button { min-height: 46px !important; }
+
+.conecta-drawer-footer {
+  display: grid;
+  gap: 2px;
+  margin-top: 2px;
+  padding: 12px 10px 2px;
+  border-top: 1px solid rgba(127,127,145,.10);
+}
+.conecta-drawer-footer strong { font-size: 10px; letter-spacing: .08em; color: var(--conecta-accent); }
+.conecta-drawer-footer span { font-size: 9px; line-height: 1.35; opacity: .45; }
+
+@media (max-width: 430px) {
+  .mobile-menu-sheet.conecta-premium-drawer { width: min(91vw, 348px) !important; }
+  .conecta-drawer-intro { padding-left: 15px; padding-right: 15px; }
+  .mobile-menu-sheet.conecta-premium-drawer .mobile-menu-list,
+  .conecta-control-center { padding-left: 10px !important; padding-right: 10px !important; }
+}

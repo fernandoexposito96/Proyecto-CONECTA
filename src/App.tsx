@@ -61,7 +61,8 @@ import {
   TabsList, TabsTrigger, Toaster, toast,
 } from "./ui";
 import { supabase } from "./supabase";
-import { demoProfiles, isDemoModeEnabled, mergeDemoCommunities, mergeDemoPlans, mergeDemoProfiles, setDemoModeEnabled } from "./demoMode";
+import { demoProfiles, isDemoModeEnabled, setDemoModeEnabled } from "./demoMode";
+import { loadConectaData } from "./data/loadConectaData";
 import { exportSocialCalendar } from "./socialCalendar";
 import { categories, categoryColor, categoryImage, planTemplates } from "./catalog";
 import { EmptyCompact, EmptyFeature, Field, PageHero, PlansEmpty, SectionTitle } from "./components/common";
@@ -186,71 +187,37 @@ export default function ConectaApp() {
   }, []);
 
   const loadData = useCallback(async (currentUser: User) => {
-    const now = Date.now();
-    if (lastLoadRef.current?.userId === currentUser.id && now - lastLoadRef.current.at < 800) return;
-    lastLoadRef.current = { userId: currentUser.id, at: now };
-    setDataLoading(true);
-    setDataError(null);
-    const [
-      profileResult,
-      trustResult,
-      plansResult,
-      membersResult,
-      profilesResult,
-      connectionsResult,
-      communitiesResult,
-      communityMembersResult,
-      conversationsResult,
-      notificationsResult,
-      savedResult,
-    ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", currentUser.id).maybeSingle(),
-      supabase.from("profile_trust").select("*").eq("user_id", currentUser.id).maybeSingle(),
-      supabase.from("plans").select("*").in("status", ["published", "full"]).order("starts_at", { ascending: true }),
-      supabase.from("plan_members").select("*").order("joined_at", { ascending: true }),
-      supabase.from("profiles").select("*").neq("id", currentUser.id).limit(80),
-      supabase.from("connections").select("*").order("created_at", { ascending: false }),
-      supabase.from("communities").select("*").order("created_at", { ascending: false }),
-      supabase.from("community_members").select("*").order("joined_at", { ascending: false }),
-      supabase.from("conversations").select("*").order("created_at", { ascending: false }),
-      supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(30),
-      supabase.from("saved_items").select("*").eq("user_id", currentUser.id),
-    ]);
-
-    const firstError = [
-      profileResult.error,
-      trustResult.error,
-      plansResult.error,
-      membersResult.error,
-      profilesResult.error,
-      connectionsResult.error,
-      communitiesResult.error,
-      communityMembersResult.error,
-      conversationsResult.error,
-      notificationsResult.error,
-      savedResult.error,
-    ].find(Boolean);
-
-    if (firstError) {
-      setDataError(firstError.message);
-      toast.error(`No se pudo sincronizar todo: ${firstError.message}`);
+  const now = Date.now();
+  if (lastLoadRef.current?.userId === currentUser.id && now - lastLoadRef.current.at < 800) return;
+  lastLoadRef.current = { userId: currentUser.id, at: now };
+  setDataLoading(true);
+  setDataError(null);
+  try {
+    const snapshot = await loadConectaData(currentUser, demoModeEnabled);
+    if (snapshot.errorMessage) {
+      setDataError(snapshot.errorMessage);
+      toast.error(`No se pudo sincronizar todo: ${snapshot.errorMessage}`);
     }
-
-    setProfile((profileResult.data as Profile | null) ?? null);
-    setTrust((trustResult.data as ProfileTrust | null) ?? null);
-    setPlans(mergeDemoPlans((plansResult.data as Plan[] | null) ?? [], demoModeEnabled));
-    setPlanMembers((membersResult.data as PlanMember[] | null) ?? []);
-    setProfiles(mergeDemoProfiles((profilesResult.data as Profile[] | null) ?? [], demoModeEnabled));
-    setConnections((connectionsResult.data as Connection[] | null) ?? []);
-    setCommunities(mergeDemoCommunities((communitiesResult.data as Community[] | null) ?? [], demoModeEnabled));
-    setCommunityMembers((communityMembersResult.data as CommunityMember[] | null) ?? []);
-    const loadedConversations = (conversationsResult.data as Conversation[] | null) ?? [];
-    setConversations(loadedConversations);
-    setSelectedConversation((current) => current ?? loadedConversations[0]?.id ?? null);
-    setNotifications((notificationsResult.data as NotificationRecord[] | null) ?? []);
-    setSavedItems((savedResult.data as SavedItem[] | null) ?? []);
+    setProfile(snapshot.profile);
+    setTrust(snapshot.trust);
+    setPlans(snapshot.plans);
+    setPlanMembers(snapshot.planMembers);
+    setProfiles(snapshot.profiles);
+    setConnections(snapshot.connections);
+    setCommunities(snapshot.communities);
+    setCommunityMembers(snapshot.communityMembers);
+    setConversations(snapshot.conversations);
+    setSelectedConversation((current) => current ?? snapshot.conversations[0]?.id ?? null);
+    setNotifications(snapshot.notifications);
+    setSavedItems(snapshot.savedItems);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error inesperado al sincronizar";
+    setDataError(message);
+    toast.error(`No se pudo sincronizar todo: ${message}`);
+  } finally {
     setDataLoading(false);
-  }, [demoModeEnabled]);
+  }
+}, [demoModeEnabled]);
 
   useEffect(() => {
     if (user && emailVerified) void loadData(user);

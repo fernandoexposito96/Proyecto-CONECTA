@@ -1,0 +1,61 @@
+name: Wire optimized data layer
+
+on:
+  push:
+    branches: [perf-wire-data-layer]
+    paths:
+      - '.github/workflows/wire-data-layer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: perf-wire-data-layer
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Wire targeted refreshes into App
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/App.tsx')
+          s = p.read_text()
+          loader_import = 'import { loadConectaData } from "./data/loadConectaData";'
+          refresh_import = 'import { refreshConnections, refreshConversations, refreshPlanMembers, refreshSavedItems } from "./data/refreshConectaSlices";'
+          if refresh_import not in s:
+            s = s.replace(loader_import, loader_import + '\n' + refresh_import)
+
+          replacements = {
+            '    await loadData(user);\n  };\n\n  const savePlan = async (plan: Plan) => {': '    try {\n      setPlanMembers(await refreshPlanMembers());\n    } catch (error) {\n      toast.error(error instanceof Error ? error.message : "No se pudo actualizar el plan");\n    }\n  };\n\n  const savePlan = async (plan: Plan) => {',
+            '    toast.success(saved ? "Plan eliminado de guardados" : "Plan guardado");\n    await loadData(user);\n  };': '    toast.success(saved ? "Plan eliminado de guardados" : "Plan guardado");\n    try {\n      setSavedItems(await refreshSavedItems(user.id));\n    } catch (error) {\n      toast.error(error instanceof Error ? error.message : "No se pudieron actualizar los guardados");\n    }\n  };',
+            '    await loadData(user);\n  };\n\n  const openDirectChat = async (person: Profile) => {': '    try {\n      setConnections(await refreshConnections());\n    } catch (error) {\n      toast.error(error instanceof Error ? error.message : "No se pudieron actualizar las conexiones");\n    }\n  };\n\n  const openDirectChat = async (person: Profile) => {',
+            '    if (error) return toast.error(error.message);\n    await loadData(user);\n    setSelectedConversation(String(data));': '    if (error) return toast.error(error.message);\n    try {\n      setConversations(await refreshConversations());\n    } catch (refreshError) {\n      toast.error(refreshError instanceof Error ? refreshError.message : "No se pudieron actualizar los chats");\n    }\n    setSelectedConversation(String(data));',
+            '    toast.success(`${person.display_name ?? "Usuario"} ha sido bloqueado y retirado de tus conexiones`);\n    await loadData(user);\n  };': '    toast.success(`${person.display_name ?? "Usuario"} ha sido bloqueado y retirado de tus conexiones`);\n    try {\n      setConnections(await refreshConnections());\n    } catch (refreshError) {\n      toast.error(refreshError instanceof Error ? refreshError.message : "No se pudieron actualizar las conexiones");\n    }\n  };',
+          }
+          for old, new in replacements.items():
+            if old not in s:
+              raise SystemExit(f'Expected App action pattern not found: {old[:80]}')
+            s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: TypeScript
+        run: npm run check
+      - name: Build
+        run: npm run build
+      - name: Automated smoke tests
+        run: npm run test:smoke
+      - name: Commit wiring
+        run: |
+          git config user.name 'conecta-robot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add src/App.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m 'Use targeted refreshes for frequent actions'
+          git push origin HEAD:perf-wire-data-layer

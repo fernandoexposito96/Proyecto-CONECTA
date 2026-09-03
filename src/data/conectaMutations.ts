@@ -5,10 +5,9 @@ function assertOk(error: { message: string } | null) {
 }
 
 export async function joinPlanMutation(planId: string, userId: string) {
-  const { error } = await supabase.from("plan_members").upsert(
-    { plan_id: planId, user_id: userId, attendance_status: "going" },
-    { onConflict: "plan_id,user_id" },
-  );
+  const { error } = await supabase
+    .from("plan_members")
+    .insert({ plan_id: planId, user_id: userId, role: "participant" });
   assertOk(error);
 }
 
@@ -22,10 +21,9 @@ export async function leavePlanMutation(planId: string, userId: string) {
 }
 
 export async function savePlanMutation(planId: string, userId: string) {
-  const { error } = await supabase.from("saved_items").upsert(
-    { user_id: userId, item_type: "plan", item_id: planId },
-    { onConflict: "user_id,item_type,item_id" },
-  );
+  const { error } = await supabase
+    .from("saved_items")
+    .insert({ user_id: userId, item_type: "plan", item_id: planId });
   assertOk(error);
 }
 
@@ -39,18 +37,35 @@ export async function unsavePlanMutation(planId: string, userId: string) {
   assertOk(error);
 }
 
-export async function connectMutation(requesterId: string, addresseeId: string) {
-  const { error } = await supabase.from("connections").upsert(
-    { requester_id: requesterId, addressee_id: addresseeId, status: "pending" },
-    { onConflict: "requester_id,addressee_id" },
-  );
+export async function requestConnectionMutation(requesterId: string, receiverId: string) {
+  const { error } = await supabase
+    .from("connections")
+    .insert({ requester_id: requesterId, receiver_id: receiverId });
+  assertOk(error);
+}
+
+export async function acceptConnectionMutation(connectionId: string) {
+  const { error } = await supabase
+    .from("connections")
+    .update({ status: "accepted", updated_at: new Date().toISOString() })
+    .eq("id", connectionId);
+  assertOk(error);
+}
+
+export async function deleteConnectionMutation(connectionId: string) {
+  const { error } = await supabase.from("connections").delete().eq("id", connectionId);
   assertOk(error);
 }
 
 export async function blockConnectionMutation(userId: string, personId: string) {
-  const { error } = await supabase
+  const { error: blockError } = await supabase
+    .from("blocks")
+    .insert({ blocker_id: userId, blocked_id: personId });
+  assertOk(blockError);
+
+  const { error: connectionError } = await supabase
     .from("connections")
-    .update({ status: "blocked" })
-    .or(`and(requester_id.eq.${userId},addressee_id.eq.${personId}),and(requester_id.eq.${personId},addressee_id.eq.${userId})`);
-  assertOk(error);
+    .delete()
+    .or(`and(requester_id.eq.${userId},receiver_id.eq.${personId}),and(requester_id.eq.${personId},receiver_id.eq.${userId})`);
+  assertOk(connectionError);
 }

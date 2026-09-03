@@ -1,6 +1,7 @@
 import {
+  acceptConnectionMutation,
   blockConnectionMutation,
-  connectMutation,
+  deleteConnectionMutation,
   joinPlanMutation,
   leavePlanMutation,
   loadConectaData,
@@ -8,12 +9,12 @@ import {
   refreshConversations,
   refreshPlanMembers,
   refreshSavedItems,
+  requestConnectionMutation,
   savePlanMutation,
   unsavePlanMutation,
 } from "./optimizedDataLayer";
 
-// Compile-time guard: keeps the staged data-layer API connected and type-checked
-// before App.tsx is switched over to it.
+// Compile-time guard: keeps the staged data-layer API connected and type-checked.
 export const optimizedDataLayerApi = {
   loadConectaData,
   refreshPlanMembers,
@@ -24,6 +25,8 @@ export const optimizedDataLayerApi = {
   leavePlanMutation,
   savePlanMutation,
   unsavePlanMutation,
-  connectMutation,
+  requestConnectionMutation,
+  acceptConnectionMutation,
+  deleteConnectionMutation,
   blockConnectionMutation,
 };

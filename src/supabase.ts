@@ -1,11 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ??
+  "https://qdjuypoqiafqncwgmicf.supabase.co";
 
-if (!supabaseUrl || !supabasePublishableKey) {
-  throw new Error("Faltan VITE_SUPABASE_URL o VITE_SUPABASE_PUBLISHABLE_KEY. Configúralas en el entorno de CONECTA.");
-}
+const supabasePublishableKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  "sb_publishable_cJAhkB9oDjK-ecmrEshNvA_79F3_G55";
 
 const client = createClient(supabaseUrl, supabasePublishableKey, {
   auth: {

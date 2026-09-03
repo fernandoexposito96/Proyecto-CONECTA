@@ -39,6 +39,9 @@
 /* Conecta+: divulgación progresiva y verificación compacta */
 @import "./conecta-calm-enhancer.css";
 
+/* Pulido específico de escritorio sin alterar móvil */
+@import "./desktop-final-polish.css";
+
 /* Siempre el último import: móvil, tablet, ordenador y PWA */
 @import "./universal-responsive.css";
 

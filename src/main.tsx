@@ -5,6 +5,8 @@ import { AppErrorBoundary, NetworkStatusBanner } from "./components/AppResilienc
 import { offlineVisual } from "./offlineVisuals";
 import { startTelemetry } from "./telemetry";
 import "./conecta-premium.css";
+import "./home-premium.css";
+import "./homePremiumEnhancer";
 import "./accessibility.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.

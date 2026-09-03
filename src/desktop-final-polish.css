@@ -37,6 +37,57 @@
     padding:9px 13px!important;
   }
 
+  /* Tarjetas Premium: más presencia, brillo y separación visual. */
+  .plan-card,.group-card,.community-card,.person-card,.profile-card,.action-card,.product-action,.feature-card{
+    position:relative!important;
+    isolation:isolate;
+    border:1px solid rgba(124,92,246,.14)!important;
+    box-shadow:0 12px 30px rgba(31,38,68,.10),0 2px 8px rgba(94,65,180,.08)!important;
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease!important;
+    overflow:hidden!important;
+  }
+  .plan-card::after,.group-card::after,.community-card::after,.person-card::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:2;
+    background:linear-gradient(135deg,rgba(255,255,255,.14),transparent 32%,transparent 72%,rgba(125,92,246,.05));
+  }
+  .plan-card:hover,.group-card:hover,.community-card:hover,.person-card:hover{
+    transform:translateY(-2px);
+    border-color:rgba(124,92,246,.24)!important;
+    box-shadow:0 18px 38px rgba(31,38,68,.14),0 5px 14px rgba(94,65,180,.12)!important;
+  }
+
+  /* Todas las zonas visuales de tarjeta deben tener una imagen limpia y consistente. */
+  .plan-image,.group-card>img,.community-card>img,.person-card>img,.profile-cover{
+    background:linear-gradient(135deg,#f0ecff,#e8f2ff)!important;
+  }
+  .plan-image img,.group-card>img,.community-card>img,.person-card>img,.profile-cover img{
+    display:block!important;
+    width:100%!important;
+    min-height:170px!important;
+    object-fit:cover!important;
+    filter:saturate(1.06) contrast(1.03) brightness(1.02);
+  }
+  .plan-image{min-height:180px!important}
+
+  /* Títulos y textos: jamás letra sobre letra ni palabras troceadas. */
+  .plan-card :where(h2,h3,strong,p,small,span),
+  .group-card :where(h2,h3,strong,p,small,span),
+  .community-card :where(h2,h3,strong,p,small,span),
+  .person-card :where(h2,h3,strong,p,small,span),
+  .page-hero :where(h1,h2,p,span),
+  .section-title :where(h2,h3,p,span){
+    word-break:normal!important;
+    overflow-wrap:break-word!important;
+    hyphens:none!important;
+    text-wrap:pretty;
+  }
+  .plan-card h3,.group-card h3,.community-card h3,.person-card h3{line-height:1.18!important}
+  .plan-card p,.group-card p,.community-card p,.person-card p{line-height:1.42!important}
+
   /* Resumen de Planes: números y etiquetas con separación real. */
   .plan-dashboard{
     display:grid!important;
@@ -50,8 +101,12 @@
     align-items:baseline!important;
     gap:7px!important;
     min-width:0!important;
+    padding:10px 12px!important;
+    border-radius:14px!important;
+    background:rgba(255,255,255,.72)!important;
+    border:1px solid rgba(124,92,246,.10)!important;
   }
-  .plan-dashboard strong{flex:0 0 auto!important}
+  .plan-dashboard strong{flex:0 0 auto!important;font-size:1.08em!important}
   .plan-dashboard span{min-width:0!important;white-space:normal!important;overflow-wrap:normal!important}
 
   /* Mapa: separar “resultados” y “Cerca de…” y dar aire a cada fila. */
@@ -72,6 +127,10 @@
 
   /* Agenda/calendario: evitar textos pegados en el lateral. */
   .calendar-layout{align-items:start!important}
+  .month-card,.agenda-card{
+    box-shadow:0 12px 28px rgba(31,38,68,.08)!important;
+    border:1px solid rgba(124,92,246,.10)!important;
+  }
   .month-card>header,
   .agenda-card>header{
     display:flex!important;
@@ -116,4 +175,8 @@
 
 @media (min-width:901px) and (max-width:1199px){
   .plan-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .plan-card,.group-card,.community-card,.person-card{transition:none!important}
 }

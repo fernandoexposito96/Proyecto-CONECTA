@@ -30,10 +30,11 @@ const exploreCards = [
 const localCards = [
   {
     icon: "%",
-    eyebrow: "OFERTAS",
-    title: "Ofertas cerca de ti",
-    text: "Descuentos y ventajas para planes, experiencias y actividades.",
-    badge: "NUEVO",
+    eyebrow: "OFERTAS PREMIUM",
+    title: "Ventajas exclusivas cerca de ti",
+    text: "Descuentos especiales en restaurantes, gimnasios, actividades y experiencias asociadas.",
+    badge: "PREMIUM",
+    premium: true,
     image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?auto=format&fit=crop&w=900&q=86",
   },
   {
@@ -42,6 +43,7 @@ const localCards = [
     title: "Restaurantes para quedar",
     text: "Descubre sitios por ambiente, precio, distancia y valoraciones.",
     badge: "TOP",
+    premium: false,
     image: "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=86",
   },
   {
@@ -50,8 +52,17 @@ const localCards = [
     title: "Gimnasios y clases",
     text: "Entrenos, clases grupales y compañeros para mantener la constancia.",
     badge: "CERCA",
+    premium: false,
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=86",
   },
+];
+
+const premiumBenefits = [
+  ["♥", "Más likes", "Más capacidad para conectar cada mes."],
+  ["↗", "Mayor visibilidad", "Tu perfil y tus planes aparecen antes en recomendaciones."],
+  ["%", "Ofertas exclusivas", "Descuentos y ventajas reservadas para miembros Premium."],
+  ["★", "Distintivo Premium", "Tu cuenta se identifica visualmente dentro de CONECTA."],
+  ["⚡", "Prioridad", "Más presencia en descubrimiento, afinidad y sugerencias."],
 ];
 
 function createExploreHighlights() {
@@ -80,31 +91,59 @@ function createExploreHighlights() {
   return section;
 }
 
+function createPremiumPromo(compact = false) {
+  const section = document.createElement("section");
+  section.className = `cx-premium-promo${compact ? " compact" : ""}`;
+  section.innerHTML = `
+    <div class="cx-premium-head">
+      <div><span>CONECTA PREMIUM</span><h2>Más visibilidad. Más ventajas.</h2><p>Una suscripción útil para quien quiere aprovechar más la aplicación.</p></div>
+      <div class="cx-premium-price"><strong>4,99 €</strong><small>/ mes</small></div>
+    </div>
+    <div class="cx-premium-benefits">
+      ${premiumBenefits.map(([icon, title, text]) => `<article><i>${icon}</i><div><b>${title}</b><small>${text}</small></div></article>`).join("")}
+    </div>
+    <div class="cx-premium-foot"><span>✓ Ofertas Premium · ✓ Distintivo · ✓ Prioridad de visibilidad</span><button type="button" data-cx-premium-info>Ver Premium</button></div>
+  `;
+  section.querySelector<HTMLButtonElement>("[data-cx-premium-info]")?.addEventListener("click", () => {
+    const modal = document.createElement("div");
+    modal.className = "cx-premium-modal";
+    modal.innerHTML = `<div class="cx-premium-modal-card"><button type="button" class="cx-premium-close" aria-label="Cerrar">×</button><span>CONECTA PREMIUM</span><h2>4,99 € al mes</h2><p>Incluye más likes, mayor visibilidad, ofertas exclusivas, distintivo Premium y prioridad en recomendaciones.</p><div>${premiumBenefits.map(([icon, title, text]) => `<article><i>${icon}</i><div><b>${title}</b><small>${text}</small></div></article>`).join("")}</div><button type="button" class="cx-premium-soon">Activación próximamente</button></div>`;
+    modal.querySelector(".cx-premium-close")?.addEventListener("click", () => modal.remove());
+    modal.addEventListener("click", (event) => { if (event.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  });
+  return section;
+}
+
 function createLocalDiscovery() {
   const section = document.createElement("section");
   section.className = "cx-local-discovery";
   section.innerHTML = `
     <div class="cx-section-heading">
-      <div><span>DESCUBRE CERCA</span><h2>Ofertas, restaurantes y gimnasios</h2></div>
-      <small>Todo integrado en Explorar</small>
+      <div><span>DESCUBRE CERCA</span><h2>Restaurantes, gimnasios y ventajas</h2></div>
+      <small>Las ofertas exclusivas son Premium</small>
     </div>
     <div class="cx-local-grid">
       ${localCards.map((card) => `
-        <article class="cx-local-card">
+        <article class="cx-local-card${card.premium ? " premium-locked" : ""}">
           <img src="${card.image}" alt="" />
           <div class="cx-local-overlay"></div>
           <span class="cx-local-badge">${card.badge}</span>
+          ${card.premium ? `<span class="cx-premium-lock">♛ SOLO PREMIUM</span>` : ""}
           <div class="cx-local-copy">
             <i>${card.icon}</i>
             <span>${card.eyebrow}</span>
             <h3>${card.title}</h3>
             <p>${card.text}</p>
-            <button type="button">Explorar <b>→</b></button>
+            <button type="button" ${card.premium ? "data-cx-premium-offer" : ""}>${card.premium ? "Premium · 4,99 €" : "Explorar"} <b>→</b></button>
           </div>
         </article>
       `).join("")}
     </div>
   `;
+  section.querySelector<HTMLButtonElement>("[data-cx-premium-offer]")?.addEventListener("click", () => {
+    document.querySelector<HTMLElement>(".cx-premium-promo")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
   return section;
 }
 
@@ -149,13 +188,21 @@ function enhanceExplore(page: HTMLElement) {
   const hero = page.querySelector(".page-hero");
   const filterLayout = page.querySelector(".filter-layout");
   if (hero && !page.querySelector(".cx-explore-highlights")) hero.after(createExploreHighlights());
-  if (filterLayout && !page.querySelector(".cx-local-discovery")) filterLayout.before(createLocalDiscovery());
+  if (filterLayout && !page.querySelector(".cx-local-discovery")) {
+    const local = createLocalDiscovery();
+    filterLayout.before(local);
+    local.before(createPremiumPromo(true));
+  }
   dedupeExplorePlans(page);
 }
 
 function enhanceConnect(page: HTMLElement) {
   const hero = page.querySelector(".page-hero");
-  if (hero && !page.querySelector(".cx-connect-strip")) hero.after(createConnectStrip());
+  if (hero && !page.querySelector(".cx-connect-strip")) {
+    const strip = createConnectStrip();
+    hero.after(strip);
+    strip.after(createPremiumPromo());
+  }
 }
 
 function enhanceChat(page: HTMLElement) {

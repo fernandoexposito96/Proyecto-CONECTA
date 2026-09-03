@@ -10,6 +10,8 @@ export {
   leavePlanMutation,
   savePlanMutation,
   unsavePlanMutation,
-  connectMutation,
+  requestConnectionMutation,
+  acceptConnectionMutation,
+  deleteConnectionMutation,
   blockConnectionMutation,
 } from "./conectaMutations";

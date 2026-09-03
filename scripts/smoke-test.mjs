@@ -58,6 +58,31 @@ test("initial Supabase loading scopes relationship-heavy rows", async () => {
   assert.doesNotMatch(loader, /from\(["']plan_members["']\).*?limit\(INITIAL_LIMITS\.planMembers\).*?from\(["']profiles["']\)/s, "plan members should not be part of the broad first-phase query batch");
 });
 
+test("partial refreshes avoid wildcard payloads", async () => {
+  const refreshes = await read("src/data/refreshConectaSlices.ts");
+  assert.doesNotMatch(refreshes, /\.select\(["']\*["']\)/, "hot refresh paths must select explicit columns");
+  for (const columns of ["PLAN_MEMBER_COLUMNS", "SAVED_ITEM_COLUMNS", "CONNECTION_COLUMNS", "CONVERSATION_COLUMNS"]) {
+    assert.ok(refreshes.includes(columns), `${columns} is missing from partial refreshes`);
+  }
+});
+
+test("database hot paths keep supporting indexes", async () => {
+  const migration = await read("supabase/migrations/20260903224000_add_runtime_performance_indexes.sql");
+  for (const indexName of [
+    "plans_status_starts_at_idx",
+    "plan_members_plan_joined_idx",
+    "community_members_community_joined_idx",
+    "notifications_user_created_idx",
+    "saved_items_user_type_item_idx",
+    "connections_requester_created_idx",
+    "connections_receiver_created_idx",
+    "messages_conversation_created_idx",
+  ]) {
+    assert.ok(migration.includes(indexName), `${indexName} performance index is missing`);
+  }
+  assert.match(migration, /create index if not exists/i);
+});
+
 test("single CSS entrypoint remains enforced", async () => {
   const main = await read("src/main.tsx");
   assert.match(main, /import\s+["']\.\/ui\.css["']/);

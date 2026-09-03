@@ -26,10 +26,22 @@ test("PWA manifest is installable", async () => {
   assert.ok(manifest.icons.some((icon) => icon?.src && (icon.sizes === "any" || typeof icon.sizes === "string")), "PWA icon metadata is invalid");
 });
 
-test("service worker uses the canonical cache", async () => {
+test("service worker uses fast versioned-asset caching", async () => {
   const sw = await read("public/sw.js");
   assert.match(sw, /conecta-v1/);
+  assert.match(sw, /cacheFirst/);
+  assert.match(sw, /staleWhileRevalidate/);
+  assert.match(sw, /\/assets\//);
+  assert.match(sw, /request\.mode===['"]navigate['"]/);
   assert.doesNotMatch(sw, /Index1996|raw\.githack/i);
+});
+
+test("initial Supabase loading scopes relationship-heavy rows", async () => {
+  const loader = await read("src/data/loadConectaData.ts");
+  assert.match(loader, /\.in\(["']plan_id["'],\s*planIds\)/);
+  assert.match(loader, /\.in\(["']community_id["'],\s*communityIds\)/);
+  assert.match(loader, /requester_id\.eq\.\$\{currentUser\.id\},receiver_id\.eq\.\$\{currentUser\.id\}/);
+  assert.doesNotMatch(loader, /from\(["']plan_members["']\).*?limit\(INITIAL_LIMITS\.planMembers\).*?from\(["']profiles["']\)/s, "plan members should not be part of the broad first-phase query batch");
 });
 
 test("single CSS entrypoint remains enforced", async () => {

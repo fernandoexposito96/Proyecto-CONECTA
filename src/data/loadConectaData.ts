@@ -55,9 +55,8 @@ const SAVED_ITEM_COLUMNS = "id,user_id,item_type,item_id,created_at";
 export async function loadConectaData(currentUser: User, demoModeEnabled: boolean): Promise<ConectaDataSnapshot> {
   /*
    * Phase 1 loads independent slices in parallel. Relationship-heavy slices are
-   * intentionally deferred until we know which plans/communities are actually
-   * visible. This avoids fetching hundreds of unrelated membership rows and
-   * makes the first screen faster and more deterministic as the database grows.
+   * intentionally deferred until we know which plans/communities/conversations
+   * are actually relevant to the authenticated user.
    */
   const [
     profileResult,
@@ -66,7 +65,7 @@ export async function loadConectaData(currentUser: User, demoModeEnabled: boolea
     profilesResult,
     connectionsResult,
     communitiesResult,
-    conversationsResult,
+    conversationMembershipsResult,
     notificationsResult,
     savedResult,
   ] = await Promise.all([
@@ -76,7 +75,7 @@ export async function loadConectaData(currentUser: User, demoModeEnabled: boolea
     supabase.from("profiles").select(PROFILE_COLUMNS).neq("id", currentUser.id).limit(INITIAL_LIMITS.profiles),
     supabase.from("connections").select(CONNECTION_COLUMNS).or(`requester_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.connections),
     supabase.from("communities").select(COMMUNITY_COLUMNS).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.communities),
-    supabase.from("conversations").select(CONVERSATION_COLUMNS).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.conversations),
+    supabase.from("conversation_members").select("conversation_id").eq("user_id", currentUser.id).limit(INITIAL_LIMITS.conversations),
     supabase.from("notifications").select(NOTIFICATION_COLUMNS).eq("user_id", currentUser.id).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.notifications),
     supabase.from("saved_items").select(SAVED_ITEM_COLUMNS).eq("user_id", currentUser.id).limit(INITIAL_LIMITS.savedItems),
   ]);
@@ -85,14 +84,20 @@ export async function loadConectaData(currentUser: User, demoModeEnabled: boolea
   const realCommunities = (communitiesResult.data as unknown as Community[] | null) ?? [];
   const planIds = realPlans.map((plan) => plan.id);
   const communityIds = realCommunities.map((community) => community.id);
+  const conversationIds = (((conversationMembershipsResult.data as unknown as Array<{ conversation_id: string }> | null) ?? []))
+    .map((membership) => membership.conversation_id)
+    .filter(Boolean);
 
-  const [membersResult, communityMembersResult] = await Promise.all([
+  const [membersResult, communityMembersResult, conversationsResult] = await Promise.all([
     planIds.length
       ? supabase.from("plan_members").select(PLAN_MEMBER_COLUMNS).in("plan_id", planIds).order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.planMembers)
       : Promise.resolve({ data: [] as PlanMember[], error: null }),
     communityIds.length
       ? supabase.from("community_members").select(COMMUNITY_MEMBER_COLUMNS).in("community_id", communityIds).order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.communityMembers)
       : Promise.resolve({ data: [] as CommunityMember[], error: null }),
+    conversationIds.length
+      ? supabase.from("conversations").select(CONVERSATION_COLUMNS).in("id", conversationIds).order("created_at", { ascending: false }).limit(INITIAL_LIMITS.conversations)
+      : Promise.resolve({ data: [] as Conversation[], error: null }),
   ]);
 
   const firstError = [
@@ -102,11 +107,12 @@ export async function loadConectaData(currentUser: User, demoModeEnabled: boolea
     profilesResult.error,
     connectionsResult.error,
     communitiesResult.error,
-    conversationsResult.error,
+    conversationMembershipsResult.error,
     notificationsResult.error,
     savedResult.error,
     membersResult.error,
     communityMembersResult.error,
+    conversationsResult.error,
   ].find(Boolean);
 
   return {

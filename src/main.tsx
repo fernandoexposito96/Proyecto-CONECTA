@@ -21,6 +21,8 @@ import "./three-pages-final.css";
 import "./explore-chip-hotfix.css";
 import "./secondary-content-max.css";
 import "./secondary-content-max";
+import "./structure-overhaul.css";
+import "./structure-overhaul";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 document.documentElement.dataset.theme = "light";

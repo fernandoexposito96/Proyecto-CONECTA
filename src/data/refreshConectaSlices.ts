@@ -2,6 +2,7 @@ import { supabase } from "../supabase";
 import type { Connection, Conversation, PlanMember, SavedItem } from "../types";
 
 const SLICE_LIMITS = {
+  plans: 120,
   planMembers: 300,
   connections: 160,
   conversations: 80,
@@ -25,9 +26,21 @@ async function requireUserId(): Promise<string> {
 }
 
 export async function refreshPlanMembers(): Promise<PlanMember[]> {
+  const { data: activePlans, error: plansError } = await supabase
+    .from("plans")
+    .select("id")
+    .in("status", ["published", "full"])
+    .order("starts_at", { ascending: true })
+    .limit(SLICE_LIMITS.plans);
+  throwIfError(plansError);
+
+  const planIds = ((activePlans as Array<{ id: string }> | null) ?? []).map((plan) => plan.id).filter(Boolean);
+  if (!planIds.length) return [];
+
   const { data, error } = await supabase
     .from("plan_members")
     .select(PLAN_MEMBER_COLUMNS)
+    .in("plan_id", planIds)
     .order("joined_at", { ascending: false })
     .limit(SLICE_LIMITS.planMembers);
   throwIfError(error);

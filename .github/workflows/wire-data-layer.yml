@@ -19,52 +19,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Wire bounded loader into App
+      - name: Wire targeted refreshes into App
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('src/App.tsx')
           s = p.read_text()
-          s = s.replace(
-            'import { demoProfiles, isDemoModeEnabled, mergeDemoCommunities, mergeDemoPlans, mergeDemoProfiles, setDemoModeEnabled } from "./demoMode";',
-            'import { demoProfiles, isDemoModeEnabled, setDemoModeEnabled } from "./demoMode";\nimport { loadConectaData } from "./data/loadConectaData";'
-          )
-          start = s.index('  const loadData = useCallback(async (currentUser: User) => {')
-          end_marker = '  }, [demoModeEnabled]);'
-          end = s.index(end_marker, start) + len(end_marker)
-          replacement = '''  const loadData = useCallback(async (currentUser: User) => {
-            const now = Date.now();
-            if (lastLoadRef.current?.userId === currentUser.id && now - lastLoadRef.current.at < 800) return;
-            lastLoadRef.current = { userId: currentUser.id, at: now };
-            setDataLoading(true);
-            setDataError(null);
-            try {
-              const snapshot = await loadConectaData(currentUser, demoModeEnabled);
-              if (snapshot.errorMessage) {
-                setDataError(snapshot.errorMessage);
-                toast.error(`No se pudo sincronizar todo: ${snapshot.errorMessage}`);
-              }
-              setProfile(snapshot.profile);
-              setTrust(snapshot.trust);
-              setPlans(snapshot.plans);
-              setPlanMembers(snapshot.planMembers);
-              setProfiles(snapshot.profiles);
-              setConnections(snapshot.connections);
-              setCommunities(snapshot.communities);
-              setCommunityMembers(snapshot.communityMembers);
-              setConversations(snapshot.conversations);
-              setSelectedConversation((current) => current ?? snapshot.conversations[0]?.id ?? null);
-              setNotifications(snapshot.notifications);
-              setSavedItems(snapshot.savedItems);
-            } catch (error) {
-              const message = error instanceof Error ? error.message : "Error inesperado al sincronizar";
-              setDataError(message);
-              toast.error(`No se pudo sincronizar todo: ${message}`);
-            } finally {
-              setDataLoading(false);
-            }
-          }, [demoModeEnabled]);'''
-          s = s[:start] + replacement + s[end:]
+          loader_import = 'import { loadConectaData } from "./data/loadConectaData";'
+          refresh_import = 'import { refreshConnections, refreshConversations, refreshPlanMembers, refreshSavedItems } from "./data/refreshConectaSlices";'
+          if refresh_import not in s:
+            s = s.replace(loader_import, loader_import + '\n' + refresh_import)
+
+          replacements = {
+            '    await loadData(user);\n  };\n\n  const savePlan = async (plan: Plan) => {': '    try {\n      setPlanMembers(await refreshPlanMembers());\n    } catch (error) {\n      toast.error(error instanceof Error ? error.message : "No se pudo actualizar el plan");\n    }\n  };\n\n  const savePlan = async (plan: Plan) => {',
+            '    toast.success(saved ? "Plan eliminado de guardados" : "Plan guardado");\n    await loadData(user);\n  };': '    toast.success(saved ? "Plan eliminado de guardados" : "Plan guardado");\n    try {\n      setSavedItems(await refreshSavedItems(user.id));\n    } catch (error) {\n      toast.error(error instanceof Error ? error.message : "No se pudieron actualizar los guardados");\n    }\n  };',
+            '    await loadData(user);\n  };\n\n  const openDirectChat = async (person: Profile) => {': '    try {\n      setConnections(await refreshConnections());\n    } catch (error) {\n      toast.error(error instanceof Error ? error.message : "No se pudieron actualizar las conexiones");\n    }\n  };\n\n  const openDirectChat = async (person: Profile) => {',
+            '    if (error) return toast.error(error.message);\n    await loadData(user);\n    setSelectedConversation(String(data));': '    if (error) return toast.error(error.message);\n    try {\n      setConversations(await refreshConversations());\n    } catch (refreshError) {\n      toast.error(refreshError instanceof Error ? refreshError.message : "No se pudieron actualizar los chats");\n    }\n    setSelectedConversation(String(data));',
+            '    toast.success(`${person.display_name ?? "Usuario"} ha sido bloqueado y retirado de tus conexiones`);\n    await loadData(user);\n  };': '    toast.success(`${person.display_name ?? "Usuario"} ha sido bloqueado y retirado de tus conexiones`);\n    try {\n      setConnections(await refreshConnections());\n    } catch (refreshError) {\n      toast.error(refreshError instanceof Error ? refreshError.message : "No se pudieron actualizar las conexiones");\n    }\n  };',
+          }
+          for old, new in replacements.items():
+            if old not in s:
+              raise SystemExit(f'Expected App action pattern not found: {old[:80]}')
+            s = s.replace(old, new, 1)
           p.write_text(s)
           PY
       - name: Install
@@ -81,5 +57,5 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add src/App.tsx
           git diff --cached --quiet && exit 0
-          git commit -m 'Wire bounded loader into App shell'
+          git commit -m 'Use targeted refreshes for frequent actions'
           git push origin HEAD:perf-wire-data-layer

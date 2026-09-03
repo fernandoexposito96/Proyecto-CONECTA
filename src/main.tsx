@@ -27,6 +27,7 @@ import "./core-views-visual.css";
 import "./premium-social-experience.css";
 import "./drawer-reference-premium.css";
 import "./mobile-dialogs-safe.css";
+import "./confirmation-final-polish.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 const savedTheme = window.localStorage.getItem("conecta-theme");

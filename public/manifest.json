@@ -1,8 +1,9 @@
 {
+  "id": "/Proyecto-CONECTA/",
   "name": "CONECTA Premium",
   "short_name": "CONECTA",
   "description": "Planes reales, gente compatible y quedadas seguras.",
-  "start_url": "/Proyecto-CONECTA/index.html",
+  "start_url": "/Proyecto-CONECTA/?pwa=3",
   "scope": "/Proyecto-CONECTA/",
   "display": "standalone",
   "orientation": "portrait",
@@ -11,7 +12,7 @@
   "lang": "es",
   "icons": [
     {
-      "src": "/Proyecto-CONECTA/conecta-icon.svg",
+      "src": "/Proyecto-CONECTA/conecta-icon.svg?v=3",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

@@ -13,6 +13,7 @@ import "./mobile-premium-fix.css";
 import "./mobile-compact-hotfix.css";
 import "./mobile-nav-polish.css";
 import "./accessibility.css";
+import "./premium-max-overhaul.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 document.documentElement.dataset.theme = "light";

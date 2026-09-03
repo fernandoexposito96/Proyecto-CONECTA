@@ -17,6 +17,7 @@ import "./premium-max-overhaul.css";
 import "./prototype-exact-mobile.css";
 import "./secondary-views-premium.css";
 import "./secondary-views-premium";
+import "./three-pages-final.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 document.documentElement.dataset.theme = "light";
@@ -52,7 +53,7 @@ void startTelemetry();
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-prototype-5", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-three-pages-final-1", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
     } catch {

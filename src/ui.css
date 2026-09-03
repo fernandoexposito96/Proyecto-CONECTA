@@ -37,3 +37,6 @@
 @import "./drawer-reference-premium.css";
 @import "./mobile-dialogs-safe.css";
 @import "./confirmation-final-polish.css";
+
+/* Conecta+: divulgación progresiva y verificación compacta */
+@import "./conecta-calm-enhancer.css";

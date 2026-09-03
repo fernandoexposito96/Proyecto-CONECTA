@@ -56,7 +56,7 @@ void startTelemetry();
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-secondary-max-3", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-premium-499-4", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
     } catch {

@@ -1,14 +1,16 @@
 import type { User } from "@supabase/supabase-js";
 import type { Connection, Conversation, PlanMember, SavedItem } from "../types";
 import {
+  acceptConnectionMutation,
   blockConnectionMutation,
-  connectMutation,
+  deleteConnectionMutation,
   joinPlanMutation,
   leavePlanMutation,
   refreshConnections,
   refreshConversations,
   refreshPlanMembers,
   refreshSavedItems,
+  requestConnectionMutation,
   savePlanMutation,
   unsavePlanMutation,
 } from "./optimizedDataLayer";
@@ -35,8 +37,16 @@ export function createOptimizedActions(user: User, setters: OptimizedStateSetter
       else await savePlanMutation(planId, user.id);
       setters.setSavedItems(await refreshSavedItems(user.id));
     },
-    async connect(personId: string) {
-      await connectMutation(user.id, personId);
+    async requestConnection(personId: string) {
+      await requestConnectionMutation(user.id, personId);
+      setters.setConnections(await refreshConnections());
+    },
+    async acceptConnection(connectionId: string) {
+      await acceptConnectionMutation(connectionId);
+      setters.setConnections(await refreshConnections());
+    },
+    async deleteConnection(connectionId: string) {
+      await deleteConnectionMutation(connectionId);
       setters.setConnections(await refreshConnections());
     },
     async block(personId: string) {

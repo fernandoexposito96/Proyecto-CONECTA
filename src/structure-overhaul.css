@@ -1,0 +1,246 @@
+/* CONECTA — structural polish layer
+   Loaded last on purpose: it normalizes spacing, wrapping and mobile density
+   without replacing the existing visual identity. */
+
+:root {
+  --conecta-accent: #7657f6;
+  --conecta-accent-soft: color-mix(in srgb, var(--conecta-accent) 12%, transparent);
+  --conecta-radius-xl: 24px;
+  --conecta-radius-lg: 18px;
+  --conecta-space-page: clamp(14px, 3vw, 28px);
+}
+
+html, body, #app { max-width: 100%; overflow-x: clip; }
+*, *::before, *::after { box-sizing: border-box; }
+img, video, svg, canvas { max-width: 100%; }
+button, input, textarea, select { font: inherit; }
+
+/* Prevent text collisions everywhere. */
+:where(h1,h2,h3,h4,p,span,strong,b,small,label,button,a,li) {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+:where(h1,h2,h3,h4,p) { margin-block-start: 0; }
+:where(button,a) { min-width: 0; }
+
+.content-wrap,
+main,
+section,
+article,
+.card,
+[class*="card"],
+[class*="grid"],
+[class*="row"] { min-width: 0; }
+
+.content-wrap {
+  width: min(100%, 1480px);
+  margin-inline: auto;
+  padding-inline: var(--conecta-space-page);
+}
+
+/* Lighter visual rhythm: more air, less visual weight. */
+.section-block { margin-block: clamp(22px, 4vw, 38px); }
+.section-block + .section-block { margin-top: clamp(26px, 5vw, 44px); }
+.section-title, .welcome-row { gap: 12px; }
+
+:where(.action-card,.plan-card,.person-card,.community-card,.feature-card,.settings-control-card) {
+  box-shadow: 0 8px 28px rgb(20 22 35 / 0.07);
+  border-radius: var(--conecta-radius-lg);
+}
+
+/* Mobile header is kept compact and never competes with itself. */
+@media (max-width: 760px) {
+  .topbar {
+    min-height: 58px !important;
+    padding-inline: 12px !important;
+    gap: 8px !important;
+  }
+  .mobile-menu-button,
+  .topbar .icon-button,
+  .top-profile {
+    flex: 0 0 auto;
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .mobile-brand { min-width: 0; max-width: 132px; }
+  .mobile-brand strong { white-space: nowrap; font-size: 14px; }
+  .top-actions { gap: 6px !important; min-width: 0; }
+  .topbar .search,
+  .topbar .create-button,
+  .topbar .desktop-refresh,
+  .topbar .theme-button { display: none !important; }
+
+  .content-wrap {
+    padding-inline: 12px !important;
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+
+  .welcome-row { align-items: flex-start !important; }
+  .welcome-row h1 {
+    font-size: clamp(24px, 7vw, 31px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.035em;
+  }
+  .welcome-row p { line-height: 1.45; }
+  .mini-stats { width: 100%; display: grid !important; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px !important; }
+  .mini-stats > div { min-width: 0; padding: 9px 5px !important; }
+  .mini-stats strong { font-size: 17px !important; line-height: 1; }
+  .mini-stats span { font-size: 10px !important; line-height: 1.2; }
+
+  .hero-card { min-height: 360px !important; border-radius: 22px !important; overflow: hidden; }
+  .hero-copy { max-width: min(92%, 420px) !important; padding: 18px !important; }
+  .hero-copy h2 { font-size: clamp(29px, 8.6vw, 40px) !important; line-height: 1.02 !important; }
+  .hero-copy p { max-width: 34ch; font-size: 13px !important; line-height: 1.45; }
+  .hero-copy > div { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero-primary, .hero-secondary { min-height: 42px; font-size: 12px !important; padding: 9px 12px !important; }
+  .hero-create { transform: scale(.9); transform-origin: right bottom; }
+
+  .action-card-grid,
+  .plans-grid,
+  .people-grid,
+  .communities-grid {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 10px !important;
+  }
+
+  .action-card { padding: 13px !important; gap: 10px !important; }
+  .action-card p { margin-top: 3px !important; font-size: 11px !important; line-height: 1.35; }
+
+  .section-title h2 { font-size: clamp(20px, 6vw, 26px) !important; line-height: 1.12 !important; }
+  .section-title button { white-space: nowrap; flex: 0 0 auto; }
+
+  .bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+  .bottom-nav button span { font-size: 10px !important; }
+  .floating-create { bottom: calc(32px + env(safe-area-inset-bottom)) !important; }
+}
+
+/* Hamburger drawer: proper hierarchy instead of one long heavy list. */
+.mobile-menu-sheet {
+  width: min(92vw, 390px) !important;
+  padding: 0 !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.mobile-menu-sheet > :where(div:first-child, header) { padding-inline: 18px; }
+.mobile-menu-sheet [data-radix-scroll-area-viewport] { overflow-x: hidden; }
+.mobile-menu-list {
+  padding: 8px 14px 4px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 7px !important;
+}
+.mobile-menu-list button {
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 11px !important;
+  border-radius: 14px !important;
+  gap: 8px !important;
+  justify-content: flex-start;
+  line-height: 1.15;
+}
+.mobile-menu-list button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.mobile-menu-list button.active {
+  background: var(--conecta-accent-soft) !important;
+  color: var(--conecta-accent) !important;
+}
+
+.conecta-control-center {
+  padding: 8px 14px 18px;
+  display: grid;
+  gap: 12px;
+}
+.conecta-control-center__section {
+  display: grid;
+  gap: 7px;
+}
+.conecta-control-center__title {
+  margin: 0 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .55;
+}
+.conecta-control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 7px;
+}
+.conecta-control-button,
+.conecta-theme-card {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgb(127 127 145 / .16);
+  background: color-mix(in srgb, Canvas 96%, var(--conecta-accent) 4%);
+  color: inherit;
+  border-radius: 14px;
+}
+.conecta-control-button {
+  min-height: 56px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  cursor: pointer;
+}
+.conecta-control-button__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: var(--conecta-accent-soft);
+  color: var(--conecta-accent);
+}
+.conecta-control-button__copy { min-width: 0; display: grid; gap: 1px; }
+.conecta-control-button__copy strong { font-size: 12px; line-height: 1.2; }
+.conecta-control-button__copy small { font-size: 9px; line-height: 1.25; opacity: .62; }
+
+.conecta-theme-card { padding: 11px; display: grid; gap: 10px; }
+.conecta-theme-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.conecta-theme-card__head strong { font-size: 12px; }
+.conecta-theme-toggle {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: var(--conecta-accent-soft);
+  color: var(--conecta-accent);
+  font-weight: 800;
+  font-size: 10px;
+  cursor: pointer;
+}
+.conecta-color-picker { display: flex; flex-wrap: wrap; gap: 9px; }
+.conecta-color-swatch {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 3px solid Canvas;
+  outline: 1px solid rgb(127 127 145 / .2);
+  cursor: pointer;
+}
+.conecta-color-swatch[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 2px; }
+
+.conecta-density-toggle { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+.conecta-density-toggle button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(127 127 145 / .09);
+  color: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.conecta-density-toggle button.active { background: var(--conecta-accent-soft); color: var(--conecta-accent); }
+
+html[data-density="compact"] .section-block { margin-block: 20px; }
+html[data-density="compact"] :where(.action-card,.plan-card,.person-card,.community-card) { padding: 11px !important; }
+
+@media (max-width: 390px) {
+  .mobile-menu-list, .conecta-control-grid { grid-template-columns: minmax(0,1fr); }
+  .mobile-menu-sheet { width: 94vw !important; }
+}

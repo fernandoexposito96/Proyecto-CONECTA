@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#7c3aed" />
+  <meta name="theme-color" content="#000000" />
   <meta name="color-scheme" content="light dark" />
   <meta name="description" content="CONECTA — conoce personas compatibles y organiza planes reales y seguros." />
   <meta name="application-name" content="CONECTA" />
@@ -20,22 +20,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <title>CONECTA — Planes reales, gente compatible</title>
   <style>
-    html,body{margin:0;min-height:100%;background:#6d28d9}
-    #boot-splash{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.14),transparent 28%),linear-gradient(145deg,#7c3aed 0%,#5b21b6 55%,#3b0764 100%);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;transition:opacity .22s ease,visibility .22s ease}
-    #boot-splash::before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08);filter:blur(42px);animation:bootGlow 1.8s ease-in-out infinite alternate}
-    #boot-splash .boot-brand{position:relative;display:grid;justify-items:center;gap:16px;color:#fff;text-align:center}
-    #boot-splash .boot-word{font-size:clamp(42px,12vw,68px);font-weight:900;letter-spacing:.16em;text-indent:.16em;text-shadow:0 8px 30px rgba(0,0,0,.22),0 0 24px rgba(255,255,255,.18);animation:bootPulse 1.6s ease-in-out infinite}
-    #boot-splash .boot-line{width:74px;height:3px;border-radius:999px;background:rgba(255,255,255,.32);overflow:hidden;box-shadow:0 0 18px rgba(255,255,255,.2)}
-    #boot-splash .boot-line::after{content:"";display:block;width:34px;height:100%;border-radius:inherit;background:#fff;animation:bootLine 1.1s ease-in-out infinite}
+    html,body{margin:0;min-height:100%;background:#000}
+    #app{visibility:hidden}
+    html.boot-complete #app{visibility:visible}
+    #boot-splash{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#000;color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;transition:opacity .28s ease,visibility .28s ease}
+    #boot-splash .boot-word{font-size:clamp(44px,12vw,72px);font-weight:800;letter-spacing:.18em;text-indent:.18em;line-height:1;white-space:nowrap}
     #boot-splash.boot-hide{opacity:0;visibility:hidden;pointer-events:none}
-    @keyframes bootGlow{from{transform:scale(.9);opacity:.55}to{transform:scale(1.08);opacity:.9}}
-    @keyframes bootPulse{0%,100%{opacity:.92;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
-    @keyframes bootLine{0%{transform:translateX(-38px);opacity:.4}50%{opacity:1}100%{transform:translateX(78px);opacity:.4}}
-    @media (prefers-reduced-motion:reduce){#boot-splash::before,#boot-splash .boot-word,#boot-splash .boot-line::after{animation:none}}
   </style>
 </head>
 <body>
-  <div id="boot-splash" aria-hidden="true"><div class="boot-brand"><div class="boot-word">CONECTA</div><div class="boot-line"></div></div></div>
+  <div id="boot-splash" aria-hidden="true"><div class="boot-word">CONECTA</div></div>
   <div id="app"></div>
   <script type="module" src="./src/main.tsx"></script>
 </body>

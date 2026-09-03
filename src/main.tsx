@@ -43,14 +43,15 @@ createRoot(root).render(
   </StrictMode>,
 );
 
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    const splash = document.getElementById("boot-splash");
-    if (!splash) return;
-    splash.classList.add("boot-hide");
-    window.setTimeout(() => splash.remove(), 260);
-  });
-});
+// Mantén la presentación visible durante 10 s y no reveles la app hasta el final.
+// Así iOS nunca llega a enseñar iconos o elementos sin estilos durante el arranque.
+window.setTimeout(() => {
+  const splash = document.getElementById("boot-splash");
+  document.documentElement.classList.add("boot-complete");
+  if (!splash) return;
+  splash.classList.add("boot-hide");
+  window.setTimeout(() => splash.remove(), 320);
+}, 10_000);
 
 void startTelemetry();
 

@@ -79,7 +79,7 @@
 /*
  * Contrato final de navegación móvil.
  * Una sola barra, cinco celdas reales: Inicio · Explorar · + · Conectar · Chat.
- * El botón crear forma parte del grid para que nunca pueda descuadrarse.
+ * Estas reglas viven después de todas las capas para neutralizar estilos antiguos.
  */
 @media (max-width:820px){
   .bottom-nav{
@@ -94,12 +94,16 @@
     padding:6px 10px!important;
     gap:2px!important;
   }
-  .bottom-nav>button{
+
+  /* Anula las asignaciones nth-child históricas de mobile-nav-polish.css. */
+  .bottom-nav>button:nth-child(n){
     grid-column:auto!important;
     min-width:0!important;
     width:100%!important;
     margin:0!important;
   }
+
+  /* El + es la tercera celda real del mismo grid. */
   .bottom-nav>.floating-create{
     position:relative!important;
     inset:auto!important;
@@ -113,8 +117,22 @@
     height:56px!important;
     min-width:56px!important;
     min-height:56px!important;
+    padding:0!important;
     margin:0!important;
+    border:5px solid #fff!important;
+    border-radius:50%!important;
+    background:linear-gradient(145deg,#7c3aed,#9b5cff)!important;
+    color:#fff!important;
+    box-shadow:0 10px 26px rgba(124,58,237,.30)!important;
+    display:grid!important;
+    place-items:center!important;
     z-index:1!important;
+  }
+
+  .bottom-nav>.floating-create svg{
+    width:27px!important;
+    height:27px!important;
+    stroke-width:2.2!important;
   }
 }
 

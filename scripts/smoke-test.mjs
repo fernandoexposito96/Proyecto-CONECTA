@@ -39,6 +39,26 @@ test("single CSS entrypoint remains enforced", async () => {
   assert.deepEqual(cssImports, ["./ui.css"]);
 });
 
+test("responsive layer is loaded last and imports stay valid", async () => {
+  const css = await read("src/ui.css");
+  const imports = [...css.matchAll(/^@import\s+["']([^"']+)["'];/gm)].map((match) => match[1]);
+  assert.equal(imports.at(-1), "./universal-responsive.css", "universal responsive layer must be the final CSS import");
+  const lastImportEnd = css.lastIndexOf("@import");
+  const firstRule = css.search(/\n\s*\.[A-Za-z_-]|\n\s*#[A-Za-z_-]|\n\s*:[A-Za-z_-]|\n\s*@media/);
+  assert.ok(firstRule === -1 || lastImportEnd < firstRule, "all @import rules must appear before CSS style rules");
+  assert.equal(await exists("src/universal-responsive.css"), true, "responsive safeguard file is missing");
+});
+
+test("startup splash stays simple and five seconds", async () => {
+  const html = await read("index.html");
+  const main = await read("src/main.tsx");
+  assert.match(html, /#boot-splash[^}]*background:#000/s);
+  assert.match(html, /boot-word[^}]*font-size:clamp\(30px,8vw,46px\)/s);
+  assert.match(html, />CONECTA<\/div>/);
+  assert.doesNotMatch(html, /boot-line|spinner|LoaderCircle/i);
+  assert.match(main, /5_000|5000/);
+});
+
 test("critical product views are present", async () => {
   const app = await read("src/App.tsx");
   for (const view of ["HomeView", "ExploreView", "ChatView", "ProfileView"]) assert.ok(app.includes(view), `${view} is missing`);

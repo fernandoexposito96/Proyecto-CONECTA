@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
+import { join } from "node:path";
 
 const read = (path) => readFile(path, "utf8");
 
@@ -33,4 +34,27 @@ assert.match(images, /loading = "lazy"/);
 assert.match(images, /fetchPriority = "low"/);
 assert.match(images, /fetchPriority = "high"/);
 
-console.log("✓ CONECTA performance contracts passed");
+// Production bundle budgets. These are intentionally generous enough for the
+// current Premium product, but strict enough to catch accidental bundle bloat.
+const assetNames = await readdir("dist/assets");
+const assetStats = await Promise.all(
+  assetNames.map(async (name) => ({ name, size: (await stat(join("dist/assets", name))).size })),
+);
+const jsAssets = assetStats.filter(({ name }) => name.endsWith(".js"));
+const cssAssets = assetStats.filter(({ name }) => name.endsWith(".css"));
+const totalJs = jsAssets.reduce((sum, asset) => sum + asset.size, 0);
+const totalCss = cssAssets.reduce((sum, asset) => sum + asset.size, 0);
+const largestJs = jsAssets.reduce((largest, asset) => Math.max(largest, asset.size), 0);
+
+const KB = 1024;
+const BUDGETS = {
+  totalJs: 2_000 * KB,
+  totalCss: 650 * KB,
+  largestJs: 700 * KB,
+};
+
+assert.ok(totalJs <= BUDGETS.totalJs, `JS budget exceeded: ${(totalJs / KB).toFixed(1)} KB > 2000 KB`);
+assert.ok(totalCss <= BUDGETS.totalCss, `CSS budget exceeded: ${(totalCss / KB).toFixed(1)} KB > 650 KB`);
+assert.ok(largestJs <= BUDGETS.largestJs, `largest JS chunk exceeded: ${(largestJs / KB).toFixed(1)} KB > 700 KB`);
+
+console.log(`✓ CONECTA performance contracts passed — JS ${(totalJs / KB).toFixed(1)} KB, CSS ${(totalCss / KB).toFixed(1)} KB, largest chunk ${(largestJs / KB).toFixed(1)} KB`);

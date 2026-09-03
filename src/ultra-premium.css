@@ -1,0 +1,124 @@
+/* CONECTA Ultra Premium — additive visual layer.
+   Intentionally loaded last: upgrades the existing identity without replacing structure. */
+
+:root {
+  --ultra-violet: #6d28d9;
+  --ultra-purple: #8b5cf6;
+  --ultra-pink: #ec4899;
+  --ultra-cyan: #06b6d4;
+  --ultra-ink: #171327;
+  --ultra-shadow: 0 14px 38px rgba(69, 39, 117, .14);
+}
+
+/* Give the product more air and depth while preserving current DOM/layout. */
+.app-shell,
+main,
+[role="main"] { background-image: linear-gradient(180deg, rgba(139,92,246,.035), transparent 22rem); }
+
+/* Premium photographic cards: any existing image becomes the visual hero instead of decoration. */
+article,
+.card,
+.plan-card,
+.event-card,
+.person-card,
+.community-card {
+  border-radius: 20px;
+  box-shadow: var(--ultra-shadow);
+  border-color: rgba(109,40,217,.10);
+}
+
+article img,
+.card img,
+.plan-card img,
+.event-card img,
+.community-card img {
+  object-fit: cover;
+  transition: transform .28s ease, filter .28s ease;
+}
+
+@media (hover:hover) {
+  article:hover img,
+  .card:hover img,
+  .plan-card:hover img,
+  .event-card:hover img { transform: scale(1.025); filter: saturate(1.06); }
+}
+
+/* Horizontal collections feel lighter and show the next card as a discovery cue. */
+.horizontal-scroll,
+.cards-row,
+.carousel,
+[aria-label*="planes" i],
+[aria-label*="categor" i] {
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.horizontal-scroll::-webkit-scrollbar,
+.cards-row::-webkit-scrollbar,
+.carousel::-webkit-scrollbar { display:none; }
+.horizontal-scroll > *, .cards-row > *, .carousel > * { scroll-snap-align: start; }
+
+/* Chips and quick categories get color/life without changing their meaning. */
+.chip,
+.pill,
+.category-chip,
+.filter-chip {
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+}
+
+/* Primary actions keep CONECTA purple but gain premium dimensionality. */
+button.primary,
+.btn-primary,
+.cta-primary,
+button[data-primary="true"] {
+  background-image: linear-gradient(110deg, var(--ultra-violet), var(--ultra-purple) 55%, var(--ultra-pink));
+  box-shadow: 0 9px 22px rgba(109,40,217,.23);
+  border: 0;
+}
+
+/* Avatars and story-like imagery. */
+.avatar,
+.avatar img,
+.profile-photo,
+.profile-photo img {
+  object-fit: cover;
+}
+.avatar { box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(139,92,246,.34); }
+
+/* Map cards remain readable over real map tiles. */
+.map-card,
+.map-popup,
+.map-overlay {
+  background: rgba(255,255,255,.94);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 30px rgba(23,19,39,.18);
+  border-radius: 18px;
+}
+
+/* Empty states should look intentional until real content is available. */
+.empty-state {
+  min-height: 180px;
+  border-radius: 22px;
+  border: 1px dashed rgba(109,40,217,.22);
+  background: radial-gradient(circle at 85% 10%, rgba(236,72,153,.10), transparent 34%),
+              radial-gradient(circle at 8% 90%, rgba(6,182,212,.10), transparent 32%),
+              rgba(139,92,246,.035);
+}
+
+/* Bottom navigation stays usable on iPhone safe areas and feels like a native app. */
+.bottom-nav,
+nav[aria-label*="principal" i] {
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(20px) saturate(1.2);
+}
+
+/* Mobile density: visual richness without making cards huge. */
+@media (max-width: 600px) {
+  article, .card, .plan-card, .event-card, .person-card, .community-card { border-radius: 17px; }
+  .section-title, h2 { letter-spacing: -.02em; }
+  .horizontal-scroll, .cards-row, .carousel { padding-right: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  article img, .card img, .plan-card img, .event-card img, .community-card img { transition: none; }
+}

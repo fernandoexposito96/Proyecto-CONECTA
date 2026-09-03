@@ -88,6 +88,7 @@
     align-items:center!important;
     left:50%!important;
     right:auto!important;
+    bottom:calc(5px + env(safe-area-inset-bottom))!important;
     transform:translateX(-50%)!important;
     width:min(calc(100vw - 24px),560px)!important;
     max-width:calc(100vw - 24px)!important;

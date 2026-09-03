@@ -92,6 +92,9 @@
     padding:6px 10px!important;
     display:grid!important;
     grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    grid-template-rows:1fr!important;
+    grid-auto-flow:column!important;
+    grid-auto-rows:0!important;
     align-items:center!important;
     gap:2px!important;
     overflow:visible!important;
@@ -107,7 +110,7 @@
   .bottom-nav>button{
     position:relative!important;
     inset:auto!important;
-    grid-column:auto!important;
+    grid-row:1!important;
     min-width:0!important;
     width:100%!important;
     height:54px!important;
@@ -127,6 +130,12 @@
     box-shadow:none!important;
     z-index:auto!important;
   }
+
+  .bottom-nav>button:nth-child(1){grid-column:1!important}
+  .bottom-nav>button:nth-child(2){grid-column:2!important}
+  .bottom-nav>button:nth-child(3){grid-column:3!important}
+  .bottom-nav>button:nth-child(4){grid-column:4!important}
+  .bottom-nav>button:nth-child(5){grid-column:5!important}
 
   .bottom-nav>button svg{
     width:21px!important;
@@ -156,6 +165,8 @@
     right:auto!important;
     bottom:auto!important;
     transform:none!important;
+    grid-column:3!important;
+    grid-row:1!important;
     justify-self:center!important;
     align-self:center!important;
     width:56px!important;
@@ -171,7 +182,7 @@
     box-shadow:0 10px 26px rgba(124,58,237,.30)!important;
     display:grid!important;
     place-items:center!important;
-    z-index:1!important;
+    z-index:2!important;
   }
 
   .bottom-nav>.floating-create svg{

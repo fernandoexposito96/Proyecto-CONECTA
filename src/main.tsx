@@ -11,6 +11,7 @@ import "./quick-icons-polish.css";
 import "./quick-icons-polish";
 import "./mobile-premium-fix.css";
 import "./mobile-compact-hotfix.css";
+import "./mobile-nav-polish.css";
 import "./accessibility.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.

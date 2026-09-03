@@ -19,12 +19,8 @@ input,textarea,select,button{max-width:100%}
 .view-page,.section-block,.page-hero{max-width:100%;min-width:0}
 
 /* Reduce off-screen rendering work without changing layout or behaviour. */
-:where(.section-block,.plan-card,.person-card,.group-card,.community-card,.product-action,.action-card,.feature-card){
-  content-visibility:auto;
-  contain-intrinsic-size:auto 360px;
-}
+:where(.section-block,.plan-card,.person-card,.group-card,.community-card,.product-action,.action-card,.feature-card){content-visibility:auto;contain-intrinsic-size:auto 360px}
 
-/* Any old fixed card/grid widths become fluid. */
 .plans-grid,.people-grid,.groups-grid,.discovery-grid,.action-card-grid,.product-action-grid,.feature-matrix,.audience-grid,.mode-actions,.security-grid,.emergency-layout,.life-dashboard,.robot-overview,.profile-layout,.calendar-layout,.home-split,.filter-layout,.map-layout,.chat-layout,.form-grid{min-width:0;max-width:100%}
 .plans-grid,.people-grid,.groups-grid,.discovery-grid{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))!important}
 .action-card-grid,.product-action-grid,.feature-matrix,.audience-grid,.mode-actions{grid-template-columns:repeat(auto-fit,minmax(min(270px,100%),1fr))!important}
@@ -33,147 +29,60 @@ input,textarea,select,button{max-width:100%}
 .plan-body,.person-info,.action-card>div,.product-action>*{min-width:0}
 .plan-title h3,.section-title h2,.page-hero h1,.welcome-row h1{overflow-wrap:anywhere}
 
-/* Keep navigation and compact labels readable instead of splitting words. */
-.side-nav button span,.brand strong,.profile-mini strong,.email-ready-card strong{
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  overflow-wrap:normal;
-}
+.side-nav button span,.brand strong,.profile-mini strong,.email-ready-card strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}
 
-/* Media never forces the viewport wider than its container. */
 .plan-image,.person-card,.hero-card,.map-canvas{max-width:100%;overflow:hidden}
 .plan-image img,.person-card>img,.hero-card>img,.profile-cover img{width:100%;height:100%;object-fit:cover}
 
-/* Horizontal chip rows scroll internally; labels never break letter-by-letter. */
-.category-row,.filter-pills,.group-chips,.time-chips{
-  display:flex;
-  flex-wrap:nowrap!important;
-  gap:10px;
-  max-width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  overscroll-behavior-inline:contain;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  padding-bottom:2px;
-}
+.category-row,.filter-pills,.group-chips,.time-chips{display:flex;flex-wrap:nowrap!important;gap:10px;max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
 .category-row::-webkit-scrollbar,.filter-pills::-webkit-scrollbar,.group-chips::-webkit-scrollbar,.time-chips::-webkit-scrollbar{display:none}
-.category-row>* , .filter-pills>* , .group-chips>* , .time-chips>*{
-  flex:0 0 auto!important;
-  width:auto!important;
-  min-width:max-content!important;
-  white-space:nowrap!important;
-  overflow-wrap:normal!important;
-  word-break:normal!important;
-}
-.category-row button,.filter-pills button,.group-chips button,.time-chips button{
-  padding-inline:12px!important;
-}
+.category-row>* , .filter-pills>* , .group-chips>* , .time-chips>*{flex:0 0 auto!important;width:auto!important;min-width:max-content!important;white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
+.category-row button,.filter-pills button,.group-chips button,.time-chips button{padding-inline:12px!important}
 
-/* Descriptive card copy stays readable, never squeezed into tiny columns. */
-:where(.plan-card,.group-card,.community-card,.person-card) :where(p,small,span,strong,h3){
-  word-break:normal;
-  overflow-wrap:break-word;
-}
+:where(.plan-card,.group-card,.community-card,.person-card) :where(p,small,span,strong,h3){word-break:normal;overflow-wrap:break-word}
 :where(.group-card,.community-card) p{line-height:1.42}
 
-/* Dialogs, drawers and sheets must fit installed-app windows too. */
 [role="dialog"],[data-radix-dialog-content],[data-radix-sheet-content],.notification-sheet,.mobile-menu-sheet{max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;overflow:auto!important}
 
-/* Desktop / large laptop */
 @media (min-width:1200px){
-  .main-content{margin-left:244px!important;width:calc(100% - 244px)!important}
-  .sidebar{width:244px!important}
-  .content-wrap{padding-top:clamp(22px,2vw,32px)!important}
-  .search{width:min(610px,44vw)!important;flex:1 1 360px}
-  .topbar{padding-inline:clamp(18px,2vw,30px)!important}
-  .map-layout,.chat-layout{grid-template-columns:minmax(270px,330px) minmax(0,1fr)!important}
-  .calendar-layout{grid-template-columns:minmax(0,1fr) minmax(300px,420px)!important}
-  .profile-layout{grid-template-columns:minmax(0,1fr) minmax(280px,340px)!important}
-  .groups-grid,.plans-grid{gap:18px!important}
+  .main-content{margin-left:244px!important;width:calc(100% - 244px)!important}.sidebar{width:244px!important}.content-wrap{padding-top:clamp(22px,2vw,32px)!important}.search{width:min(610px,44vw)!important;flex:1 1 360px}.topbar{padding-inline:clamp(18px,2vw,30px)!important}.map-layout,.chat-layout{grid-template-columns:minmax(270px,330px) minmax(0,1fr)!important}.calendar-layout{grid-template-columns:minmax(0,1fr) minmax(300px,420px)!important}.profile-layout{grid-template-columns:minmax(0,1fr) minmax(280px,340px)!important}.groups-grid,.plans-grid{gap:18px!important}
 }
 
-/* Small desktop / laptop / landscape tablet: compact sidebar and flexible panels. */
 @media (min-width:901px) and (max-width:1199px){
-  .sidebar{width:220px!important;padding-inline:10px!important}
-  .main-content{margin-left:220px!important;width:calc(100% - 220px)!important}
-  .brand small,.email-ready-card small,.side-nav.compact em{display:none!important}
-  .topbar{gap:10px!important;padding-inline:16px!important}
-  .search{width:auto!important;flex:1 1 260px;min-width:160px}
-  .create-button{padding-inline:11px!important}
-  .content-wrap{padding-inline:18px!important}
-  .home-split,.security-grid,.emergency-layout,.life-dashboard,.robot-overview{grid-template-columns:1fr 1fr!important}
-  .filter-layout{grid-template-columns:210px minmax(0,1fr)!important}
-  .map-layout,.chat-layout{grid-template-columns:280px minmax(0,1fr)!important}
-  .calendar-layout,.profile-layout{grid-template-columns:minmax(0,1fr) 300px!important}
-  .plans-grid,.people-grid,.groups-grid,.discovery-grid{grid-template-columns:repeat(auto-fit,minmax(min(245px,100%),1fr))!important}
+  .sidebar{width:220px!important;padding-inline:10px!important}.main-content{margin-left:220px!important;width:calc(100% - 220px)!important}.brand small,.email-ready-card small,.side-nav.compact em{display:none!important}.topbar{gap:10px!important;padding-inline:16px!important}.search{width:auto!important;flex:1 1 260px;min-width:160px}.create-button{padding-inline:11px!important}.content-wrap{padding-inline:18px!important}.home-split,.security-grid,.emergency-layout,.life-dashboard,.robot-overview{grid-template-columns:1fr 1fr!important}.filter-layout{grid-template-columns:210px minmax(0,1fr)!important}.map-layout,.chat-layout{grid-template-columns:280px minmax(0,1fr)!important}.calendar-layout,.profile-layout{grid-template-columns:minmax(0,1fr) 300px!important}.plans-grid,.people-grid,.groups-grid,.discovery-grid{grid-template-columns:repeat(auto-fit,minmax(min(245px,100%),1fr))!important}
 }
 
-/* Tablet and narrow app windows: switch to mobile chrome before clipping begins. */
 @media (max-width:900px){
-  .sidebar{display:none!important}
-  .main-content{margin-left:0!important;width:100%!important;max-width:100%!important}
-  .mobile-menu-button,.mobile-brand{display:grid!important}
-  .content-wrap{padding-inline:clamp(12px,2.6vw,22px)!important;padding-bottom:calc(98px + env(safe-area-inset-bottom))!important}
-  .topbar{width:100%!important;max-width:100%!important;padding-inline:clamp(10px,2vw,18px)!important}
-  .topbar .search{flex:1 1 auto;width:auto!important;min-width:0}
-  .top-actions{flex:0 0 auto;min-width:0}
-  .topbar .create-button,.topbar .desktop-refresh,.topbar .theme-button{display:none!important}
-  .bottom-nav,.floating-create{display:flex!important}
-  .home-split,.security-grid,.emergency-layout,.life-dashboard,.robot-overview,.profile-layout,.calendar-layout,.filter-layout,.map-layout,.chat-layout{grid-template-columns:minmax(0,1fr)!important}
-  .filter-panel{position:static!important;width:100%!important}
-  .map-results,.conversation-panel{border-right:0!important;border-bottom:1px solid var(--line)}
-  .map-layout,.chat-layout{min-height:0!important;overflow:visible!important}
-  .map-canvas{min-height:clamp(360px,55dvh,560px)!important}
-  .message-panel{min-height:560px;max-width:100%}
-  .profile-main{flex-wrap:wrap!important}
-  .page-hero{align-items:flex-start!important}
+  .sidebar{display:none!important}.main-content{margin-left:0!important;width:100%!important;max-width:100%!important}.mobile-menu-button,.mobile-brand{display:grid!important}.content-wrap{padding-inline:clamp(12px,2.6vw,22px)!important;padding-bottom:calc(98px + env(safe-area-inset-bottom))!important}.topbar{width:100%!important;max-width:100%!important;padding-inline:clamp(10px,2vw,18px)!important}.topbar .search{flex:1 1 auto;width:auto!important;min-width:0}.top-actions{flex:0 0 auto;min-width:0}.topbar .create-button,.topbar .desktop-refresh,.topbar .theme-button{display:none!important}.bottom-nav,.floating-create{display:flex!important}.home-split,.security-grid,.emergency-layout,.life-dashboard,.robot-overview,.profile-layout,.calendar-layout,.filter-layout,.map-layout,.chat-layout{grid-template-columns:minmax(0,1fr)!important}.filter-panel{position:static!important;width:100%!important}.map-results,.conversation-panel{border-right:0!important;border-bottom:1px solid var(--line)}.map-layout,.chat-layout{min-height:0!important;overflow:visible!important}.map-canvas{min-height:clamp(360px,55dvh,560px)!important}.message-panel{min-height:560px;max-width:100%}.profile-main{flex-wrap:wrap!important}.page-hero{align-items:flex-start!important}
 }
 
-/* Phone */
 @media (max-width:600px){
-  :root{--responsive-page-gap:12px}
-  .content-wrap{padding-inline:12px!important}
-  .topbar{min-height:58px!important;gap:7px!important;padding-inline:10px!important}
-  .topbar .search{display:none!important}
-  .mobile-brand{margin-right:auto}
-  .page-hero,.section-block{border-radius:20px!important;padding:14px!important}
-  .page-hero{display:grid!important;grid-template-columns:auto minmax(0,1fr);gap:12px!important}
-  .page-hero-icon{width:48px!important;height:48px!important;border-radius:15px!important}
-  .page-hero h1{font-size:clamp(25px,8vw,34px)!important;line-height:1.05!important}
-  .section-title{align-items:flex-start!important;flex-wrap:wrap!important}
-  .section-title>button{margin-left:0!important}
-  .hero-card{min-height:330px!important}
-  .hero-copy{left:0!important;right:0!important;bottom:0!important;max-width:100%!important;width:100%!important;padding:16px!important}
-  .hero-copy h2{font-size:clamp(27px,9vw,38px)!important}
-  .hero-copy>div{flex-wrap:wrap!important}
-  .hero-primary,.hero-secondary{max-width:100%!important}
-  .plans-grid,.people-grid,.groups-grid,.discovery-grid,.action-card-grid,.product-action-grid,.feature-matrix,.audience-grid,.mode-actions,.form-grid{grid-template-columns:minmax(0,1fr)!important}
-  .category{flex-basis:118px!important;height:112px!important}
-  .profile-main{padding-inline:14px!important}
-  .profile-main>img{width:90px!important;height:90px!important;border-radius:24px!important}
-  .profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .calendar-week>button{height:50px!important;min-width:0!important;padding:2px!important}
-  .message{max-width:88%!important}
-  .message-form{max-width:100%;min-width:0}
-  .message-form input{min-width:0}
+  :root{--responsive-page-gap:12px}.content-wrap{padding-inline:12px!important;padding-bottom:calc(126px + env(safe-area-inset-bottom))!important}.topbar{min-height:58px!important;gap:7px!important;padding-inline:10px!important}.topbar .search{display:none!important}.mobile-brand{margin-right:auto}.page-hero,.section-block{border-radius:20px!important;padding:14px!important}.page-hero{display:grid!important;grid-template-columns:auto minmax(0,1fr);gap:12px!important}.page-hero-icon{width:48px!important;height:48px!important;border-radius:15px!important}.page-hero h1{font-size:clamp(25px,8vw,34px)!important;line-height:1.05!important}.section-title{align-items:flex-start!important;flex-wrap:wrap!important}.section-title>button{margin-left:0!important}.hero-card{min-height:330px!important}.hero-copy{left:0!important;right:0!important;bottom:0!important;max-width:100%!important;width:100%!important;padding:16px!important}.hero-copy h2{font-size:clamp(27px,9vw,38px)!important}.hero-copy>div{flex-wrap:wrap!important}.hero-primary,.hero-secondary{max-width:100%!important}.plans-grid,.people-grid,.groups-grid,.discovery-grid,.action-card-grid,.product-action-grid,.feature-matrix,.audience-grid,.mode-actions,.form-grid{grid-template-columns:minmax(0,1fr)!important}.category{flex-basis:118px!important;height:112px!important}.profile-main{padding-inline:14px!important}.profile-main>img{width:90px!important;height:90px!important;border-radius:24px!important}.profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.calendar-week>button{height:50px!important;min-width:0!important;padding:2px!important}.message{max-width:88%!important}.message-form{max-width:100%;min-width:0}.message-form input{min-width:0}
+
+  /* Chat móvil: carrusel legible y contenido nunca cortado. */
+  .advanced-chat{min-width:0;max-width:100%;padding-bottom:calc(132px + env(safe-area-inset-bottom))!important}
+  .advanced-chat .chat-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important;overflow:visible!important;max-width:100%!important}
+  .advanced-chat .conversation-panel{display:flex!important;gap:10px!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;padding:10px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  .advanced-chat .conversation-panel::-webkit-scrollbar{display:none}
+  .advanced-chat .conversation-panel .chat-search{flex:0 0 46px!important;width:46px!important;min-width:46px!important;overflow:hidden!important}
+  .advanced-chat .conversation-panel .chat-search input{display:none!important}
+  .advanced-chat .conversation-panel>button{flex:0 0 clamp(150px,44vw,184px)!important;width:auto!important;min-width:150px!important;max-width:184px!important;display:grid!important;grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important;gap:7px!important;padding:12px 10px!important;overflow:hidden!important;scroll-snap-align:start}
+  .advanced-chat .conversation-panel>button>svg:last-child{display:none!important}
+  .advanced-chat .conversation-panel>button>span:nth-child(2){width:100%!important;min-width:0!important}
+  .advanced-chat .conversation-panel>button strong,.advanced-chat .conversation-panel>button small{display:block!important;width:100%!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .advanced-chat .message-panel{min-width:0!important;max-width:100%!important;min-height:520px!important;overflow:hidden!important}
+  .advanced-chat .message-panel>header,.advanced-chat .message-panel>header>div,.advanced-chat .messages{min-width:0!important;max-width:100%!important}
+  .advanced-chat .message-panel>header strong,.advanced-chat .message-panel>header small{display:block!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  .advanced-chat .quick-replies{display:flex!important;gap:8px!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;padding-inline:14px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .advanced-chat .quick-replies::-webkit-scrollbar{display:none}.advanced-chat .quick-replies>button{flex:0 0 auto!important;white-space:nowrap!important}
+  .advanced-chat .message-form{grid-template-columns:auto auto auto minmax(0,1fr) auto!important;max-width:100%!important}.advanced-chat .message-form input{min-width:0!important}
+  .advanced-chat .conversation-empty{padding:28px 20px!important}.advanced-chat .conversation-empty strong,.advanced-chat .conversation-empty p{overflow-wrap:break-word!important}
 }
 
-/* Very narrow phones: protect against old hard-coded widths. */
 @media (max-width:390px){
-  .content-wrap{padding-inline:10px!important}
-  .page-hero,.section-block{padding:12px!important;border-radius:18px!important}
-  .mobile-brand strong{font-size:13px!important}
-  .top-actions{gap:5px!important}
-  .icon-button,.top-profile,.mobile-menu-button{width:38px!important;height:38px!important;min-height:38px!important}
-  .mini-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .content-wrap{padding-inline:10px!important}.page-hero,.section-block{padding:12px!important;border-radius:18px!important}.mobile-brand strong{font-size:13px!important}.top-actions{gap:5px!important}.icon-button,.top-profile,.mobile-menu-button{width:38px!important;height:38px!important;min-height:38px!important}.mini-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}.advanced-chat .conversation-panel>button{flex-basis:148px!important;min-width:148px!important;max-width:148px!important}.advanced-chat .message-form{gap:5px!important}.advanced-chat .message-form>button{padding:7px!important}
 }
 
-/* Installed PWA / resized desktop windows: never crop due to viewport height. */
 @media (display-mode:standalone){
-  .app-shell,.main-content{min-height:100dvh}
-  .sidebar{height:100dvh;overflow-y:auto;overscroll-behavior:contain}
-  .topbar{padding-top:max(10px,env(safe-area-inset-top))}
-  .bottom-nav{padding-bottom:env(safe-area-inset-bottom)}
+  .app-shell,.main-content{min-height:100dvh}.sidebar{height:100dvh;overflow-y:auto;overscroll-behavior:contain}.topbar{padding-top:max(10px,env(safe-area-inset-top))}.bottom-nav{padding-bottom:env(safe-area-inset-bottom)}
 }

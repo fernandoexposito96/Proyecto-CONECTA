@@ -25,6 +25,7 @@ import "./structure-overhaul.css";
 import "./structure-overhaul";
 import "./core-views-visual.css";
 import "./premium-social-experience.css";
+import "./drawer-reference-premium.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 const savedTheme = window.localStorage.getItem("conecta-theme");

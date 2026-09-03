@@ -12,6 +12,7 @@ function applyPreferences() {
   const accent = window.localStorage.getItem("conecta-accent") || ACCENTS[0].value;
   const density = (window.localStorage.getItem("conecta-density") as Density | null) || "comfortable";
   document.documentElement.style.setProperty("--conecta-accent", accent);
+  document.documentElement.style.setProperty("--app-accent", accent);
   document.documentElement.dataset.density = density;
 }
 
@@ -19,6 +20,10 @@ function clickMenuButton(label: string) {
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>(".mobile-menu-list button"));
   const target = buttons.find((button) => button.textContent?.trim().toLowerCase() === label.toLowerCase());
   target?.click();
+}
+
+function closeSheet(sheet: HTMLElement) {
+  sheet.querySelector<HTMLButtonElement>("button[data-radix-dialog-close]")?.click();
 }
 
 function icon(glyph: string) {
@@ -56,21 +61,41 @@ function section(title: string) {
   return wrapper;
 }
 
+function ensureDrawerIntro(sheet: HTMLElement) {
+  if (sheet.querySelector(".conecta-drawer-intro")) return;
+  const list = sheet.querySelector(".mobile-menu-list");
+  if (!list) return;
+
+  const intro = document.createElement("div");
+  intro.className = "conecta-drawer-intro";
+  intro.innerHTML = `
+    <div class="conecta-drawer-brand">
+      <span class="conecta-drawer-brandmark" aria-hidden="true">C</span>
+      <div><strong>CONECTA</strong><small>Tu vida social, más cerca</small></div>
+    </div>
+    <div class="conecta-drawer-greeting">
+      <span>👋</span>
+      <div><strong>Hola</strong><small>¿Qué quieres hacer hoy?</small></div>
+    </div>
+    <p class="conecta-drawer-section-label">Principal</p>
+  `;
+  list.parentElement?.insertBefore(intro, list);
+}
+
 function buildControlCenter(sheet: HTMLElement) {
   if (sheet.querySelector(".conecta-control-center")) return;
 
   const root = document.createElement("div");
   root.className = "conecta-control-center";
 
-  const account = section("Cuenta y privacidad");
+  const account = section("Tu cuenta");
   const accountGrid = document.createElement("div");
   accountGrid.className = "conecta-control-grid";
   accountGrid.append(
     controlButton("Mi perfil", "Datos, bio y preferencias", "👤", () => clickMenuButton("Perfil")),
-    controlButton("Privacidad", "Seguridad, permisos y cuenta", "🔐", () => clickMenuButton("Seguridad")),
+    controlButton("Privacidad y seguridad", "Permisos, bloqueos y cuenta", "🔐", () => clickMenuButton("Seguridad")),
     controlButton("Notificaciones", "Avisos y actividad reciente", "🔔", () => {
-      const close = sheet.querySelector<HTMLButtonElement>("button[data-radix-dialog-close]");
-      close?.click();
+      closeSheet(sheet);
       setTimeout(() => document.querySelector<HTMLButtonElement>('.top-actions button[aria-label="Notificaciones"]')?.click(), 80);
     }),
     controlButton("Calendario", "Planes confirmados y agenda", "📅", () => clickMenuButton("Calendario")),
@@ -82,19 +107,34 @@ function buildControlCenter(sheet: HTMLElement) {
   themeCard.className = "conecta-theme-card";
   const themeHead = document.createElement("div");
   themeHead.className = "conecta-theme-card__head";
-  const themeTitle = document.createElement("strong");
-  themeTitle.textContent = "Tema y color de CONECTA";
+  const themeCopy = document.createElement("div");
+  themeCopy.className = "conecta-theme-copy";
+  themeCopy.innerHTML = "<strong>Modo de la aplicación</strong><small>Claro u oscuro</small>";
   const themeToggle = document.createElement("button");
   themeToggle.type = "button";
   themeToggle.className = "conecta-theme-toggle";
-  const syncThemeLabel = () => { themeToggle.textContent = document.documentElement.dataset.theme === "dark" ? "☀️ Modo claro" : "🌙 Modo oscuro"; };
+  const syncThemeLabel = () => {
+    const dark = document.documentElement.dataset.theme === "dark";
+    themeToggle.textContent = dark ? "Claro" : "Oscuro";
+    themeToggle.setAttribute("aria-pressed", String(dark));
+  };
   syncThemeLabel();
   themeToggle.addEventListener("click", () => {
-    document.querySelector<HTMLButtonElement>(".theme-button")?.click();
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    const nativeToggle = document.querySelector<HTMLButtonElement>(".theme-button");
+    if (nativeToggle) nativeToggle.click();
+    else {
+      document.documentElement.dataset.theme = next;
+      document.documentElement.style.colorScheme = next;
+      window.localStorage.setItem("conecta-theme", next);
+    }
     setTimeout(syncThemeLabel, 0);
   });
-  themeHead.append(themeTitle, themeToggle);
+  themeHead.append(themeCopy, themeToggle);
 
+  const colorLabel = document.createElement("p");
+  colorLabel.className = "conecta-setting-label";
+  colorLabel.textContent = "Color de CONECTA";
   const colorPicker = document.createElement("div");
   colorPicker.className = "conecta-color-picker";
   const currentAccent = window.localStorage.getItem("conecta-accent") || ACCENTS[0].value;
@@ -110,12 +150,16 @@ function buildControlCenter(sheet: HTMLElement) {
     swatch.addEventListener("click", () => {
       window.localStorage.setItem("conecta-accent", accent.value);
       document.documentElement.style.setProperty("--conecta-accent", accent.value);
+      document.documentElement.style.setProperty("--app-accent", accent.value);
       colorPicker.querySelectorAll("button").forEach((node) => node.setAttribute("aria-pressed", "false"));
       swatch.setAttribute("aria-pressed", "true");
     });
     colorPicker.append(swatch);
   }
 
+  const densityLabel = document.createElement("p");
+  densityLabel.className = "conecta-setting-label";
+  densityLabel.textContent = "Tamaño de la interfaz";
   const density = document.createElement("div");
   density.className = "conecta-density-toggle";
   const comfortable = document.createElement("button");
@@ -138,28 +182,36 @@ function buildControlCenter(sheet: HTMLElement) {
   density.append(comfortable, compact);
   syncDensity();
 
-  themeCard.append(themeHead, colorPicker, density);
+  themeCard.append(themeHead, colorLabel, colorPicker, densityLabel, density);
   appearance.append(themeCard);
 
   const quick = section("Accesos rápidos");
   const quickGrid = document.createElement("div");
-  quickGrid.className = "conecta-control-grid";
+  quickGrid.className = "conecta-control-grid conecta-quick-grid";
   quickGrid.append(
     controlButton("Explorar", "Buscar planes y personas", "🧭", () => clickMenuButton("Explorar")),
+    controlButton("Conecta", "Descubrir gente compatible", "💜", () => clickMenuButton("Conecta")),
     controlButton("Mapa", "Planes cerca de ti", "🗺️", () => clickMenuButton("Mapa")),
-    controlButton("Grupos", "Comunidades y actividades", "👥", () => clickMenuButton("Grupos")),
-    controlButton("Chat", "Conversaciones", "💬", () => clickMenuButton("Chat")),
+    controlButton("Chat", "Tus conversaciones", "💬", () => clickMenuButton("Chat")),
   );
   quick.append(quickGrid);
 
-  root.append(account, appearance, quick);
+  const footer = document.createElement("div");
+  footer.className = "conecta-drawer-footer";
+  footer.innerHTML = "<strong>CONECTA</strong><span>Ajustes rápidos · tus preferencias se guardan en este dispositivo</span>";
+
+  root.append(account, appearance, quick, footer);
   const demo = sheet.querySelector(".mobile-demo-control");
   if (demo) sheet.insertBefore(root, demo);
   else sheet.append(root);
 }
 
 function enhance() {
-  document.querySelectorAll<HTMLElement>(".mobile-menu-sheet").forEach(buildControlCenter);
+  document.querySelectorAll<HTMLElement>(".mobile-menu-sheet").forEach((sheet) => {
+    sheet.classList.add("conecta-premium-drawer");
+    ensureDrawerIntro(sheet);
+    buildControlCenter(sheet);
+  });
 }
 
 applyPreferences();

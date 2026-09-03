@@ -1,10 +1,8 @@
 /*
  * CONECTA — entrada única de estilos
  *
- * Este archivo centraliza el orden de carga para evitar que main.tsx
- * acumule hotfixes y que un cambio accidental de orden rompa el móvil.
- * Los estilos antiguos se mantienen temporalmente como módulos internos
- * para conservar exactamente la apariencia mientras se consolidan.
+ * Todos los @import deben permanecer al principio del archivo.
+ * La última capa importada es la protección responsive universal.
  */
 
 /* Base visual */
@@ -17,7 +15,7 @@
 @import "./mobile-compact-hotfix.css";
 @import "./mobile-nav-polish.css";
 
-/* Accesibilidad antes de las capas visuales finales, igual que hasta ahora */
+/* Accesibilidad */
 @import "./accessibility.css";
 
 /* Capas históricas de compatibilidad visual */
@@ -33,7 +31,7 @@
 @import "./core-views-visual.css";
 @import "./premium-social-experience.css";
 
-/* Menú, diálogos y confirmaciones: siempre al final */
+/* Menú, diálogos y confirmaciones */
 @import "./drawer-reference-premium.css";
 @import "./mobile-dialogs-safe.css";
 @import "./confirmation-final-polish.css";
@@ -41,7 +39,15 @@
 /* Conecta+: divulgación progresiva y verificación compacta */
 @import "./conecta-calm-enhancer.css";
 
-/* Pantalla de arranque premium: marca limpia, sin spinner */
+/* Siempre el último import: móvil, tablet, ordenador y PWA */
+@import "./universal-responsive.css";
+
+/*
+ * Fallback de arranque.
+ * Normalmente queda cubierto por #boot-splash de index.html durante 5 s.
+ * Si la autenticación tarda más, conserva exactamente el mismo lenguaje:
+ * negro + CONECTA blanco, sin spinner ni elementos adicionales.
+ */
 .loading-screen{
   position:fixed;
   inset:0;
@@ -50,9 +56,7 @@
   place-items:center;
   min-height:100dvh;
   overflow:hidden;
-  background:
-    radial-gradient(circle at 50% 42%,rgba(255,255,255,.16),transparent 28%),
-    linear-gradient(145deg,#4c1d95 0%,#6d28d9 42%,#8b5cf6 100%);
+  background:#000;
 }
 .loading-screen>*{display:none!important}
 .loading-screen::before{
@@ -60,39 +64,11 @@
   display:block;
   color:#fff;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
-  font-size:clamp(42px,11vw,72px);
-  font-weight:950;
+  font-size:clamp(30px,8vw,46px);
+  font-weight:800;
   line-height:1;
-  letter-spacing:.14em;
-  text-indent:.14em;
-  text-shadow:0 10px 34px rgba(17,8,45,.28),0 0 30px rgba(255,255,255,.16);
-  animation:conectaBootGlow 1.45s ease-in-out infinite alternate;
+  letter-spacing:.16em;
+  text-indent:.16em;
+  white-space:nowrap;
 }
-.loading-screen::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:calc(50% + 52px);
-  width:52px;
-  height:3px;
-  border-radius:999px;
-  background:rgba(255,255,255,.88);
-  box-shadow:0 0 18px rgba(255,255,255,.42);
-  transform:translateX(-50%) scaleX(.45);
-  transform-origin:center;
-  animation:conectaBootLine 1.25s ease-in-out infinite alternate;
-}
-@keyframes conectaBootGlow{
-  from{opacity:.82;transform:scale(.985);filter:brightness(.96)}
-  to{opacity:1;transform:scale(1);filter:brightness(1.08)}
-}
-@keyframes conectaBootLine{
-  from{opacity:.35;transform:translateX(-50%) scaleX(.38)}
-  to{opacity:1;transform:translateX(-50%) scaleX(1)}
-}
-@media (prefers-reduced-motion:reduce){
-  .loading-screen::before,.loading-screen::after{animation:none}
-}
-
-/* Última capa: adaptación universal móvil/tablet/ordenador/PWA */
-@import "./universal-responsive.css";
+.loading-screen::after{content:none!important}

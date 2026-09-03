@@ -8,6 +8,8 @@ import { startImagePerformance } from "./image-performance";
 import { startTelemetry } from "./telemetry";
 import "./ui.css";
 import "./homePremiumEnhancer";
+import "./home-fused-hero.css";
+import "./home-fused-hero";
 import "./structure-overhaul";
 import "./conecta-calm-enhancer";
 
@@ -64,7 +66,7 @@ window.setTimeout(() => {
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-v1", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-home-fused-1", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
     } catch {

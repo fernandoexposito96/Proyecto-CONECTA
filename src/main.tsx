@@ -24,12 +24,14 @@ import "./secondary-content-max";
 import "./structure-overhaul.css";
 import "./structure-overhaul";
 import "./core-views-visual.css";
+import "./premium-social-experience.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
-document.documentElement.dataset.theme = "light";
-document.documentElement.style.colorScheme = "light";
+const savedTheme = window.localStorage.getItem("conecta-theme");
+const initialTheme = savedTheme === "dark" ? "dark" : "light";
+document.documentElement.dataset.theme = initialTheme;
+document.documentElement.style.colorScheme = initialTheme;
 document.documentElement.dataset.ui = "conecta-clean-react";
-window.localStorage.setItem("conecta-theme", "light");
 
 document.addEventListener(
   "error",

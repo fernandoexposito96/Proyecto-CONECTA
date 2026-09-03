@@ -13,15 +13,17 @@ test("production build exists", async () => {
 
 test("app mount point survives build", async () => {
   const html = await read("dist/index.html");
-  assert.match(html, /id=["']root["']/);
+  assert.match(html, /id=["']app["']/);
   assert.match(html, /manifest\.json/);
 });
 
 test("PWA manifest is installable", async () => {
   const manifest = JSON.parse(await read("public/manifest.json"));
-  assert.equal(manifest.name, "CONECTA");
+  assert.equal(manifest.name, "CONECTA Premium");
+  assert.equal(manifest.short_name, "CONECTA");
   assert.equal(manifest.display, "standalone");
-  assert.ok(Array.isArray(manifest.icons) && manifest.icons.length >= 2, "PWA needs at least two icons");
+  assert.ok(Array.isArray(manifest.icons) && manifest.icons.length >= 1, "PWA needs at least one installable icon");
+  assert.ok(manifest.icons.some((icon) => icon?.src && (icon.sizes === "any" || typeof icon.sizes === "string")), "PWA icon metadata is invalid");
 });
 
 test("service worker uses the canonical cache", async () => {

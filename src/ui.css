@@ -29,6 +29,7 @@
 @import "./structure-overhaul.css";
 @import "./core-views-visual.css";
 @import "./premium-social-experience.css";
+@import "./views/community-activity.css";
 
 /* Menú, diálogos y confirmaciones */
 @import "./drawer-reference-premium.css";

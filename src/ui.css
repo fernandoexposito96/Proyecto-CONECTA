@@ -93,3 +93,6 @@
 @media (prefers-reduced-motion:reduce){
   .loading-screen::before,.loading-screen::after{animation:none}
 }
+
+/* Última capa: adaptación universal móvil/tablet/ordenador/PWA */
+@import "./universal-responsive.css";

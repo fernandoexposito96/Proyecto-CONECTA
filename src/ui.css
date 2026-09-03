@@ -33,7 +33,10 @@
 @import "./core-views-visual.css";
 @import "./premium-social-experience.css";
 
-/* Menú, diálogos y confirmaciones: siempre al final */
+/* Menú, diálogos y confirmaciones */
 @import "./drawer-reference-premium.css";
 @import "./mobile-dialogs-safe.css";
 @import "./confirmation-final-polish.css";
+
+/* Ultra Premium: capa aditiva final, nunca sustituye la identidad/estructura estable */
+@import "./ultra-premium.css";

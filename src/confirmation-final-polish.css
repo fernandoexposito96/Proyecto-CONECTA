@@ -1,0 +1,144 @@
+/* CONECTA · final confirmation / modal polish
+   Loaded last. Keeps the drawer X, removes the cross from regular confirmations,
+   and guarantees containment of actions, notices and validation feedback. */
+
+/* Dialogs: replace the visual X with a calm text close control. */
+.modal-panel > .modal-close {
+  width: auto !important;
+  min-width: 68px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-size: 0 !important;
+  color: var(--conecta-accent,#7657f6) !important;
+  background: color-mix(in srgb, Canvas 95%, var(--conecta-accent,#7657f6) 5%) !important;
+}
+.modal-panel > .modal-close svg { display:none !important; }
+.modal-panel > .modal-close::after {
+  content:"Cerrar";
+  font-size:11px;
+  line-height:1;
+  font-weight:850;
+  letter-spacing:.01em;
+}
+
+/* Keep the familiar X only in the hamburger/settings drawer. */
+.sheet-panel > .modal-close {
+  font-size: initial !important;
+}
+.sheet-panel > .modal-close svg { display:block !important; }
+.sheet-panel > .modal-close::after { content:none !important; }
+
+/* Give every header enough room for the close pill. */
+.modal-panel .dialog-header {
+  padding-right: 82px !important;
+}
+
+/* Confirmation/action rows never force horizontal scroll. */
+.modal-panel :where(.alert-footer,.plan-detail-actions,.attendance-summary,.security-status,.public-place-notice,.ai-plan-writer),
+.alert-panel :where(.alert-footer) {
+  min-width:0 !important;
+  max-width:100% !important;
+}
+.modal-panel :where(button,.primary-action,.secondary-action,.danger-action),
+.alert-panel :where(button,.primary-action,.secondary-action,.danger-action) {
+  max-width:100% !important;
+  overflow-wrap:anywhere;
+  white-space:normal !important;
+}
+
+/* Native validation is easier to read and fields stay inside the panel. */
+.modal-panel :where(input,select,textarea) {
+  max-inline-size:100% !important;
+  min-inline-size:0 !important;
+}
+.modal-panel :where(input,select,textarea):invalid:not(:placeholder-shown) {
+  border-color: color-mix(in srgb, #dc2626 42%, transparent) !important;
+}
+.modal-panel :where(input,select,textarea):focus-visible {
+  outline:2px solid color-mix(in srgb, var(--conecta-accent,#7657f6) 35%, transparent) !important;
+  outline-offset:1px;
+}
+
+/* Long text, URLs, file names, locations and Supabase messages can never escape. */
+.modal-panel :where(p,small,strong,b,label,li,code,pre,a,span),
+.toast-premium {
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+.modal-panel pre {
+  white-space:pre-wrap !important;
+  max-width:100% !important;
+  overflow:auto !important;
+}
+
+/* Destructive confirmations are compact and unmistakable. */
+.alert-panel {
+  padding-top:20px !important;
+}
+.alert-panel .dialog-title {
+  padding-right:0 !important;
+}
+.alert-panel .alert-footer {
+  margin-top:16px;
+}
+.alert-panel .danger-action {
+  background:#b42318 !important;
+  color:#fff !important;
+  border-color:transparent !important;
+}
+
+/* Toasts: successful actions look confirmed, errors informative rather than broken. */
+.toast-premium.success > span:first-child {
+  background:rgba(22,183,119,.14) !important;
+  color:#0d8a58 !important;
+}
+.toast-premium.error > span:first-child {
+  background:rgba(220,38,38,.11) !important;
+  color:#b42318 !important;
+}
+.toast-premium.info > span:first-child {
+  background:color-mix(in srgb,var(--conecta-accent,#7657f6) 12%,transparent) !important;
+  color:var(--conecta-accent,#7657f6) !important;
+}
+
+@media (max-width:700px) {
+  .modal-panel > .modal-close {
+    min-width:62px !important;
+    height:34px !important;
+    min-height:34px !important;
+    margin-bottom:-36px !important;
+    padding-inline:10px !important;
+  }
+  .modal-panel .dialog-header {
+    padding-right:72px !important;
+  }
+
+  .modal-panel :where(.plan-detail-actions,.alert-footer) {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:8px !important;
+  }
+  .modal-panel :where(.plan-detail-actions,.alert-footer) > button,
+  .modal-panel :where(.plan-detail-actions,.alert-footer) > .primary-action,
+  .modal-panel :where(.plan-detail-actions,.alert-footer) > .secondary-action,
+  .modal-panel :where(.plan-detail-actions,.alert-footer) > .danger-action {
+    width:100% !important;
+    min-width:0 !important;
+  }
+
+  /* Avoid iOS zoom and clipped controls in modal forms. */
+  .modal-panel :where(input,select,textarea) {
+    font-size:16px !important;
+  }
+}
+
+@media (max-width:390px) {
+  .modal-panel .dialog-header { padding-right:66px !important; }
+  .modal-panel > .modal-close {
+    min-width:58px !important;
+    padding-inline:8px !important;
+  }
+  .modal-panel > .modal-close::after { font-size:10px; }
+}

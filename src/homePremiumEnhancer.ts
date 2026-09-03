@@ -1,3 +1,5 @@
+export {};
+
 const navTo = (label: string) => {
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>("button"));
   const match = buttons.find((button) => button.textContent?.trim().toLowerCase().includes(label.toLowerCase()));

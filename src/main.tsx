@@ -7,6 +7,8 @@ import { startTelemetry } from "./telemetry";
 import "./conecta-premium.css";
 import "./home-premium.css";
 import "./homePremiumEnhancer";
+import "./quick-icons-polish.css";
+import "./quick-icons-polish";
 import "./mobile-premium-fix.css";
 import "./mobile-compact-hotfix.css";
 import "./accessibility.css";

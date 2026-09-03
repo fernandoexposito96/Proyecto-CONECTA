@@ -30,6 +30,7 @@
 @import "./core-views-visual.css";
 @import "./premium-social-experience.css";
 @import "./views/community-activity.css";
+@import "./views/advanced-chat.css";
 
 /* Menú, diálogos y confirmaciones */
 @import "./drawer-reference-premium.css";

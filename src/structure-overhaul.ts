@@ -1,3 +1,5 @@
+export {};
+
 const ACCENTS = [
   { name: "Violeta", value: "#7657f6" },
   { name: "Azul", value: "#3478f6" },

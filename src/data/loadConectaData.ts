@@ -29,6 +29,19 @@ export type ConectaDataSnapshot = {
   errorMessage: string | null;
 };
 
+// Initial-screen safety bounds. Dedicated screens can page beyond these windows.
+const INITIAL_LIMITS = {
+  plans: 120,
+  planMembers: 300,
+  profiles: 80,
+  connections: 160,
+  communities: 80,
+  communityMembers: 240,
+  conversations: 80,
+  notifications: 30,
+  savedItems: 200,
+} as const;
+
 export async function loadConectaData(currentUser: User, demoModeEnabled: boolean): Promise<ConectaDataSnapshot> {
   const [
     profileResult,
@@ -45,15 +58,15 @@ export async function loadConectaData(currentUser: User, demoModeEnabled: boolea
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", currentUser.id).maybeSingle(),
     supabase.from("profile_trust").select("*").eq("user_id", currentUser.id).maybeSingle(),
-    supabase.from("plans").select("*").in("status", ["published", "full"]).order("starts_at", { ascending: true }),
-    supabase.from("plan_members").select("*").order("joined_at", { ascending: true }),
-    supabase.from("profiles").select("*").neq("id", currentUser.id).limit(80),
-    supabase.from("connections").select("*").order("created_at", { ascending: false }),
-    supabase.from("communities").select("*").order("created_at", { ascending: false }),
-    supabase.from("community_members").select("*").order("joined_at", { ascending: false }),
-    supabase.from("conversations").select("*").order("created_at", { ascending: false }),
-    supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(30),
-    supabase.from("saved_items").select("*").eq("user_id", currentUser.id),
+    supabase.from("plans").select("*").in("status", ["published", "full"]).order("starts_at", { ascending: true }).limit(INITIAL_LIMITS.plans),
+    supabase.from("plan_members").select("*").order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.planMembers),
+    supabase.from("profiles").select("*").neq("id", currentUser.id).limit(INITIAL_LIMITS.profiles),
+    supabase.from("connections").select("*").order("created_at", { ascending: false }).limit(INITIAL_LIMITS.connections),
+    supabase.from("communities").select("*").order("created_at", { ascending: false }).limit(INITIAL_LIMITS.communities),
+    supabase.from("community_members").select("*").order("joined_at", { ascending: false }).limit(INITIAL_LIMITS.communityMembers),
+    supabase.from("conversations").select("*").order("created_at", { ascending: false }).limit(INITIAL_LIMITS.conversations),
+    supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(INITIAL_LIMITS.notifications),
+    supabase.from("saved_items").select("*").eq("user_id", currentUser.id).limit(INITIAL_LIMITS.savedItems),
   ]);
 
   const firstError = [

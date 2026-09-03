@@ -19,6 +19,8 @@ import "./secondary-views-premium.css";
 import "./secondary-views-premium";
 import "./three-pages-final.css";
 import "./explore-chip-hotfix.css";
+import "./secondary-content-max.css";
+import "./secondary-content-max";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 document.documentElement.dataset.theme = "light";
@@ -54,7 +56,7 @@ void startTelemetry();
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-explore-layout-fix-2", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-secondary-max-3", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
     } catch {

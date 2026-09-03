@@ -1,0 +1,12 @@
+{
+  "name": "CONECTA Premium",
+  "short_name": "CONECTA",
+  "description": "Planes reales, gente compatible y quedadas seguras.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f7fc",
+  "theme_color": "#7c3aed",
+  "lang": "es"
+}

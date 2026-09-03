@@ -8,9 +8,6 @@ import { startImagePerformance } from "./image-performance";
 import { startTelemetry } from "./telemetry";
 import "./ui.css";
 import "./homePremiumEnhancer";
-import "./quick-icons-polish";
-import "./secondary-views-premium";
-import "./secondary-content-max";
 import "./structure-overhaul";
 import "./conecta-calm-enhancer";
 

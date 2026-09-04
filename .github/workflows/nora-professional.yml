@@ -1,0 +1,50 @@
+name: NORA Professional Validation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Verify pinned Playwright engines
+        run: npx playwright install --list
+
+      - name: Static validation
+        run: npm run lint && npm run check && npm run test:unit
+
+      - name: Build
+        run: npm run build
+
+      - name: Existing CONECTA contracts
+        run: npm run test:smoke && npm run test:performance && npm run test:security
+
+      - name: Browser, iPhone and accessibility tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore

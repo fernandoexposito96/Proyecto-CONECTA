@@ -58,8 +58,9 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader,
   DialogTitle, Sheet, SheetContent,
   SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsContent,
-  TabsList, TabsTrigger, Toaster, toast,
+  TabsList, TabsTrigger, Toaster,
 } from "./ui";
+import { toast } from "./toast";
 import { supabase } from "./supabase";
 import { demoProfiles, isDemoModeEnabled, setDemoModeEnabled } from "./demoMode";
 import { loadConectaData } from "./data/loadConectaData";
@@ -67,7 +68,8 @@ import { refreshConnections, refreshConversations, refreshPlanMembers, refreshSa
 import { exportSocialCalendar } from "./socialCalendar";
 import { categories, categoryColor, categoryImage, planTemplates } from "./catalog";
 import { EmptyCompact, EmptyFeature, Field, PageHero, PlansEmpty, SectionTitle } from "./components/common";
-import { MobileNavigation, Sidebar, Topbar, primaryNavigation } from "./components/AppChrome";
+import { MobileNavigation, Sidebar, Topbar } from "./components/AppChrome";
+import { primaryNavigation } from "./navigation";
 import { RetryState, ScreenSkeleton } from "./components/AppResilience";
 import { AuthScreen, EmailVerificationScreen, LoadingScreen, OnboardingScreen } from "./views/AuthFlowViews";
 import { ReputationReviews } from "./components/ReputationReviews";
@@ -159,6 +161,7 @@ export default function ConectaApp() {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [selectedMapPlan, setSelectedMapPlan] = useState<Plan | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [referenceNow, setReferenceNow] = useState(0);
 
   const user = session?.user ?? null;
   const emailVerified = Boolean(user?.email_confirmed_at || trust?.email_verified);
@@ -211,6 +214,7 @@ export default function ConectaApp() {
     setSelectedConversation((current) => current ?? snapshot.conversations[0]?.id ?? null);
     setNotifications(snapshot.notifications);
     setSavedItems(snapshot.savedItems);
+    setReferenceNow(Date.now());
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error inesperado al sincronizar";
     setDataError(message);
@@ -221,13 +225,15 @@ export default function ConectaApp() {
 }, [demoModeEnabled]);
 
   useEffect(() => {
-    if (user && emailVerified) void loadData(user);
+    if (!user || !emailVerified) return;
+    const timer = window.setTimeout(() => void loadData(user), 0);
+    return () => window.clearTimeout(timer);
   }, [emailVerified, loadData, user]);
 
   useEffect(() => {
     if (!selectedConversation || !user) {
-      setMessages([]);
-      return;
+      const timer = window.setTimeout(() => setMessages([]), 0);
+      return () => window.clearTimeout(timer);
     }
     let mounted = true;
     void supabase
@@ -287,7 +293,6 @@ export default function ConectaApp() {
   );
 
   const visiblePlans = useMemo(() => {
-    const now = Date.now();
     return plans.filter((plan) => {
       const haystack = `${plan.title} ${plan.description ?? ""} ${plan.category ?? ""} ${plan.location_name ?? ""}`.toLowerCase();
       if (query && !haystack.includes(query.toLowerCase())) return false;
@@ -303,20 +308,19 @@ export default function ConectaApp() {
         if (filters.date === "today" && start.toDateString() !== today.toDateString()) return false;
         if (filters.date === "weekend" && ![0, 6].includes(start.getDay())) return false;
       }
-      if (plan.expires_at && new Date(plan.expires_at).getTime() < now) return false;
+      if (plan.expires_at && new Date(plan.expires_at).getTime() < referenceNow) return false;
       return true;
     });
-  }, [category, filters, plans, profile, query]);
+  }, [category, filters, plans, profile, query, referenceNow]);
 
   const nowPlans = useMemo(() => {
-    const now = Date.now();
-    const twoDays = now + 48 * 60 * 60 * 1000;
+    const twoDays = referenceNow + 48 * 60 * 60 * 1000;
     return plans.filter((plan) => {
       const start = plan.starts_at ? new Date(plan.starts_at).getTime() : Number.POSITIVE_INFINITY;
-      if (plan.expires_at && new Date(plan.expires_at).getTime() < now) return false;
-      return plan.is_spontaneous || (start >= now && start <= twoDays);
+      if (plan.expires_at && new Date(plan.expires_at).getTime() < referenceNow) return false;
+      return plan.is_spontaneous || (start >= referenceNow && start <= twoDays);
     });
-  }, [plans]);
+  }, [plans, referenceNow]);
 
   const go = (view: View) => {
     setActive(view);

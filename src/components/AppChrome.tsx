@@ -7,7 +7,7 @@ import { formatPlanDate } from "../utils";
 
 type Theme = "light" | "dark";
 const avatarFallback = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=84";
-export const primaryNavigation: Array<{ label: View; icon: typeof Home }> = [
+const primaryNavigation: Array<{ label: View; icon: typeof Home }> = [
   { label: "Inicio", icon: Home }, { label: "Explorar", icon: Compass }, { label: "Ahora", icon: Zap },
   { label: "Mapa", icon: Map }, { label: "Planes", icon: CalendarDays }, { label: "Grupos", icon: UsersRound },
   { label: "Chat", icon: MessageCircle }, { label: "Calendario", icon: ListChecks },

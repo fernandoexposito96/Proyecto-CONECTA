@@ -73,7 +73,7 @@ html[data-theme="light"] body{background:linear-gradient(180deg,#fbfaff 0%,#f6f3
 .auth2-panel{background:transparent!important}
 .auth2-card{filter:none}
 .auth2-switch{border-radius:18px!important;background:#f2eff7!important}
-.auth2-switch button{border-radius:14px!important}
+.auth2-switch button{border-radius:14px!important;color:#4b5563!important}
 .auth2-switch button.active{background:linear-gradient(135deg,var(--p3-accent),var(--p3-accent-2))!important;color:#fff!important}
 .auth2-social,.auth2-field input{border-radius:17px!important;border-color:#e7e3ee!important;box-shadow:0 8px 24px rgba(40,30,70,.04)!important}
 .auth2-primary{border-radius:16px!important}

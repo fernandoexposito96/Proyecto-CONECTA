@@ -1,8 +1,6 @@
 name: CONECTA Diagnostic Robot
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: "17 */5 * * *"
       timezone: "Europe/Madrid"

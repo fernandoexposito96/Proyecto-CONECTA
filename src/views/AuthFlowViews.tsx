@@ -7,17 +7,117 @@ import { authRedirectUrl, friendlyAuthError, signInWithConectaPasskey, supportsP
 import { categories } from "../catalog";
 import { Field } from "../components/common";
 import type { Profile } from "../types";
+import "../auth-premium-final.css";
 
 type AuthMode = "signin" | "signup";
 export function LoadingScreen({ label }: { label: string }) { return <main className="loading-screen"><span className="brand-mark large">C</span><LoaderCircle className="spin" /><strong>{label}</strong></main>; }
 
 export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { mode: AuthMode; pendingEmail: string; setMode: (mode: AuthMode) => void; setPendingEmail: (email: string) => void; }) {
-  const [busy, setBusy] = useState(false); const [passkeyBusy, setPasskeyBusy] = useState(false); const [message, setMessage] = useState("");
-  const submit = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const data = new FormData(event.currentTarget); const email = String(data.get("email") ?? "").trim(); const password = String(data.get("password") ?? ""); const displayName = String(data.get("display_name") ?? "").trim(); setBusy(true); setMessage(""); try { if (mode === "signup") { const { data: result, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: authRedirectUrl() } }); if (error) return setMessage(friendlyAuthError(error)); if (!result.session) { setPendingEmail(email); setMessage("Correo enviado. Abre el enlace de verificación para continuar."); } return; } const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) setMessage(friendlyAuthError(error)); } catch (error) { setMessage(friendlyAuthError(error)); } finally { setBusy(false); } };
-  const signInWithPasskey = async () => { if (!supportsPasskeys()) { setMessage("Este dispositivo o navegador no admite Face ID para la web. Prueba con Safari actualizado."); return; } setPasskeyBusy(true); setMessage(""); try { await signInWithConectaPasskey(); } catch (error) { setMessage(friendlyAuthError(error)); } finally { setPasskeyBusy(false); } };
-  const resetPassword = async () => { const email = window.prompt("Introduce tu correo para recuperar la contraseña:"); if (!email?.trim()) return; const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: authRedirectUrl() }); if (error) return toast.error(friendlyAuthError(error)); toast.success("Revisa tu correo para cambiar la contraseña"); };
-  const resend = async () => { if (!pendingEmail) return; const { error } = await supabase.auth.resend({ type: "signup", email: pendingEmail, options: { emailRedirectTo: authRedirectUrl() } }); if (error) return toast.error(friendlyAuthError(error)); toast.success("Correo reenviado"); };
-  return <main className="auth-screen"><Toaster position="top-center" richColors /><section className="auth-visual" aria-label="CONECTA, planes reales con gente compatible"><img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=90" alt="Grupo de amigos compartiendo un plan" /><div className="auth-shade" /><div className="auth-brand"><span className="brand-mark">C</span><strong>CONECTA</strong></div><div className="auth-copy"><span><Sparkles /> ACTIVIDADES REALES, CONEXIONES REALES</span><h1>De “hola” a<br /><em>“¿qué plan hacemos?”</em></h1><p>Intereses, disponibilidad, ubicación y nivel para encontrar gente compatible y quedar con seguridad.</p><div className="auth-proof"><b><ShieldCheck /> Quedadas seguras</b><b><MapPin /> Planes cercanos</b><b><Users /> Compatibilidad real</b></div></div></section><section className="auth-panel"><div className="auth-mobile-brand"><span className="brand-mark">C</span><strong>CONECTA</strong></div><div className="auth-form-wrap"><span className="auth-kicker">BIENVENIDO A TU COMUNIDAD</span><h2>{mode === "signin" ? "Entra en CONECTA" : "Crea tu cuenta"}</h2><p>{mode === "signin" ? "Continúa donde lo dejaste." : "Tu próximo plan puede empezar hoy."}</p><div className="auth-switch"><button className={mode === "signin" ? "active" : ""} onClick={() => setMode("signin")}>Entrar</button><button className={mode === "signup" ? "active" : ""} onClick={() => setMode("signup")}>Registrarme</button></div><form className="auth-form" onSubmit={submit}>{mode === "signup" && <Field label="Nombre visible"><input name="display_name" required maxLength={50} autoComplete="name" placeholder="Cómo quieres que te llamen" /></Field>}<Field label="Correo electrónico"><input name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" /></Field><Field label="Contraseña"><input name="password" type="password" minLength={8} required autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="Mínimo 8 caracteres" /></Field>{message && <div className="form-message"><CircleAlert /> {message}</div>}<button className="primary-action" disabled={busy} type="submit">{busy ? <LoaderCircle className="spin" /> : mode === "signin" ? <LockKeyhole /> : <UserRoundPlus />}{busy ? "Procesando…" : mode === "signin" ? "Entrar de forma segura" : "Crear cuenta"}</button></form>{mode === "signin" && <><div className="auth-divider"><span>o usa tu dispositivo</span></div><button className="passkey-action" onClick={() => void signInWithPasskey()} disabled={passkeyBusy}>{passkeyBusy ? <LoaderCircle className="spin" /> : <Fingerprint />}<span><strong>Entrar con Face ID</strong><small>Passkey protegida por tu iPhone, iPad o equipo</small></span><ChevronRight /></button></>}{pendingEmail && <button className="text-action" onClick={resend}><RefreshCw /> Reenviar correo de verificación</button>}{mode === "signin" && <button className="text-action" onClick={resetPassword}>¿Has olvidado tu contraseña?</button>}<small className="legal-copy">Al registrarte aceptas las normas de convivencia, privacidad y seguridad de CONECTA.</small></div></section></main>;
+  const [busy, setBusy] = useState(false);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+    const displayName = String(data.get("display_name") ?? "").trim();
+    setBusy(true);
+    setMessage("");
+    try {
+      if (mode === "signup") {
+        const { data: result, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: authRedirectUrl() } });
+        if (error) return setMessage(friendlyAuthError(error));
+        if (!result.session) {
+          setPendingEmail(email);
+          setMessage("Correo enviado. Abre el enlace de verificación para continuar.");
+        }
+        return;
+      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setMessage(friendlyAuthError(error));
+    } catch (error) {
+      setMessage(friendlyAuthError(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const signInWithPasskey = async () => {
+    if (!supportsPasskeys()) {
+      setMessage("Este dispositivo o navegador no admite Face ID para la web. Prueba con Safari actualizado.");
+      return;
+    }
+    setPasskeyBusy(true);
+    setMessage("");
+    try { await signInWithConectaPasskey(); }
+    catch (error) { setMessage(friendlyAuthError(error)); }
+    finally { setPasskeyBusy(false); }
+  };
+
+  const resetPassword = async () => {
+    const email = window.prompt("Introduce tu correo para recuperar la contraseña:");
+    if (!email?.trim()) return;
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: authRedirectUrl() });
+    if (error) return toast.error(friendlyAuthError(error));
+    toast.success("Revisa tu correo para cambiar la contraseña");
+  };
+
+  const resend = async () => {
+    if (!pendingEmail) return;
+    const { error } = await supabase.auth.resend({ type: "signup", email: pendingEmail, options: { emailRedirectTo: authRedirectUrl() } });
+    if (error) return toast.error(friendlyAuthError(error));
+    toast.success("Correo reenviado");
+  };
+
+  return <main className="auth2-screen">
+    <Toaster position="top-center" richColors />
+    <section className="auth2-visual" aria-label="CONECTA, planes reales con gente compatible">
+      <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=90" alt="Grupo de amigos compartiendo un plan" />
+      <div className="auth2-visual-brand"><span className="auth2-logo">C</span><strong>CONECTA</strong></div>
+      <div className="auth2-visual-copy">
+        <span className="auth2-eyebrow"><Sparkles /> ACTIVIDADES REALES, CONEXIONES REALES</span>
+        <h1>Tu próxima historia<br /><em>empieza aquí.</em></h1>
+        <p>Descubre personas, planes y experiencias cerca de ti. Conecta por intereses, disponibilidad y ubicación con más seguridad.</p>
+        <div className="auth2-proof"><span><ShieldCheck /> Quedadas seguras</span><span><MapPin /> Cerca de ti</span><span><Users /> Gente compatible</span></div>
+      </div>
+    </section>
+
+    <section className="auth2-panel">
+      <div className="auth2-card">
+        <div className="auth2-mobile-brand"><span className="auth2-logo">C</span><div><strong>CONECTA</strong><small>Tu mundo, tu gente y tus planes.</small></div></div>
+        <span className="auth2-kicker">BIENVENIDO A CONECTA</span>
+        <h2>{mode === "signin" ? "Vuelve a conectar" : "Crea tu cuenta"}</h2>
+        <p className="auth2-subtitle">{mode === "signin" ? "Entra y continúa desde donde lo dejaste." : "Empieza a descubrir personas y planes cerca de ti."}</p>
+
+        <div className="auth2-switch">
+          <button type="button" className={mode === "signin" ? "active" : ""} onClick={() => setMode("signin")}>Entrar</button>
+          <button type="button" className={mode === "signup" ? "active" : ""} onClick={() => setMode("signup")}>Registrarme</button>
+        </div>
+
+        <form className="auth2-form" onSubmit={submit}>
+          {mode === "signup" && <div className="auth2-field"><label htmlFor="auth-display-name">Nombre visible</label><input id="auth-display-name" name="display_name" required maxLength={50} autoComplete="name" placeholder="Cómo quieres que te llamen" /></div>}
+          <div className="auth2-field"><label htmlFor="auth-email">Correo electrónico</label><input id="auth-email" name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" /></div>
+          <div className="auth2-field"><label htmlFor="auth-password">Contraseña</label><input id="auth-password" name="password" type="password" minLength={8} required autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="Mínimo 8 caracteres" /></div>
+          {message && <div className="auth2-message"><CircleAlert /> <span>{message}</span></div>}
+          <button className="auth2-primary" disabled={busy} type="submit">{busy ? <LoaderCircle className="spin" /> : mode === "signin" ? <LockKeyhole /> : <UserRoundPlus />}{busy ? "Procesando…" : mode === "signin" ? "Entrar en CONECTA" : "Crear mi cuenta"}</button>
+        </form>
+
+        {mode === "signin" && <>
+          <div className="auth2-divider"><span>o entra con tu dispositivo</span></div>
+          <button className="auth2-passkey" onClick={() => void signInWithPasskey()} disabled={passkeyBusy}>{passkeyBusy ? <LoaderCircle className="spin" /> : <Fingerprint />}<span><strong>Entrar con Face ID</strong><small>Acceso protegido con passkey en tu iPhone, iPad o equipo</small></span><ChevronRight /></button>
+        </>}
+
+        <div className="auth2-links">
+          {pendingEmail && <button className="auth2-text-button" onClick={resend}><RefreshCw /> Reenviar verificación</button>}
+          {mode === "signin" && <button className="auth2-text-button" onClick={resetPassword}>¿Has olvidado tu contraseña?</button>}
+        </div>
+        <small className="auth2-legal">Al registrarte aceptas las <b>normas de convivencia, privacidad y seguridad</b> de CONECTA.</small>
+        <div className="auth2-security-note"><ShieldCheck /> Tus credenciales se gestionan de forma segura.</div>
+      </div>
+    </section>
+  </main>;
 }
 
 export function EmailVerificationScreen({ user }: { user: User }) { const [busy, setBusy] = useState(false); const resend = async () => { if (!user.email) return; setBusy(true); const { error } = await supabase.auth.resend({ type: "signup", email: user.email, options: { emailRedirectTo: authRedirectUrl() } }); setBusy(false); if (error) return toast.error(friendlyAuthError(error)); toast.success("Correo reenviado"); }; return <main className="centered-flow"><Toaster position="top-center" richColors /><div className="flow-card"><span className="flow-icon"><Bell /></span><span className="eyebrow">PRIMER PASO DE SEGURIDAD</span><h1>Confirma tu correo</h1><p>Abre el enlace que hemos enviado a <strong>{user.email}</strong>. El enlace vuelve directamente a CONECTA y desbloquea tu perfil.</p><div className="email-delivery-status"><MailCheck /><span><strong>Enlace seguro y de un solo uso</strong><small>Revisa también Spam o Correo no deseado.</small></span></div><button className="primary-action" onClick={resend} disabled={busy}><RefreshCw className={busy ? "spin" : ""} /> Reenviar correo</button><button className="text-action" onClick={() => supabase.auth.signOut()}><LogOut /> Usar otra cuenta</button></div></main>; }

@@ -69,12 +69,7 @@ html[data-theme="light"] body{background:linear-gradient(180deg,#fbfaff 0%,#f6f3
   border-radius:15px!important;border:1px solid #e5e2ec!important;background:#fff!important;box-shadow:none!important}
 
 /* Registro e onboarding alineados con el prototipo elegido. */
-.auth2-screen{background:linear-gradient(180deg,#111629 0 235px,#fff 235px)!important}
-.auth2-panel{background:transparent!important}
 .auth2-card{filter:none}
-.auth2-switch{border-radius:18px!important;background:#f2eff7!important}
-.auth2-switch button{border-radius:14px!important;color:#4b5563!important}
-.auth2-switch button.active{background:linear-gradient(135deg,var(--p3-accent),var(--p3-accent-2))!important;color:#fff!important}
 .auth2-social,.auth2-field input{border-radius:17px!important;border-color:#e7e3ee!important;box-shadow:0 8px 24px rgba(40,30,70,.04)!important}
 .auth2-primary{border-radius:16px!important}
 
@@ -107,6 +102,11 @@ html[data-theme="light"] body{background:linear-gradient(180deg,#fbfaff 0%,#f6f3
 
 /* Navegación inferior exacta: Inicio · Explora · + · Chat · Perfil. */
 @media(max-width:820px){
+  .auth2-screen.auth2-signup{background:linear-gradient(180deg,#111629 0 235px,#fff 235px)!important}
+  .auth2-screen.auth2-signup .auth2-panel{background:transparent!important}
+  .auth2-screen.auth2-signup .auth2-switch{border-radius:18px!important;background:#f2eff7!important}
+  .auth2-screen.auth2-signup .auth2-switch button{border-radius:14px!important;color:#4b5563!important}
+  .auth2-screen.auth2-signup .auth2-switch button.active{background:linear-gradient(135deg,var(--p3-accent),var(--p3-accent-2))!important;color:#fff!important}
   .content-wrap{padding:12px 12px calc(112px + env(safe-area-inset-bottom))!important}
   .section-block,.welcome-row{border-radius:24px!important;padding:18px!important}
   .hero-card{min-height:390px;border-radius:26px!important}
@@ -139,4 +139,8 @@ html[data-theme="light"] body{background:linear-gradient(180deg,#fbfaff 0%,#f6f3
   .choice-field label{font-size:12px!important;padding:10px 6px!important}
   .form-grid{grid-template-columns:1fr!important}
   .step-actions{display:grid!important;grid-template-columns:minmax(110px,.42fr) minmax(0,1fr)!important}
+}
+
+@media(max-width:360px){
+  .choice-field{grid-template-columns:1fr!important}
 }

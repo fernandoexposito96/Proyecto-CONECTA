@@ -62,6 +62,20 @@ jobs:
           path: robot-reports/
           if-no-files-found: error
           retention-days: 30
+      - name: Preparar código fuente para Codex
+        if: always()
+        run: |
+          rm -rf .codex-source
+          mkdir -p .codex-source/Proyecto-CONECTA
+          rsync -a --exclude '.git' --exclude 'node_modules' --exclude '.codex-source' ./ .codex-source/Proyecto-CONECTA/
+      - name: Guardar código fuente para Codex
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proyecto-conecta-source-${{ github.run_number }}
+          path: .codex-source/Proyecto-CONECTA/
+          if-no-files-found: error
+          retention-days: 30
       - name: Marcar ejecución como fallida si hay fallos duros
         if: steps.full_scan.outcome == 'failure'
         run: exit 1

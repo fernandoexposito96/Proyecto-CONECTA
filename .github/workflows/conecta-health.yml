@@ -1,0 +1,45 @@
+name: CONECTA Health Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: Robot job id
+        required: false
+        default: manual
+      scan_mode:
+        description: Scan mode
+        required: false
+        default: full
+      reason:
+        description: Trigger reason
+        required: false
+        default: manual
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: TypeScript
+        run: npm run check
+      - name: Build
+        run: npm run build
+      - name: Smoke tests
+        run: npm run test:smoke
+      - name: Performance contracts
+        run: npm run test:performance
+      - name: Security contracts
+        run: npm run test:security

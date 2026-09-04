@@ -1,6 +1,6 @@
-const SHELL_CACHE='conecta-v4-shell';
-const ASSET_CACHE='conecta-v4-assets';
-const IMAGE_CACHE='conecta-v4-images';
+const SHELL_CACHE='conecta-v5-shell';
+const ASSET_CACHE='conecta-v5-assets';
+const IMAGE_CACHE='conecta-v5-images';
 const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
 
 const scopeUrl=new URL(self.registration.scope);
@@ -26,7 +26,7 @@ const trimCache=async(cacheName)=>{
 };
 
 const put=async(cacheName,request,response)=>{
-  if(!response?.ok) return response;
+  if(!response || (!response.ok && response.type!=='opaque')) return response;
   const cache=await caches.open(cacheName);
   await cache.put(request,response.clone());
   await trimCache(cacheName);
@@ -90,18 +90,15 @@ self.addEventListener('activate',event=>{
 
 self.addEventListener('message',event=>{
   if(event.data?.type==='SKIP_WAITING') self.skipWaiting();
-  if(event.data?.type==='CLEAR_CONECTA_CACHES'){
-    event.waitUntil((async()=>{
-      const keys=await caches.keys();
-      await Promise.all(keys.filter(key=>key.startsWith('conecta-')).map(key=>caches.delete(key)));
-    })());
-  }
 });
 
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
   const url=new URL(event.request.url);
-  if(url.origin!==self.location.origin) return;
+  if(url.origin!==self.location.origin){
+    if(event.request.destination==='image') event.respondWith(staleWhileRevalidate(event.request));
+    return;
+  }
 
   if(event.request.mode==='navigate'){
     event.respondWith(networkFirst(event.request,APP_INDEX));

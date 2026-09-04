@@ -69,12 +69,9 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
         window.location.reload();
       });
 
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-social-auth-v8", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-social-auth-v9", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
-
-      const active = registration.active ?? registration.waiting ?? registration.installing;
-      active?.postMessage({ type: "CLEAR_CONECTA_CACHES" });
     } catch {
       // La aplicación continúa funcionando aunque no haya modo offline.
     }

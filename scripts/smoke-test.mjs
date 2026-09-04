@@ -37,6 +37,10 @@ test("service worker uses persistent asset caches", async () => {
   assert.match(sw, /startsWith\(['"]conecta-/);
   assert.match(sw, /request\.mode===['"]navigate['"]/);
   assert.doesNotMatch(sw, /Index1996|raw\.githack/i);
+  assert.doesNotMatch(sw, /CLEAR_CONECTA_CACHES/, "normal app startup must never purge all offline caches");
+  assert.match(sw, /response\.type!==['"]opaque['"]/, "cross-origin image responses must remain cacheable");
+  const main = await read("src/main.tsx");
+  assert.doesNotMatch(main, /CLEAR_CONECTA_CACHES/, "app startup must preserve PWA caches");
 });
 
 test("stable vendor chunks remain split", async () => {

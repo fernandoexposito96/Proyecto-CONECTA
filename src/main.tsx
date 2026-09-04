@@ -8,7 +8,6 @@ import { startImagePerformance } from "./image-performance";
 import { startTelemetry } from "./telemetry";
 import "./ui.css";
 import "./homePremiumEnhancer";
-import "./home-fused-hero";
 import "./conecta-calm-enhancer";
 import "./premiumMembershipEnhancer";
 import "./accountCenterEnhancer";
@@ -69,7 +68,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
         window.location.reload();
       });
 
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-auth-prototype-final-v5", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-home-canonical-v6", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
 

@@ -1,9 +1,8 @@
 /*
  * CONECTA — entrada única de estilos.
  *
- * Esta rama elimina capas históricas de hotfix/compatibilidad y conserva
- * únicamente módulos de estructura, vistas, accesibilidad y la referencia
- * visual Premium V4 aprobada. La protección responsive universal sigue última.
+ * Mantiene una única cadena de estilos: base, estructura, responsive universal
+ * y, al final, la referencia Premium V4 aprobada como autoridad visual.
  */
 
 /* Base visual estable */
@@ -27,7 +26,10 @@
 /* Escritorio */
 @import "./desktop-final-polish.css";
 
-/* Diseño Premium V4 aprobado: única capa de acabado visual */
+/* Protección responsive genérica: antes del acabado V4 para no pisar la referencia aprobada. */
+@import "./universal-responsive.css";
+
+/* Diseño Premium V4 aprobado: autoridad visual final. */
 @import "./premium-reference-v4.css";
 
 /* Vistas V4 aprobadas, separadas por pantalla para evitar hotfixes globales. */
@@ -35,9 +37,6 @@
 @import "./views/explore-reference-v4.css";
 @import "./views/chat-profile-reference-v4.css";
 @import "./views/settings-premium-reference-v4.css";
-
-/* Siempre último: móvil, tablet, ordenador y PWA */
-@import "./universal-responsive.css";
 
 /* Fallback de arranque: negro + CONECTA, sin spinner. */
 .loading-screen{

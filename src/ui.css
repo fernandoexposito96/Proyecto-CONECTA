@@ -36,6 +36,9 @@
 /* Pulido específico de escritorio sin alterar móvil */
 @import "./desktop-final-polish.css";
 
+/* Capa visual aprobada por el propietario: solo presentación, sin tocar lógica. */
+@import "./premium-reference-v3.css";
+
 /* Siempre el último import: móvil, tablet, ordenador y PWA */
 @import "./universal-responsive.css";
 

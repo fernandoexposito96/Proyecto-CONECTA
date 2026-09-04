@@ -1,0 +1,64 @@
+name: CONECTA Diagnostic · 5h
+
+on:
+  schedule:
+    # GitHub Actions cron is evaluated in UTC.
+    - cron: "17 */5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - name: Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Generate diagnostic report
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          CONECTA_ROBOT_MAX_FINDINGS: "999"
+        run: node scripts/diagnostic-scan.mjs
+      - name: Build with latest diagnostic
+        run: pnpm run build
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
+
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: diagnostic
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish CONECTA and diagnostic
+        id: deployment
+        uses: actions/deploy-pages@v4

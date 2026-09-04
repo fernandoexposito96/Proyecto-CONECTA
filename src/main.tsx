@@ -68,7 +68,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
         window.location.reload();
       });
 
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-premium-engineered-v7", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-social-auth-v8", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
 

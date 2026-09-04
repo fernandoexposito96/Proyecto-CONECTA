@@ -19,13 +19,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install
         run: npm install --no-audit --no-fund
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
       - name: Validate with automatic retries
         shell: bash
         run: |

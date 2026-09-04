@@ -1,6 +1,13 @@
 name: CONECTA Diagnostic · 5h
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/diagnostic-hourly.yml"
+      - "scripts/diagnostic-scan.mjs"
+      - "package.json"
+      - "pnpm-lock.yaml"
   schedule:
     # GitHub Actions cron is evaluated in UTC.
     - cron: "17 */5 * * *"

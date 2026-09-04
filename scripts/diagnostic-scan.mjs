@@ -6,6 +6,7 @@ const root = process.cwd();
 const startedAt = new Date();
 const results = [];
 const maxFindings = Math.min(Math.max(Number.parseInt(process.env.CONECTA_ROBOT_MAX_FINDINGS ?? "999", 10) || 999, 1), 999);
+let sequence = 0;
 
 let previousReport = null;
 try {
@@ -18,8 +19,36 @@ try {
   previousReport = null;
 }
 
+const clean = (value, max = 1400) => String(value ?? "").replace(/\x1b\[[0-9;]*m/g, "").trim().slice(0, max);
+const slug = (value) => clean(value, 160).toLowerCase().replace(/[^a-z0-9áéíóúüñ]+/gi, "-").replace(/^-|-$/g, "").slice(0, 90);
 const add = (id, area, label, status, detail, severity = "info", meta = {}) => {
-  results.push({ id, area, label, status, detail, severity, ...meta });
+  results.push({ id: id || `finding-${++sequence}`, area, label, status, detail: clean(detail), severity, ...meta });
+};
+const addUnique = (() => {
+  const seen = new Set();
+  return (id, area, label, status, detail, severity = "info", meta = {}) => {
+    const key = `${area}|${label}|${clean(detail, 500)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    add(id, area, label, status, detail, severity, meta);
+  };
+})();
+
+const errorPattern = /\b(error|failed|failure|exception|fatal|critical|vulnerab|insecure|denied|forbidden|cannot|can't|invalid)\b/i;
+const warningPattern = /\b(warn(?:ing)?|deprecated|missing|not found|timeout|retry|slow|unstable|flaky|unavailable|skipped|not tested|not executed|todo|fixme|hack)\b/i;
+
+const parseCommandOutput = (checkId, area, label, output) => {
+  let errorIndex = 0;
+  let warningIndex = 0;
+  for (const raw of String(output || "").split(/\r?\n/)) {
+    const line = clean(raw, 1200);
+    if (!line || /^>\s|^npm notice/i.test(line)) continue;
+    if (errorPattern.test(line)) {
+      addUnique(`${checkId}-error-${++errorIndex}-${slug(line)}`, area, `${label} · detalle ${errorIndex}`, "fail", line, "error", { source: "command-output", parent_check: checkId });
+    } else if (warningPattern.test(line)) {
+      addUnique(`${checkId}-warn-${++warningIndex}-${slug(line)}`, area, `${label} · aviso ${warningIndex}`, "warn", line, "warning", { source: "command-output", parent_check: checkId });
+    }
+  }
 };
 
 const run = (id, area, label, command, args, severity = "error") => {
@@ -27,25 +56,20 @@ const run = (id, area, label, command, args, severity = "error") => {
   const proc = spawnSync(command, args, {
     cwd: root,
     encoding: "utf8",
-    env: { ...process.env, CI: "1" },
-    maxBuffer: 8 * 1024 * 1024,
+    env: { ...process.env, CI: "1", FORCE_COLOR: "0" },
+    maxBuffer: 20 * 1024 * 1024,
   });
   const output = `${proc.stdout || ""}\n${proc.stderr || ""}`.trim();
   const ok = proc.status === 0;
-  add(
-    id,
-    area,
-    label,
-    ok ? "ok" : "fail",
-    ok ? `Correcto · ${Math.round((Date.now() - t0) / 100) / 10}s` : output.slice(-1400) || `Salida ${proc.status}`,
-    ok ? "info" : severity,
-    { duration_ms: Date.now() - t0 },
-  );
+  add(id, area, label, ok ? "ok" : "fail", ok ? `Correcto · ${Math.round((Date.now() - t0) / 100) / 10}s` : clean(output.slice(-1800)) || `Salida ${proc.status}`, ok ? "info" : severity, { duration_ms: Date.now() - t0, source: "command" });
+  parseCommandOutput(id, area, label, output);
 };
 
 const exists = (rel) => fs.existsSync(path.join(root, rel));
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
+const rel = (full) => path.relative(root, full).replaceAll(path.sep, "/");
 
+// 1) Comprobaciones ejecutables: no se resume un comando fallido en un único contador.
 run("lint", "Código", "ESLint", "npm", ["run", "lint"]);
 run("typescript", "Código", "TypeScript", "npm", ["run", "check"]);
 run("build", "Build", "Compilación Vite", "npm", ["run", "build"], "critical");
@@ -54,75 +78,101 @@ run("performance", "Rendimiento", "Contratos de rendimiento", "npm", ["run", "te
 run("security", "Seguridad", "Contratos de seguridad", "npm", ["run", "test:security"], "critical");
 run("audit", "Dependencias", "npm audit (producción)", "npm", ["audit", "--omit=dev", "--audit-level=high"], "warning");
 
+// 2) Estructura mínima de una PWA CONECTA desplegable.
 const required = [
-  "src/main.tsx",
-  "src/App.tsx",
-  "src/ui.css",
-  "src/supabase.ts",
-  "public/manifest.json",
-  "public/sw.js",
-  ".github/workflows/deploy-pages.yml",
+  "src/main.tsx", "src/App.tsx", "src/ui.css", "src/supabase.ts",
+  "public/manifest.json", "public/sw.js", ".github/workflows/deploy-pages.yml",
+  ".github/workflows/diagnostic-hourly.yml", "scripts/smoke-test.mjs",
+  "scripts/performance-contracts.mjs", "scripts/security-contracts.mjs",
 ];
-const missing = required.filter((f) => !exists(f));
-add(
-  "structure",
-  "Estructura",
-  "Archivos críticos",
-  missing.length ? "fail" : "ok",
-  missing.length ? `Faltan: ${missing.join(", ")}` : `${required.length}/${required.length} presentes`,
-  missing.length ? "critical" : "info",
-);
+for (const file of required) {
+  add(`structure-${slug(file)}`, "Estructura", file, exists(file) ? "ok" : "fail", exists(file) ? "Presente" : "Archivo crítico ausente", exists(file) ? "info" : "critical", { source: "filesystem", file });
+}
 
+// 3) Inventario profundo por archivo fuente.
+const sourceFiles = [];
+const walk = (dir) => {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(full);
+    else if (/\.(ts|tsx|js|mjs|css|html|json)$/.test(entry.name)) sourceFiles.push(full);
+  }
+};
+walk(path.join(root, "src"));
+walk(path.join(root, "public"));
+
+let scannedBytes = 0;
+let scannedLines = 0;
+let staticFindings = 0;
+const staticWatch = (file, lineNo, label, detail, kind = "warning") => {
+  staticFindings += 1;
+  addUnique(`static-${slug(rel(file))}-${lineNo}-${slug(label)}`, "Código estático", label, "warn", `${rel(file)}:${lineNo} · ${detail}`, kind, { source: "static", file: rel(file), line: lineNo });
+};
+
+for (const file of sourceFiles) {
+  const text = fs.readFileSync(file, "utf8");
+  const lines = text.split(/\r?\n/);
+  scannedBytes += Buffer.byteLength(text);
+  scannedLines += lines.length;
+
+  // Ficheros excesivamente grandes dificultan mantenimiento y esconden regresiones.
+  if (lines.length > 1800) staticWatch(file, 1, "Archivo excesivamente grande", `${lines.length} líneas; conviene modularizar para reducir riesgo de regresiones.`);
+  if (/\.css$/.test(file)) {
+    const importantCount = (text.match(/!important\b/g) || []).length;
+    if (importantCount > 25) staticWatch(file, 1, "Deuda CSS por !important", `${importantCount} usos de !important detectados.`);
+  }
+
+  lines.forEach((line, index) => {
+    const n = index + 1;
+    if (/\b(?:TODO|FIXME|HACK)\b/i.test(line)) staticWatch(file, n, "Trabajo pendiente marcado en código", clean(line, 420));
+    if (/console\.(?:log|warn|error)\s*\(/.test(line)) staticWatch(file, n, "Console en código de cliente", clean(line, 420));
+    if (/dangerouslySetInnerHTML\s*=/.test(line)) staticWatch(file, n, "HTML dinámico sensible", "Uso de dangerouslySetInnerHTML; revisar sanitización y origen del contenido.", "warning");
+    if (/href\s*=\s*["']#["']/.test(line)) staticWatch(file, n, "Enlace placeholder", clean(line, 420));
+    if (/onClick\s*=\s*\{\s*\(?.*\)?\s*=>\s*\{?\s*\}?\s*\}/.test(line)) staticWatch(file, n, "Acción aparentemente vacía", clean(line, 420));
+    if (/\b(?:alert|confirm|prompt)\s*\(/.test(line) && /\.(?:ts|tsx|js)$/.test(file)) staticWatch(file, n, "Diálogo nativo en experiencia de usuario", clean(line, 420));
+    if (/localStorage\.(?:setItem|getItem)\s*\([^\n]*(?:token|password|secret|session)/i.test(line)) staticWatch(file, n, "Dato sensible potencial en localStorage", clean(line, 420), "warning");
+    if (/<img\b/i.test(line) && !/\balt\s*=/.test(line)) staticWatch(file, n, "Imagen sin alt visible", clean(line, 420));
+  });
+}
+add("source-inventory", "Cobertura", "Inventario fuente", "ok", `${sourceFiles.length} archivos · ${scannedLines} líneas · ${(scannedBytes / 1024).toFixed(1)} KiB analizados`, "info", { source: "static", files_scanned: sourceFiles.length, lines_scanned: scannedLines, bytes_scanned: scannedBytes });
+
+// 4) CSS y capas históricas.
 try {
   const ui = read("src/ui.css");
   const imports = [...ui.matchAll(/@import\s+["']([^"']+)["']/g)].map((m) => m[1]);
   const last = imports.at(-1) || "";
-  add(
-    "css-entry",
-    "Interfaz",
-    "Entrada CSS única",
-    imports.length && last.includes("universal-responsive.css") ? "ok" : "fail",
-    `${imports.length} capas · última: ${last || "ninguna"}`,
-    last.includes("universal-responsive.css") ? "info" : "error",
-  );
-  const legacyLayers = imports.filter((x) => /hotfix|prototype|overhaul/i.test(x));
-  add(
-    "css-debt",
-    "Interfaz",
-    "Capas históricas/hotfix",
-    legacyLayers.length <= 4 ? "ok" : "warn",
-    legacyLayers.length ? `${legacyLayers.length}: ${legacyLayers.join(", ")}` : "Sin capas históricas detectadas",
-    legacyLayers.length <= 4 ? "info" : "warning",
-  );
+  add("css-entry", "Interfaz", "Entrada CSS y responsive final", imports.length && last.includes("universal-responsive.css") ? "ok" : "fail", `${imports.length} capas · última: ${last || "ninguna"}`, imports.length && last.includes("universal-responsive.css") ? "info" : "error");
+  const legacyLayers = imports.filter((x) => /hotfix|prototype|overhaul|legacy/i.test(x));
+  legacyLayers.forEach((x, i) => addUnique(`css-legacy-${i}-${slug(x)}`, "Interfaz", "Capa CSS histórica", "warn", x, "warning", { source: "css-import" }));
 } catch (error) {
-  add("css-entry", "Interfaz", "Entrada CSS única", "fail", String(error), "error");
+  add("css-entry", "Interfaz", "Entrada CSS", "fail", String(error), "error");
 }
 
+// 5) PWA, caché y manifest.
 try {
   const sw = read("public/sw.js");
   const cacheMatch = sw.match(/SHELL_CACHE=['"]([^'"]+)/);
   const hasCleanup = /caches\.keys\(\)/.test(sw) && /caches\.delete/.test(sw);
   const hasClaim = /clients\.claim/.test(sw);
-  add(
-    "pwa-cache",
-    "PWA",
-    "Service Worker y limpieza de caché",
-    hasCleanup && hasClaim ? "ok" : "warn",
-    `cache=${cacheMatch?.[1] || "desconocida"} · limpieza=${hasCleanup ? "sí" : "no"} · claim=${hasClaim ? "sí" : "no"}`,
-    hasCleanup && hasClaim ? "info" : "warning",
-  );
+  const hasSkipWaiting = /skipWaiting/.test(sw);
+  add("pwa-cache-cleanup", "PWA", "Limpieza de cachés anteriores", hasCleanup ? "ok" : "warn", `cache=${cacheMatch?.[1] || "desconocida"} · limpieza=${hasCleanup ? "sí" : "no"}`, hasCleanup ? "info" : "warning");
+  add("pwa-clients-claim", "PWA", "Activación inmediata de Service Worker", hasClaim && hasSkipWaiting ? "ok" : "warn", `clients.claim=${hasClaim ? "sí" : "no"} · skipWaiting=${hasSkipWaiting ? "sí" : "no"}`, hasClaim && hasSkipWaiting ? "info" : "warning");
 } catch (error) {
-  add("pwa-cache", "PWA", "Service Worker y limpieza de caché", "fail", String(error), "error");
+  add("pwa-cache", "PWA", "Service Worker", "fail", String(error), "error");
 }
-
 try {
   const manifest = JSON.parse(read("public/manifest.json"));
-  const ok = Boolean(manifest.name && manifest.start_url && manifest.display);
-  add("manifest", "PWA", "Manifest", ok ? "ok" : "fail", `name=${manifest.name || "?"} · start=${manifest.start_url || "?"} · display=${manifest.display || "?"}`, ok ? "info" : "error");
+  const fields = ["name", "short_name", "start_url", "display", "icons"];
+  for (const field of fields) {
+    const ok = Array.isArray(manifest[field]) ? manifest[field].length > 0 : Boolean(manifest[field]);
+    add(`manifest-${field}`, "PWA", `Manifest · ${field}`, ok ? "ok" : "fail", ok ? "Configurado" : "Ausente o vacío", ok ? "info" : "error");
+  }
 } catch (error) {
-  add("manifest", "PWA", "Manifest", "fail", String(error), "error");
+  add("manifest-parse", "PWA", "Manifest válido", "fail", String(error), "error");
 }
 
+// 6) Supabase: configuración local y prueba remota solo si hay secretos reales.
 try {
   const supabase = read("src/supabase.ts");
   const envExample = exists(".env.example") ? read(".env.example") : "";
@@ -130,64 +180,35 @@ try {
   const exampleConfigured = /VITE_SUPABASE_URL/.test(envExample) && /VITE_SUPABASE_(?:ANON_KEY|PUBLISHABLE_KEY)/.test(envExample);
   const runtimeKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
   const runtimeConfigured = Boolean(process.env.VITE_SUPABASE_URL && runtimeKey);
-  add(
-    "supabase-config",
-    "Conexiones",
-    "Configuración Supabase",
-    sourceConfigured && exampleConfigured ? "ok" : "fail",
-    `código=${sourceConfigured ? "sí" : "no"} · env.example=${exampleConfigured ? "sí" : "no"} · secretos CI=${runtimeConfigured ? "disponibles" : "no configurados"}`,
-    sourceConfigured && exampleConfigured ? (runtimeConfigured ? "info" : "warning") : "critical",
-  );
-
+  add("supabase-source-config", "Conexiones", "Supabase configurado en código", sourceConfigured ? "ok" : "fail", sourceConfigured ? "Variables esperadas presentes" : "Faltan referencias de configuración", sourceConfigured ? "info" : "critical");
+  add("supabase-env-example", "Conexiones", "Plantilla de entorno Supabase", exampleConfigured ? "ok" : "warn", exampleConfigured ? "Variables documentadas" : "Plantilla incompleta", exampleConfigured ? "info" : "warning");
   if (runtimeConfigured) {
     try {
-      const response = await fetch(`${process.env.VITE_SUPABASE_URL.replace(/\/$/, "")}/auth/v1/health`, {
-        headers: { apikey: runtimeKey },
-        signal: AbortSignal.timeout(12000),
-      });
+      const response = await fetch(`${process.env.VITE_SUPABASE_URL.replace(/\/$/, "")}/auth/v1/health`, { headers: { apikey: runtimeKey }, signal: AbortSignal.timeout(12000) });
       add("supabase-health", "Conexiones", "Supabase Auth health", response.ok ? "ok" : "fail", `HTTP ${response.status}`, response.ok ? "info" : "critical");
     } catch (error) {
       add("supabase-health", "Conexiones", "Supabase Auth health", "fail", String(error), "critical");
     }
   } else {
-    add("supabase-health", "Conexiones", "Supabase Auth health", "warn", "No se prueba en remoto hasta configurar las variables Supabase del workflow.", "warning");
+    add("supabase-health", "Conexiones", "Supabase Auth health", "warn", "No ejecutado: faltan secretos VITE_SUPABASE_URL/KEY en el workflow. No se marca como correcto.", "warning", { source: "runtime", not_executed: true });
   }
 } catch (error) {
   add("supabase-config", "Conexiones", "Configuración Supabase", "fail", String(error), "critical");
 }
 
+// 7) Producción real.
 try {
-  const response = await fetch("https://fernandoexposito96.github.io/Proyecto-CONECTA/", {
-    redirect: "follow",
-    signal: AbortSignal.timeout(15000),
-    headers: { "cache-control": "no-cache" },
-  });
+  const response = await fetch("https://fernandoexposito96.github.io/Proyecto-CONECTA/", { redirect: "follow", signal: AbortSignal.timeout(15000), headers: { "cache-control": "no-cache" } });
   add("production", "Producción", "GitHub Pages accesible", response.ok ? "ok" : "fail", `HTTP ${response.status} · ${response.url}`, response.ok ? "info" : "critical");
 } catch (error) {
   add("production", "Producción", "GitHub Pages accesible", "fail", String(error), "critical");
 }
 
-const sourceFiles = [];
-const walk = (dir) => {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) walk(full);
-    else if (/\.(ts|tsx|js|mjs|css|html)$/.test(entry.name)) sourceFiles.push(full);
-  }
-};
-if (exists("src")) walk(path.join(root, "src"));
-let todoCount = 0;
-let consoleCount = 0;
-for (const file of sourceFiles) {
-  const text = fs.readFileSync(file, "utf8");
-  todoCount += (text.match(/\b(?:TODO|FIXME|HACK)\b/gi) || []).length;
-  consoleCount += (text.match(/console\.(?:log|warn|error)\s*\(/g) || []).length;
-}
-add("todos", "Mantenimiento", "TODO/FIXME/HACK", todoCount === 0 ? "ok" : "warn", `${todoCount} marcas encontradas`, todoCount === 0 ? "info" : "warning");
-add("console", "Mantenimiento", "Console en código cliente", consoleCount <= 3 ? "ok" : "warn", `${consoleCount} llamadas detectadas`, consoleCount <= 3 ? "info" : "warning");
-
-const errors = results.filter((r) => r.status === "fail").slice(0, maxFindings);
-const watch = results.filter((r) => r.status === "warn" || (r.status === "ok" && r.severity === "warning")).slice(0, Math.max(0, maxFindings - errors.length));
+// 8) Tres capas. Se limita al final, nunca durante la detección.
+const rawErrors = results.filter((r) => r.status === "fail");
+const rawWatch = results.filter((r) => r.status === "warn" || (r.status === "ok" && r.severity === "warning"));
+const errors = rawErrors.slice(0, maxFindings);
+const watch = rawWatch.slice(0, Math.max(0, maxFindings - errors.length));
 
 const previousById = new Map((previousReport?.results || []).map((item) => [item.id, item]));
 const currentById = new Map(results.map((item) => [item.id, item]));
@@ -201,18 +222,7 @@ for (const current of results) {
   const previous = previousById.get(current.id);
   const wasBad = previous && (previous.status === "fail" || previous.status === "warn" || previous.severity === "warning");
   const nowGood = current.status === "ok" && current.severity !== "warning";
-  if (wasBad && nowGood) {
-    correctedMap.set(current.id, {
-      id: current.id,
-      area: current.area,
-      label: current.label,
-      status: "corrected",
-      severity: "resolved",
-      detail: current.detail,
-      previous_status: previous.status,
-      corrected_at: new Date().toISOString(),
-    });
-  }
+  if (wasBad && nowGood) correctedMap.set(current.id, { id: current.id, area: current.area, label: current.label, status: "corrected", severity: "resolved", detail: current.detail, previous_status: previous.status, corrected_at: new Date().toISOString() });
 }
 const corrected = [...correctedMap.values()].slice(0, maxFindings);
 
@@ -222,25 +232,43 @@ const counts = {
   warnings: watch.length,
   corrected: corrected.length,
   ok: results.filter((r) => r.status === "ok" && r.severity !== "warning").length,
+  total_checks: results.length,
+  detected_before_limit: rawErrors.length + rawWatch.length,
 };
-const score = Math.max(0, Math.min(100, 100 - counts.critical * 25 - counts.errors * 10 - counts.warnings * 3));
+const weightedPenalty = counts.critical * 12 + counts.errors * 4 + counts.warnings * 1.2;
+const score = Math.max(0, Math.min(100, Math.round(100 - weightedPenalty)));
 const overall = counts.critical ? "critical" : counts.errors ? "error" : counts.warnings ? "warning" : "healthy";
 const finishedAt = new Date();
+const activeFindings = errors.length + watch.length;
+const truncated = rawErrors.length + rawWatch.length > activeFindings;
+const coverage = {
+  executable_checks: 7,
+  files_scanned: sourceFiles.length,
+  lines_scanned: scannedLines,
+  bytes_scanned: scannedBytes,
+  static_findings: staticFindings,
+  production_checked: true,
+  supabase_runtime_checked: results.some((r) => r.id === "supabase-health" && !r.not_executed),
+};
+
 const report = {
-  schema: 2,
+  schema: 3,
   app: "CONECTA",
   agent: "NORA",
+  engine: "deep-diagnostic-v3",
   overall,
   score,
   max_findings: maxFindings,
+  truncated,
   counts,
+  coverage,
   started_at: startedAt.toISOString(),
   finished_at: finishedAt.toISOString(),
   duration_ms: finishedAt - startedAt,
   commit: process.env.GITHUB_SHA || "local",
   run_id: process.env.GITHUB_RUN_ID || null,
   previous_report_loaded: Boolean(previousReport),
-  coverage_note: "Escaneo automatizado real de código, build, pruebas, seguridad, rendimiento, PWA, configuración y producción. Errores contiene fallos confirmados; Vigilar contiene avisos o puntos no concluyentes; Errores corregidos solo contiene comprobaciones que antes estaban mal o en vigilancia y ahora pasan correctamente. Una prueba no ejecutada nunca se marca como correcta.",
+  coverage_note: `NORA v3 ejecuta pruebas de código/build/smoke/rendimiento/seguridad/dependencias y además inspecciona ${sourceFiles.length} archivos (${scannedLines} líneas) de forma estática, PWA, Supabase y producción. Cada línea problemática confirmada se registra como hallazgo independiente. "Vigilar" incluye riesgos, deuda técnica y comprobaciones no ejecutadas; nunca se convierten en OK. Capacidad máxima visible: ${maxFindings}.`,
   errors,
   watch,
   corrected,
@@ -250,4 +278,4 @@ const report = {
 const outDir = path.join(root, "public", "diagnostic");
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`);
-console.log(`Diagnostic report: ${overall} · score ${score}/100 · ${results.length} checks · errors ${errors.length} · watch ${watch.length} · corrected ${corrected.length}`);
+console.log(`NORA deep diagnostic v3: ${overall} · health ${score}/100 · ${results.length} checks/findings · errors ${errors.length} · watch ${watch.length} · corrected ${corrected.length} · coverage ${sourceFiles.length} files/${scannedLines} lines${truncated ? " · TRUNCATED" : ""}`);

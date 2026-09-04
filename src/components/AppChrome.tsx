@@ -39,7 +39,7 @@ export function MobileNavigation({ active, go, onCreate }: { active: View; go: (
   return createPortal(
     <nav className="bottom-nav" aria-label="Navegación móvil">
       <button className={active === "Inicio" ? "active" : ""} onClick={() => go("Inicio")}><Home /><span>Inicio</span></button>
-      <button className={active === "Explorar" ? "active" : ""} onClick={() => go("Explorar")}><Compass /><span>Explorar</span></button>
+      <button className={active === "Explorar" ? "active" : ""} onClick={() => go("Explorar")}><Compass /><span>Explora</span></button>
       <button className="floating-create" onClick={onCreate} aria-label="Crear plan"><Plus /></button>
       <button className={active === "Chat" ? "active" : ""} onClick={() => go("Chat")}><MessageCircle /><span>Chat</span></button>
       <button className={active === "Perfil" ? "active" : ""} onClick={() => go("Perfil")}><UserCheck /><span>Perfil</span></button>

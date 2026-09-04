@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 */5 * * *"
   workflow_dispatch:
     inputs:
       job_id:
@@ -24,7 +24,7 @@ permissions:
   contents: read
 
 env:
-  CONECTA_ROBOT_MAX_FINDINGS: "1999"
+  CONECTA_ROBOT_MAX_FINDINGS: "999"
 
 jobs:
   health:
@@ -44,13 +44,14 @@ jobs:
         id: full_scan
         continue-on-error: true
         run: node scripts/robot-health-scan.mjs
-      - name: Apartado · Todos los fallos
+      - name: Apartados · Lo que está bien / Lo que está mal
         if: always()
         run: |
           if [ -f robot-reports/latest.md ]; then
             cat robot-reports/latest.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "# CONECTA Robot · Informe completo" >> "$GITHUB_STEP_SUMMARY"
+            echo "# NORA · CONECTA Diagnostic" >> "$GITHUB_STEP_SUMMARY"
+            echo "## Lo que está mal" >> "$GITHUB_STEP_SUMMARY"
             echo "No se pudo generar el informe. Esto se considera un fallo del escáner." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Guardar informe completo

@@ -76,7 +76,7 @@ run("build", "Build", "Compilación Vite", "npm", ["run", "build"], "critical");
 run("smoke", "Pruebas", "Smoke tests", "npm", ["run", "test:smoke"], "critical");
 run("performance", "Rendimiento", "Contratos de rendimiento", "npm", ["run", "test:performance"]);
 run("security", "Seguridad", "Contratos de seguridad", "npm", ["run", "test:security"], "critical");
-run("audit", "Dependencias", "npm audit (producción)", "npm", ["audit", "--omit=dev", "--audit-level=high"], "warning");
+run("audit", "Dependencias", "pnpm audit (producción)", "pnpm", ["audit", "--prod", "--audit-level=high"], "warning");
 
 // 2) Estructura mínima de una PWA CONECTA desplegable.
 const required = [

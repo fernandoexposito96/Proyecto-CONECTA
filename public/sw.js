@@ -1,4 +1,4 @@
-const SHELL_CACHE='conecta-v1-shell-4';
+const SHELL_CACHE='conecta-v1-shell-5';
 const ASSET_CACHE='conecta-v1-assets';
 const IMAGE_CACHE='conecta-v1-images';
 const APP_ROOT='/Proyecto-CONECTA/';
@@ -51,16 +51,34 @@ const staleWhileRevalidate=async(request)=>{
 };
 
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(SHELL_CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
+  event.waitUntil(
+    caches.open(SHELL_CACHE)
+      .then(cache=>cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'}))))
+      .then(()=>self.skipWaiting()),
+  );
 });
 
 self.addEventListener('activate',event=>{
-  event.waitUntil(
-    caches.keys()
-      .then(keys=>Promise.all(keys.filter(key=>key.startsWith('conecta-v1-shell-')&&key!==SHELL_CACHE).map(key=>caches.delete(key))))
-      .then(()=>Promise.all([trimCache(ASSET_CACHE),trimCache(IMAGE_CACHE)]))
-      .then(()=>self.clients.claim()),
-  );
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key.startsWith('conecta-v1-shell-')&&key!==SHELL_CACHE).map(key=>caches.delete(key)));
+    await Promise.all([trimCache(ASSET_CACHE),trimCache(IMAGE_CACHE)]);
+    await self.clients.claim();
+
+    // iOS puede mantener la PWA suspendida con el bundle anterior durante mucho tiempo.
+    // Al activar una versión nueva, recargamos los clientes abiertos de CONECTA una sola vez.
+    const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    await Promise.all(clients.map(async client=>{
+      try{
+        const url=new URL(client.url);
+        if(url.origin===self.location.origin && url.pathname.startsWith(APP_ROOT)){
+          await client.navigate(client.url);
+        }
+      }catch{
+        // Un cliente que se esté cerrando no debe bloquear la activación del SW.
+      }
+    }));
+  })());
 });
 
 self.addEventListener('message',event=>{

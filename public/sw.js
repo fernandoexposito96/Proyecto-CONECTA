@@ -1,10 +1,15 @@
-const SHELL_CACHE='conecta-v2-shell';
-const ASSET_CACHE='conecta-v2-assets';
-const IMAGE_CACHE='conecta-v2-images';
+const SHELL_CACHE='conecta-v4-shell';
+const ASSET_CACHE='conecta-v4-assets';
+const IMAGE_CACHE='conecta-v4-images';
 const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
-const APP_ROOT='/Proyecto-CONECTA/';
-const APP_INDEX='/Proyecto-CONECTA/index.html';
-const CORE=[APP_ROOT,APP_INDEX,'/Proyecto-CONECTA/manifest.json','/Proyecto-CONECTA/conecta-icon.svg'];
+
+const scopeUrl=new URL(self.registration.scope);
+const APP_ROOT=scopeUrl.pathname.endsWith('/')?scopeUrl.pathname:`${scopeUrl.pathname}/`;
+const APP_INDEX=new URL('index.html',scopeUrl).pathname;
+const MANIFEST=new URL('manifest.json',scopeUrl).pathname;
+const ICON=new URL('conecta-icon.svg',scopeUrl).pathname;
+const CORE=[APP_ROOT,APP_INDEX,MANIFEST,ICON];
+
 const CACHE_LIMITS={
   [ASSET_CACHE]:120,
   [IMAGE_CACHE]:80,
@@ -67,7 +72,6 @@ self.addEventListener('activate',event=>{
         .filter(key=>key.startsWith('conecta-')&&!CURRENT_CACHES.has(key))
         .map(key=>caches.delete(key)),
     );
-    await Promise.all([trimCache(ASSET_CACHE),trimCache(IMAGE_CACHE)]);
     await self.clients.claim();
 
     const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
@@ -78,7 +82,7 @@ self.addEventListener('activate',event=>{
           await client.navigate(client.url);
         }
       }catch{
-        // Un cliente que se cierre durante la activación no debe bloquear el SW.
+        // Un cliente que se cierre durante la activación no debe bloquear la actualización.
       }
     }));
   })());
@@ -86,6 +90,12 @@ self.addEventListener('activate',event=>{
 
 self.addEventListener('message',event=>{
   if(event.data?.type==='SKIP_WAITING') self.skipWaiting();
+  if(event.data?.type==='CLEAR_CONECTA_CACHES'){
+    event.waitUntil((async()=>{
+      const keys=await caches.keys();
+      await Promise.all(keys.filter(key=>key.startsWith('conecta-')).map(key=>caches.delete(key)));
+    })());
+  }
 });
 
 self.addEventListener('fetch',event=>{
@@ -99,7 +109,6 @@ self.addEventListener('fetch',event=>{
   }
 
   if(url.pathname.includes('/assets/')){
-    /* Vite usa nombres con hash: los chunks inmutables pueden cachearse con seguridad. */
     event.respondWith(cacheFirst(event.request));
     return;
   }

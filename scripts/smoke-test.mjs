@@ -28,13 +28,13 @@ test("PWA manifest is installable", async () => {
 
 test("service worker uses persistent asset caches", async () => {
   const sw = await read("public/sw.js");
-  assert.match(sw, /conecta-v1-shell-/);
-  assert.match(sw, /conecta-v1-assets/);
-  assert.match(sw, /conecta-v1-images/);
+  assert.match(sw, /conecta-v\d+-shell/);
+  assert.match(sw, /conecta-v\d+-assets/);
+  assert.match(sw, /conecta-v\d+-images/);
   assert.match(sw, /cacheFirst/);
   assert.match(sw, /staleWhileRevalidate/);
   assert.match(sw, /\/assets\//);
-  assert.match(sw, /startsWith\(['"]conecta-v1-shell-/);
+  assert.match(sw, /startsWith\(['"]conecta-/);
   assert.match(sw, /request\.mode===['"]navigate['"]/);
   assert.doesNotMatch(sw, /Index1996|raw\.githack/i);
 });

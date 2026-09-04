@@ -6,8 +6,12 @@ import { offlineVisual } from "./offlineVisuals";
 import { scheduleIdlePrefetch } from "./idle-prefetch";
 import { startImagePerformance } from "./image-performance";
 import { startTelemetry } from "./telemetry";
+import { initMonitoring } from "./monitoring";
 import "./ui.css";
 import "./bootstrapEnhancers";
+
+// Monitoring is intentionally optional: without VITE_SENTRY_DSN nothing is sent.
+void initMonitoring();
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 const savedTheme = window.localStorage.getItem("conecta-theme");

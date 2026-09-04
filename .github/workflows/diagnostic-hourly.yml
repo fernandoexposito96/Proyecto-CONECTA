@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "17 * * * *"
+    - cron: "17 */5 * * *"
       timezone: "Europe/Madrid"
   workflow_dispatch:
 
@@ -36,6 +36,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          CONECTA_ROBOT_MAX_FINDINGS: "999"
         run: node scripts/diagnostic-scan.mjs
 
       - name: Build app with latest report

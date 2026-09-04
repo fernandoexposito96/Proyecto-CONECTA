@@ -22,24 +22,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: pnpm install --frozen-lockfile
 
       - name: Verify pinned Playwright engines
-        run: npx playwright install --list
+        run: pnpm exec playwright install --list
 
       - name: Static validation
-        run: npm run lint && npm run check && npm run test:unit
+        run: pnpm run lint && pnpm run check && pnpm run test:unit
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Existing CONECTA contracts
-        run: npm run test:smoke && npm run test:performance && npm run test:security
+        run: pnpm run test:smoke && pnpm run test:performance && pnpm run test:security
 
       - name: Browser, iPhone and accessibility tests
-        run: npm run test:e2e
+        run: pnpm run test:e2e
 
       - name: Upload Playwright report on failure
         if: failure()

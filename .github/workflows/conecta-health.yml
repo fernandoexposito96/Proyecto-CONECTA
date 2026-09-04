@@ -38,8 +38,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+      - name: Enable pnpm
+        run: corepack enable
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: pnpm install --frozen-lockfile
       - name: Escaneo completo del robot
         id: full_scan
         continue-on-error: true

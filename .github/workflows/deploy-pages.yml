@@ -24,35 +24,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+      - name: Enable pnpm
+        run: corepack enable
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: pnpm install --frozen-lockfile
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
-      - name: Validate with automatic retries
-        shell: bash
-        run: |
-          set -o pipefail
-          attempts=3
-          for attempt in $(seq 1 "$attempts"); do
-            echo "CONECTA validation attempt $attempt/$attempts"
-            if npm run validate; then
-              echo "Validation completed successfully."
-              exit 0
-            fi
-            if [ "$attempt" -lt "$attempts" ]; then
-              echo "Validation failed. Waiting 15 seconds before retrying..."
-              sleep 15
-            fi
-          done
-          echo "Validation failed after $attempts attempts. Review the failing check and logs."
-          exit 1
+        run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Validate release candidate
+        run: pnpm run validate
       - name: Generate NORA diagnostic report
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: node scripts/diagnostic-scan.mjs
       - name: Rebuild with latest diagnostic report
-        run: npm run build
+        run: pnpm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:

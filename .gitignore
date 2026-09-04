@@ -1,0 +1,12 @@
+node_modules/
+dist/
+playwright-report/
+test-results/
+coverage/
+robot-reports/
+.codex-source/
+.env
+.env.*
+!.env.example
+*.log
+

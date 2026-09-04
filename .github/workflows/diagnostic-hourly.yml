@@ -41,12 +41,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: pnpm install --frozen-lockfile
 
       - name: Verify pinned Playwright engines
-        run: npx playwright install --list
+        run: pnpm exec playwright install --list
 
       - name: NORA professional end-to-end diagnostic
         id: nora_scan
@@ -59,7 +63,7 @@ jobs:
         run: node scripts/nora-professional-scan.mjs
 
       - name: Build app with latest diagnostic report
-        run: npm run build
+        run: pnpm run build
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

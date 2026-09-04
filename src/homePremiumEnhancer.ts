@@ -8,7 +8,7 @@ const navTo = (label: string) => {
 
 const clickFirst = (selector: string) => document.querySelector<HTMLButtonElement>(selector)?.click();
 
-const heroImage = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=90";
+const heroImage = "https://images.unsplash.com/photo-1744943776635-04bdcc859692?auto=format&fit=crop&fm=jpg&q=82&w=1800";
 const images = {
   popular: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=700&q=86",
   novelty: "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?auto=format&fit=crop&w=700&q=86",
@@ -62,7 +62,7 @@ function createPremiumHome() {
           <button data-nav="Ahora"><span class="pill-icon sun">${icon("sun")}</span><strong>Hoy</strong><span>· Buen momento</span><em>⌄</em></button>
         </div>
       </div>
-      <div class="ph-hero-photo"><img src="${heroImage}" alt="Grupo de amigos disfrutando junto al mar"/></div>
+      <div class="ph-hero-photo"><img src="${heroImage}" alt="Grupo de amigos viendo el atardecer junto al mar"/></div>
     </section>
 
     <section class="ph-map-card">

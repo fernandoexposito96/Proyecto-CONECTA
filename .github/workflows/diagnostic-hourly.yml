@@ -14,8 +14,8 @@ on:
       - "vitest.config.ts"
       - ".github/workflows/**"
   schedule:
+    # GitHub Actions cron siempre se evalúa en UTC.
     - cron: "17 */5 * * *"
-      timezone: "Europe/Madrid"
   workflow_dispatch:
 
 permissions:

@@ -1,42 +1,55 @@
 export {};
 
-function fuseHomeHero() {
+const approvedHeroImage =
+  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1800&q=92";
+
+function applyApprovedHomeHero() {
   const root = document.querySelector<HTMLElement>(".premium-home-root");
   if (!root) return;
 
-  const hero = root.querySelector<HTMLElement>(":scope > .ph-hero");
-  const map = root.querySelector<HTMLElement>(":scope > .ph-map-card");
-  const existing = root.querySelector<HTMLElement>(":scope > .ph-hero-fused");
+  const fused = root.querySelector<HTMLElement>(":scope > .ph-hero-fused");
+  const hero = root.querySelector<HTMLElement>(":scope > .ph-hero") ?? fused?.querySelector<HTMLElement>(":scope > .ph-hero");
+  if (!hero) return;
 
-  if (existing) return;
-  if (!hero || !map) return;
+  // Si una versión anterior llegó a fusionar hero + mapa, restaura el hero como bloque independiente.
+  if (fused) {
+    fused.before(hero);
+    fused.remove();
+  }
+
+  root.querySelector<HTMLElement>(":scope > .ph-map-card")?.remove();
+  hero.querySelector<HTMLElement>(".ph-map-card")?.remove();
+  hero.querySelector<HTMLElement>(".ph-hero-pills")?.remove();
+
+  hero.classList.add("ph-hero-approved");
+
+  const greeting = hero.querySelector<HTMLElement>(".ph-hero-copy > p");
+  if (greeting) greeting.textContent = "¡Buenos días, Fernando! 👋";
 
   const title = hero.querySelector<HTMLElement>(".ph-hero-copy h1");
   if (title) title.innerHTML = "Descubre<br/>planes cerca<br/>de ti";
 
-  const pills = hero.querySelector<HTMLElement>(".ph-hero-pills");
+  const subtitle = hero.querySelector<HTMLElement>(".ph-hero-sub");
+  if (subtitle) subtitle.innerHTML = "Conecta con personas increíbles<br/>y vive experiencias únicas";
 
-  const fused = document.createElement("section");
-  fused.className = "ph-hero-fused";
-  hero.before(fused);
-  fused.append(hero, map);
-
-  // Los chips deben pertenecer al bloque fusionado, no al bloque de texto.
-  // Así se posicionan sobre el mapa y nunca vuelven a tapar el título/subtítulo.
-  if (pills) fused.append(pills);
+  const image = hero.querySelector<HTMLImageElement>(".ph-hero-photo img");
+  if (image) {
+    image.src = approvedHeroImage;
+    image.alt = "Grupo de amigos disfrutando juntos de un plan";
+  }
 }
 
-let homeFuseQueued = false;
-const queueHomeFuse = () => {
-  if (homeFuseQueued) return;
-  homeFuseQueued = true;
+let queued = false;
+const queueApprovedHero = () => {
+  if (queued) return;
+  queued = true;
   requestAnimationFrame(() => {
-    homeFuseQueued = false;
-    fuseHomeHero();
+    queued = false;
+    applyApprovedHomeHero();
   });
 };
 
-new MutationObserver(queueHomeFuse).observe(document.documentElement, { childList: true, subtree: true });
-window.addEventListener("DOMContentLoaded", queueHomeFuse);
-window.addEventListener("pageshow", queueHomeFuse);
-queueHomeFuse();
+new MutationObserver(queueApprovedHero).observe(document.documentElement, { childList: true, subtree: true });
+window.addEventListener("DOMContentLoaded", queueApprovedHero);
+window.addEventListener("pageshow", queueApprovedHero);
+queueApprovedHero();

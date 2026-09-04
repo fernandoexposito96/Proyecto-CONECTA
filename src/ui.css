@@ -8,16 +8,15 @@
 /* Base visual */
 @import "./conecta-premium.css";
 @import "./home-premium.css";
-@import "./home-fused-hero.css";
 
-/* Ajustes de Home y móvil */
+/* Ajustes generales de móvil */
 @import "./mobile-premium-fix.css";
 @import "./mobile-compact-hotfix.css";
 
 /* Accesibilidad */
 @import "./accessibility.css";
 
-/* Capas históricas de compatibilidad visual */
+/* Capas históricas de compatibilidad visual de otras vistas */
 @import "./premium-max-overhaul.css";
 @import "./prototype-exact-mobile.css";
 @import "./three-pages-final.css";
@@ -41,18 +40,10 @@
 /* Pulido específico de escritorio sin alterar móvil */
 @import "./desktop-final-polish.css";
 
-/* Portada final aprobada */
-@import "./home-final-hero.css";
-
 /* Siempre el último import: móvil, tablet, ordenador y PWA */
 @import "./universal-responsive.css";
 
-/*
- * Fallback de arranque.
- * Normalmente queda cubierto por #boot-splash de index.html durante 5 s.
- * Si la autenticación tarda más, conserva exactamente el mismo lenguaje:
- * negro + CONECTA blanco, sin spinner ni elementos adicionales.
- */
+/* Fallback de arranque: negro + CONECTA, sin spinner. */
 .loading-screen{
   position:fixed;
   inset:0;
@@ -78,10 +69,7 @@
 }
 .loading-screen::after{content:none!important}
 
-/*
- * Navegación móvil canónica.
- * Única fuente de verdad para Inicio · Explorar · + · Conectar · Chat.
- */
+/* Navegación móvil canónica. */
 @media (max-width:820px){
   .bottom-nav{
     position:fixed!important;
@@ -140,26 +128,9 @@
   .bottom-nav>button:nth-child(4){grid-column:4!important}
   .bottom-nav>button:nth-child(5){grid-column:5!important}
 
-  .bottom-nav>button svg{
-    width:21px!important;
-    height:21px!important;
-    stroke-width:2.05!important;
-  }
-
-  .bottom-nav>button span{
-    display:block!important;
-    max-width:100%!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-    font-size:10px!important;
-    font-weight:700!important;
-    white-space:nowrap!important;
-  }
-
-  .bottom-nav>button.active{
-    color:#7c3aed!important;
-    background:rgba(124,58,237,.065)!important;
-  }
+  .bottom-nav>button svg{width:21px!important;height:21px!important;stroke-width:2.05!important}
+  .bottom-nav>button span{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:10px!important;font-weight:700!important;white-space:nowrap!important}
+  .bottom-nav>button.active{color:#7c3aed!important;background:rgba(124,58,237,.065)!important}
 
   .bottom-nav>.floating-create{
     position:relative!important;
@@ -188,42 +159,15 @@
     z-index:2!important;
   }
 
-  .bottom-nav>.floating-create svg{
-    width:27px!important;
-    height:27px!important;
-    stroke-width:2.2!important;
-  }
-
+  .bottom-nav>.floating-create svg{width:27px!important;height:27px!important;stroke-width:2.2!important}
   .bottom-nav>.floating-create span{display:none!important}
-
-  .content-wrap,.view-page{
-    padding-bottom:calc(108px + env(safe-area-inset-bottom))!important;
-    scroll-padding-bottom:calc(108px + env(safe-area-inset-bottom))!important;
-  }
+  .content-wrap,.view-page{padding-bottom:calc(108px + env(safe-area-inset-bottom))!important;scroll-padding-bottom:calc(108px + env(safe-area-inset-bottom))!important}
 }
 
 @media (max-width:390px){
-  .bottom-nav{
-    width:calc(100vw - 16px)!important;
-    max-width:calc(100vw - 16px)!important;
-    height:64px!important;
-    padding:5px 6px!important;
-    border-radius:23px!important;
-  }
-  .bottom-nav>button{
-    height:50px!important;
-  }
-  .bottom-nav>button svg{
-    width:19px!important;
-    height:19px!important;
-  }
-  .bottom-nav>button span{
-    font-size:9px!important;
-  }
-  .bottom-nav>.floating-create{
-    width:52px!important;
-    height:52px!important;
-    min-width:52px!important;
-    min-height:52px!important;
-  }
+  .bottom-nav{width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;height:64px!important;padding:5px 6px!important;border-radius:23px!important}
+  .bottom-nav>button{height:50px!important}
+  .bottom-nav>button svg{width:19px!important;height:19px!important}
+  .bottom-nav>button span{font-size:9px!important}
+  .bottom-nav>.floating-create{width:52px!important;height:52px!important;min-width:52px!important;min-height:52px!important}
 }

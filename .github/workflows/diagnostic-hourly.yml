@@ -40,6 +40,8 @@ jobs:
           cache: pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
       - name: Validate production quality gate
         run: pnpm run validate
       - name: Generate diagnostic report

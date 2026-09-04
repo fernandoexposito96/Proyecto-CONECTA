@@ -62,9 +62,12 @@ window.setTimeout(() => {
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-auth-final-v2", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-auth-prototype-final-v4", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
+
+      const active = registration.active ?? registration.waiting ?? registration.installing;
+      active?.postMessage({ type: "CLEAR_CONECTA_CACHES" });
     } catch {
       // La aplicación continúa funcionando aunque no haya modo offline.
     }

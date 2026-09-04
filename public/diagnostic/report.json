@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "app": "CONECTA",
+  "agent": "NORA",
+  "overall": "warning",
+  "score": 0,
+  "counts": { "critical": 0, "errors": 0, "warnings": 1, "ok": 0 },
+  "started_at": null,
+  "finished_at": null,
+  "duration_ms": 0,
+  "commit": "pending",
+  "run_id": null,
+  "coverage_note": "NORA está esperando su primer escaneo automático. El panel se actualizará cuando termine la primera ejecución.",
+  "results": [
+    {
+      "id": "pending",
+      "area": "Sistema",
+      "label": "Primer escaneo",
+      "status": "warn",
+      "detail": "Pendiente de la primera ejecución horaria.",
+      "severity": "warning"
+    }
+  ]
+}

@@ -98,7 +98,7 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
   return <main className={`auth2-screen auth2-${mode}`}>
     <Toaster position="top-center" richColors />
     <section className="auth2-visual" aria-label="CONECTA, planes reales con gente compatible">
-      <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=90" alt="Grupo de amigos compartiendo un plan" />
+      <img src={`${import.meta.env.BASE_URL}media/cards/social-city.webp`} width={1280} height={853} fetchPriority="high" alt="Grupo de amigos compartiendo un plan" />
       <div className="auth2-visual-brand"><span className="auth2-logo">C</span><strong>CONECTA</strong></div>
       <div className="auth2-visual-copy">
         <span className="auth2-eyebrow"><Sparkles /> ACTIVIDADES REALES, CONEXIONES REALES</span>

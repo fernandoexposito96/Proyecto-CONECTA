@@ -21,9 +21,15 @@ jobs:
           node-version: 22
       - name: Install
         run: npm install --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
       - name: TypeScript
         run: npm run check
       - name: Build
         run: npm run build
       - name: Automated smoke tests
         run: npm run test:smoke
+      - name: Performance contracts
+        run: npm run test:performance
+      - name: Security contracts
+        run: npm run test:security

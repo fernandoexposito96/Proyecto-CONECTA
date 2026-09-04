@@ -8,14 +8,10 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: false,
-    target: "es2021",
+    target: "es2020",
     cssCodeSplit: true,
     modulePreload: { polyfill: false },
     rollupOptions: {
-      input: {
-        main: "index.html",
-        almacen: "almacen.html",
-      },
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;

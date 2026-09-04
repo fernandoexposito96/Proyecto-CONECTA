@@ -36,11 +36,11 @@ export function TabsTrigger({ value, children }: { value: string; children: Reac
 export function TabsContent({ value, children }: { value: string; children: ReactNode }) { const context = useContext(TabsContext); return context?.value === value ? <div role="tabpanel">{children}</div> : null; }
 
 export function InputOTP({ maxLength, value, onChange }: { maxLength: number; value: string; onChange: (value: string) => void; children?: ReactNode }) { return <input className="otp-input" inputMode="numeric" autoComplete="one-time-code" maxLength={maxLength} value={value} onChange={(event) => onChange(event.target.value.replace(/\D/g, "").slice(0, maxLength))} aria-label="Código de verificación" />; }
-export function InputOTPGroup({}: { children: ReactNode }) { return null; }
-export function InputOTPSlot({}: { index: number }) { return null; }
+export function InputOTPGroup(_props: { children: ReactNode }) { return null; }
+export function InputOTPSlot(_props: { index: number }) { return null; }
 
 const TOAST_EVENT = "conecta:toast";
 type ToastDetail = { message: string; tone: "success" | "error" | "info" };
 function emit(message: string, tone: ToastDetail["tone"]) { window.dispatchEvent(new CustomEvent<ToastDetail>(TOAST_EVENT, { detail: { message, tone } })); }
 export const toast = { success: (message: string) => emit(message, "success"), error: (message: string) => emit(message, "error"), info: (message: string) => emit(message, "info") };
-export function Toaster({}: { position?: string; richColors?: boolean }) { const [detail, setDetail] = useState<ToastDetail | null>(null); useEffect(() => { let timer = 0; const show = (event: Event) => { setDetail((event as CustomEvent<ToastDetail>).detail); window.clearTimeout(timer); timer = window.setTimeout(() => setDetail(null), 3200); }; window.addEventListener(TOAST_EVENT, show); return () => { window.clearTimeout(timer); window.removeEventListener(TOAST_EVENT, show); }; }, []); return detail ? <div className={`toast-premium ${detail.tone}`} role="status"><span>{detail.tone === "error" ? "!" : detail.tone === "info" ? "i" : "✓"}</span>{detail.message}</div> : null; }
+export function Toaster(_props: { position?: string; richColors?: boolean }) { const [detail, setDetail] = useState<ToastDetail | null>(null); useEffect(() => { let timer = 0; const show = (event: Event) => { setDetail((event as CustomEvent<ToastDetail>).detail); window.clearTimeout(timer); timer = window.setTimeout(() => setDetail(null), 3200); }; window.addEventListener(TOAST_EVENT, show); return () => { window.clearTimeout(timer); window.removeEventListener(TOAST_EVENT, show); }; }, []); return detail ? <div className={`toast-premium ${detail.tone}`} role="status"><span>{detail.tone === "error" ? "!" : detail.tone === "info" ? "i" : "✓"}</span>{detail.message}</div> : null; }

@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-const MAX_FINDINGS = 1000;
+const MAX_FINDINGS = Number(process.env.CONECTA_ROBOT_MAX_FINDINGS ?? 1999);
 const checks = [
   ["Lint", ["npm", ["run", "lint"]]],
   ["TypeScript", ["npm", ["run", "check"]]],
@@ -49,7 +49,7 @@ const lines = [
   "# CONECTA Robot · Informe completo",
   "",
   `Generado: ${summary.generatedAt}`,
-  `Capacidad máxima: ${MAX_FINDINGS} hallazgos`,
+  `Capacidad máxima: ${MAX_FINDINGS.toLocaleString("es-ES")} hallazgos`,
   `Hallazgos detectados: ${findings.length}${summary.truncated ? " (límite alcanzado)" : ""}`,
   `Pruebas con fallo duro: ${hardFailures.length}`,
   "",
@@ -57,7 +57,7 @@ const lines = [
   "",
   ...results.map((item) => `- ${item.status === "passed" ? "✅" : "❌"} ${item.name} · exit ${item.exitCode}`),
   "",
-  "## Todos los fallos y avisos detectados",
+  "## Todos los fallos",
   "",
   ...(findings.length ? findings.map((item, index) => `${index + 1}. **${item.severity.toUpperCase()} · ${item.check}** — ${item.message.replace(/\|/g, "\\|")}`) : ["No se han detectado líneas de error/aviso en esta ejecución."]),
   "",

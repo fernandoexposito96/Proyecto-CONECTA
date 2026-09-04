@@ -19,26 +19,27 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
   const [passkeyBusy, setPasskeyBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<SocialProvider | null>(null);
   const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const email = String(data.get("email") ?? "").trim();
+    const normalizedEmail = email.trim();
     const password = String(data.get("password") ?? "");
     const displayName = String(data.get("display_name") ?? "").trim();
     setBusy(true);
     setMessage("");
     try {
       if (mode === "signup") {
-        const { data: result, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: displayName }, emailRedirectTo: authRedirectUrl() } });
+        const { data: result, error } = await supabase.auth.signUp({ email: normalizedEmail, password, options: { data: { display_name: displayName }, emailRedirectTo: authRedirectUrl() } });
         if (error) return setMessage(friendlyAuthError(error));
         if (!result.session) {
-          setPendingEmail(email);
+          setPendingEmail(normalizedEmail);
           setMessage("Correo enviado. Abre el enlace de verificación para continuar.");
         }
         return;
       }
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
       if (error) setMessage(friendlyAuthError(error));
     } catch (error) {
       setMessage(friendlyAuthError(error));
@@ -76,9 +77,13 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
   };
 
   const resetPassword = async () => {
-    const email = window.prompt("Introduce tu correo para recuperar la contraseña:");
-    if (!email?.trim()) return;
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: authRedirectUrl() });
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setMessage("Introduce tu correo para recuperar la contraseña.");
+      return;
+    }
+    setMessage("");
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo: authRedirectUrl() });
     if (error) return toast.error(friendlyAuthError(error));
     toast.success("Revisa tu correo para cambiar la contraseña");
   };
@@ -130,7 +135,7 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
 
         <form className="auth2-form" onSubmit={submit}>
           {mode === "signup" && <div className="auth2-field"><label htmlFor="auth-display-name">Nombre visible</label><input id="auth-display-name" name="display_name" required maxLength={50} autoComplete="name" placeholder="Cómo quieres que te llamen" /></div>}
-          <div className="auth2-field"><label htmlFor="auth-email">Correo electrónico</label><input id="auth-email" name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" /></div>
+          <div className="auth2-field"><label htmlFor="auth-email">Correo electrónico</label><input id="auth-email" name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" value={email} onChange={(event) => setEmail(event.target.value)} /></div>
           <div className="auth2-field"><label htmlFor="auth-password">Contraseña</label><input id="auth-password" name="password" type="password" minLength={8} required autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="Mínimo 8 caracteres" /></div>
           {message && <div className="auth2-message"><CircleAlert /> <span>{message}</span></div>}
           <button className="auth2-primary" disabled={busy || oauthBusy !== null} type="submit">{busy ? <LoaderCircle className="spin" /> : mode === "signin" ? <LockKeyhole /> : <UserRoundPlus />}{busy ? "Procesando…" : mode === "signin" ? "Entrar de forma segura" : "Crear mi cuenta"}</button>

@@ -52,17 +52,17 @@ window.setTimeout(() => {
   if (!splash) return;
   splash.classList.add("boot-hide");
   window.setTimeout(() => splash.remove(), 280);
-}, 5_000);
+}, 4_000);
 
 scheduleIdlePrefetch();
 window.setTimeout(() => {
   void startTelemetry();
-}, 5_250);
+}, 4_250);
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-premium-engineered-v3", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-startup-4s-v1", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
     } catch {

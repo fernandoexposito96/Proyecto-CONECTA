@@ -17,9 +17,8 @@ Este documento define cómo está organizado **Proyecto-CONECTA** y qué reglas 
 El arranque visible tiene dos niveles coordinados:
 
 1. `index.html` muestra inmediatamente el splash nativo HTML para evitar flashes sin CSS.
-2. Durante 5 segundos se ve únicamente fondo negro + `CONECTA` blanco centrado.
-3. `src/main.tsx` revela la aplicación al finalizar esos 5 segundos.
-4. Si Supabase todavía no ha terminado después de ese tiempo, `LoadingScreen` usa el mismo lenguaje visual: negro + CONECTA blanco, sin spinner.
+2. `src/main.tsx` retira el splash en el siguiente frame, cuando React ya puede pintar.
+3. Si Supabase todavía no ha terminado, `LoadingScreen` mantiene el mismo lenguaje visual: negro + CONECTA blanco, sin spinner.
 
 No añadir círculos, loaders giratorios, barras ni elementos extra al arranque.
 
@@ -45,15 +44,14 @@ Esta capa es la protección final contra recortes y anchos antiguos.
 
 Dentro de `ui.css`, el orden lógico es:
 
-1. Base Premium (`conecta-premium.css`, `home-premium.css`).
+1. Base Premium (`conecta-premium.css`).
 2. Ajustes visuales y móvil.
 3. Accesibilidad.
 4. Compatibilidad de estilos históricos todavía necesarios.
 5. Estructura y vistas principales.
 6. Menús, diálogos y confirmaciones.
-7. Conecta+ compacto/progresivo.
-8. `universal-responsive.css` como última capa importada.
-9. Reglas locales de fallback de arranque.
+7. `universal-responsive.css` como última capa importada.
+8. Reglas locales de fallback de arranque.
 
 Los CSS históricos se mantienen mientras sigan siendo necesarios para conservar el diseño Premium. No añadir nuevos hotfixes salvo que no exista una capa canónica donde resolver el problema.
 
@@ -94,10 +92,10 @@ Conecta+ usa divulgación progresiva: mostrar primero opciones compactas y abrir
 El contrato de cierre es:
 
 ```bash
-npm run validate
+pnpm validate
 ```
 
-Incluye TypeScript, build y smoke tests.
+Incluye lint, TypeScript, unitarios, build, smoke, rendimiento, seguridad y E2E en Chromium y WebKit/iPhone.
 
 Los smoke tests protegen al menos:
 
@@ -107,7 +105,7 @@ Los smoke tests protegen al menos:
 - service worker canónico;
 - un único CSS de entrada;
 - orden válido de imports CSS y responsive final;
-- splash negro CONECTA de 5 segundos;
+- splash negro CONECTA retirado al primer frame de React;
 - vistas críticas;
 - autenticación y seguridad;
 - ausencia de referencias legacy.

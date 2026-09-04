@@ -3,7 +3,7 @@ import { CalendarDays, MessageSquareText, RefreshCw, Send, UsersRound } from "lu
 import { supabase } from "../supabase";
 import type { Community, CommunityMember, Plan } from "../types";
 import { EmptyCompact, Field, SectionTitle } from "../components/common";
-import { toast } from "../ui";
+import { toast } from "../toast";
 
 type CommunityPost = { id: string; community_id: string; author_id: string; content: string; created_at: string };
 type RecurrentPlan = Pick<Plan, "id" | "title" | "recurrence_rule" | "location_name">;
@@ -11,9 +11,9 @@ type Props = { communities: Community[]; members: CommunityMember[]; userId: str
 export function CommunityActivityTools({ communities, members, userId }: Props) {
   const joined = useMemo(() => communities.filter((community) => members.some((member) => member.community_id === community.id && member.user_id === userId && member.status === "active")), [communities, members, userId]);
   const [selected, setSelected] = useState(""); const [posts, setPosts] = useState<CommunityPost[]>([]); const [recurrentPlans, setRecurrentPlans] = useState<RecurrentPlan[]>([]);
-  useEffect(() => { if (!selected && joined[0]) setSelected(joined[0].id); }, [joined, selected]);
+  useEffect(() => { if (!selected && joined[0]) { const timer = window.setTimeout(() => setSelected(joined[0].id), 0); return () => window.clearTimeout(timer); } }, [joined, selected]);
   const load = useCallback(async () => { if (!selected) { setPosts([]); setRecurrentPlans([]); return; } const [postResult, planResult] = await Promise.all([supabase.from("community_posts").select("id,community_id,author_id,content,created_at").eq("community_id", selected).order("created_at", { ascending: false }).limit(30),supabase.from("plans").select("id,title,recurrence_rule,location_name").eq("community_id", selected).not("recurrence_rule", "is", null).in("status", ["published", "full"]).order("starts_at", { ascending: true }).limit(20)]); if (postResult.error) toast.error(postResult.error.message); if (planResult.error) toast.error(planResult.error.message); setPosts((postResult.data as CommunityPost[] | null) ?? []); setRecurrentPlans((planResult.data as RecurrentPlan[] | null) ?? []); }, [selected]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, [load]);
   useEffect(() => { if (!selected) return; const channel = supabase.channel(`community-posts:${selected}`).on("postgres_changes", { event: "*", schema: "public", table: "community_posts", filter: `community_id=eq.${selected}` }, () => void load()).subscribe(); return () => { void supabase.removeChannel(channel); }; }, [load, selected]);
   const publish = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); if (!selected) return; const form = event.currentTarget; const content = String(new FormData(form).get("content") ?? "").trim(); if (!content) return; const { error } = await supabase.from("community_posts").insert({ community_id: selected, author_id: userId, content }); if (error) return toast.error(error.message); form.reset(); toast.success("Publicado en la comunidad"); await load(); };
   if (!joined.length) return <section className="section-block"><SectionTitle eyebrow="ACTIVIDAD DE COMUNIDAD" title="Participa en tus grupos" /><EmptyCompact icon={<UsersRound />} title="Únete a una comunidad" text="Cuando seas miembro, aquí verás publicaciones y planes recurrentes del grupo." /></section>;

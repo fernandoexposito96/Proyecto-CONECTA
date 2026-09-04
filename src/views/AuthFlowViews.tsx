@@ -1,7 +1,8 @@
 import { type FormEvent, useState } from "react";
 import type { Provider, User } from "@supabase/supabase-js";
 import { Bell, Check, ChevronRight, CircleAlert, Fingerprint, LoaderCircle, LockKeyhole, LogOut, MailCheck, MapPin, RefreshCw, ShieldCheck, Sparkles, UserRoundPlus, Users } from "lucide-react";
-import { Toaster, toast } from "../ui";
+import { Toaster } from "../ui";
+import { toast } from "../toast";
 import { supabase } from "../supabase";
 import { authRedirectUrl, friendlyAuthError, signInWithConectaPasskey, supportsPasskeys } from "../auth/passkeys";
 import { categories } from "../catalog";

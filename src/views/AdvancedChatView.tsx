@@ -3,7 +3,7 @@ import { Check, ChevronRight, Edit3, ImagePlus, MapPin, MessageCircle, Mic, Repl
 import { supabase } from "../supabase";
 import type { Conversation, Message, Profile } from "../types";
 import { EmptyCompact, EmptyFeature, PageHero } from "../components/common";
-import { toast } from "../ui";
+import { toast } from "../toast";
 
 type Props = { conversations: Conversation[]; selected: string | null; setSelected: (id: string) => void; messages: Message[]; profiles: Profile[]; profile: Profile | null; userId: string; onRefresh?: () => Promise<void>; };
 type RichMessage = Message & { media_url?: string | null; reply_to?: string | null; edited_at?: string | null; kind?: string };

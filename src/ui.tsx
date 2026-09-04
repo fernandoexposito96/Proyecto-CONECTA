@@ -1,14 +1,12 @@
 import { cloneElement, createContext, isValidElement, ReactElement, ReactNode, useContext, useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { TOAST_EVENT, type ToastDetail } from "./toast";
 
 type OpenValue = { open: boolean; setOpen: (open: boolean) => void };
 const DialogContext = createContext<OpenValue | null>(null);
 const SheetContext = createContext<OpenValue | null>(null);
 const AlertContext = createContext<OpenValue | null>(null);
-const TabsContext = createContext<{ value: string; setValue: (value: string) => void } | null>(null);
-
-export function Dialog({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: ReactNode }) { return <DialogContext.Provider value={{ open, setOpen: onOpenChange }}>{children}</DialogContext.Provider>; }
-export function DialogContent({ className = "", children }: { className?: string; children: ReactNode }) { const context = useContext(DialogContext); if (!context?.open) return null; return <div className="modal-overlay" role="presentation" onMouseDown={() => context.setOpen(false)}><section className={`modal-panel ${className}`} role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Cerrar" onClick={() => context.setOpen(false)}><X /></button>{children}</section></div>; }
+const TabsC…155 tokens truncated…ole="presentation" onMouseDown={() => context.setOpen(false)}><section className={`modal-panel ${className}`} role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Cerrar" onClick={() => context.setOpen(false)}><X /></button>{children}</section></div>; }
 export function DialogHeader({ className = "", children }: { className?: string; children: ReactNode }) { return <header className={`dialog-header ${className}`}>{children}</header>; }
 export function DialogTitle({ children }: { children: ReactNode }) { return <h2 className="dialog-title">{children}</h2>; }
 export function DialogDescription({ children }: { children: ReactNode }) { return <p className="dialog-description">{children}</p>; }
@@ -39,8 +37,4 @@ export function InputOTP({ maxLength, value, onChange }: { maxLength: number; va
 export function InputOTPGroup(_props: { children: ReactNode }) { return null; }
 export function InputOTPSlot(_props: { index: number }) { return null; }
 
-const TOAST_EVENT = "conecta:toast";
-type ToastDetail = { message: string; tone: "success" | "error" | "info" };
-function emit(message: string, tone: ToastDetail["tone"]) { window.dispatchEvent(new CustomEvent<ToastDetail>(TOAST_EVENT, { detail: { message, tone } })); }
-export const toast = { success: (message: string) => emit(message, "success"), error: (message: string) => emit(message, "error"), info: (message: string) => emit(message, "info") };
 export function Toaster(_props: { position?: string; richColors?: boolean }) { const [detail, setDetail] = useState<ToastDetail | null>(null); useEffect(() => { let timer = 0; const show = (event: Event) => { setDetail((event as CustomEvent<ToastDetail>).detail); window.clearTimeout(timer); timer = window.setTimeout(() => setDetail(null), 3200); }; window.addEventListener(TOAST_EVENT, show); return () => { window.clearTimeout(timer); window.removeEventListener(TOAST_EVENT, show); }; }, []); return detail ? <div className={`toast-premium ${detail.tone}`} role="status"><span>{detail.tone === "error" ? "!" : detail.tone === "info" ? "i" : "✓"}</span>{detail.message}</div> : null; }

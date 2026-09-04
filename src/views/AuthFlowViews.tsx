@@ -71,25 +71,25 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
     toast.success("Correo reenviado");
   };
 
-  return <main className="auth2-screen">
+  return <main className={`auth2-screen auth2-${mode}`}>
     <Toaster position="top-center" richColors />
     <section className="auth2-visual" aria-label="CONECTA, planes reales con gente compatible">
       <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=90" alt="Grupo de amigos compartiendo un plan" />
       <div className="auth2-visual-brand"><span className="auth2-logo">C</span><strong>CONECTA</strong></div>
       <div className="auth2-visual-copy">
         <span className="auth2-eyebrow"><Sparkles /> ACTIVIDADES REALES, CONEXIONES REALES</span>
-        <h1>Tu próxima historia<br /><em>empieza aquí.</em></h1>
-        <p>Descubre personas, planes y experiencias cerca de ti. Conecta por intereses, disponibilidad y ubicación con más seguridad.</p>
+        <h1>Gente real.<br /><em>Planes de verdad.</em></h1>
+        <p>Descubre, conecta y vive más. Encuentra personas y planes cerca de ti con más seguridad.</p>
         <div className="auth2-proof"><span><ShieldCheck /> Quedadas seguras</span><span><MapPin /> Cerca de ti</span><span><Users /> Gente compatible</span></div>
       </div>
     </section>
 
     <section className="auth2-panel">
       <div className="auth2-card">
-        <div className="auth2-mobile-brand"><span className="auth2-logo">C</span><div><strong>CONECTA</strong><small>Tu mundo, tu gente y tus planes.</small></div></div>
-        <span className="auth2-kicker">BIENVENIDO A CONECTA</span>
-        <h2>{mode === "signin" ? "Vuelve a conectar" : "Crea tu cuenta"}</h2>
-        <p className="auth2-subtitle">{mode === "signin" ? "Entra y continúa desde donde lo dejaste." : "Empieza a descubrir personas y planes cerca de ti."}</p>
+        <div className="auth2-mobile-brand"><span className="auth2-logo">C</span><div><strong>CONECTA</strong><small>PLANES · PERSONAS · EXPERIENCIAS</small></div></div>
+        <span className="auth2-kicker">{mode === "signin" ? "BIENVENIDO DE NUEVO" : "EMPIEZA EN CONECTA"}</span>
+        <h2>{mode === "signin" ? "Entra en CONECTA" : "Crea tu cuenta"}</h2>
+        <p className="auth2-subtitle">{mode === "signin" ? "Continúa donde lo dejaste y descubre qué está pasando cerca de ti." : "Únete a una comunidad de personas que, como tú, quieren hacer planes."}</p>
 
         <div className="auth2-switch">
           <button type="button" className={mode === "signin" ? "active" : ""} onClick={() => setMode("signin")}>Entrar</button>
@@ -101,19 +101,19 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
           <div className="auth2-field"><label htmlFor="auth-email">Correo electrónico</label><input id="auth-email" name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" /></div>
           <div className="auth2-field"><label htmlFor="auth-password">Contraseña</label><input id="auth-password" name="password" type="password" minLength={8} required autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="Mínimo 8 caracteres" /></div>
           {message && <div className="auth2-message"><CircleAlert /> <span>{message}</span></div>}
-          <button className="auth2-primary" disabled={busy} type="submit">{busy ? <LoaderCircle className="spin" /> : mode === "signin" ? <LockKeyhole /> : <UserRoundPlus />}{busy ? "Procesando…" : mode === "signin" ? "Entrar en CONECTA" : "Crear mi cuenta"}</button>
+          <button className="auth2-primary" disabled={busy} type="submit">{busy ? <LoaderCircle className="spin" /> : mode === "signin" ? <LockKeyhole /> : <UserRoundPlus />}{busy ? "Procesando…" : mode === "signin" ? "Entrar de forma segura" : "Crear mi cuenta"}</button>
         </form>
 
         {mode === "signin" && <>
-          <div className="auth2-divider"><span>o entra con tu dispositivo</span></div>
-          <button className="auth2-passkey" onClick={() => void signInWithPasskey()} disabled={passkeyBusy}>{passkeyBusy ? <LoaderCircle className="spin" /> : <Fingerprint />}<span><strong>Entrar con Face ID</strong><small>Acceso protegido con passkey en tu iPhone, iPad o equipo</small></span><ChevronRight /></button>
+          <div className="auth2-divider"><span>o continúa con</span></div>
+          <button className="auth2-passkey" onClick={() => void signInWithPasskey()} disabled={passkeyBusy}>{passkeyBusy ? <LoaderCircle className="spin" /> : <Fingerprint />}<span><strong>Face ID</strong><small>Accede con tu iPhone de forma rápida y protegida</small></span><ChevronRight /></button>
         </>}
 
         <div className="auth2-links">
           {pendingEmail && <button className="auth2-text-button" onClick={resend}><RefreshCw /> Reenviar verificación</button>}
           {mode === "signin" && <button className="auth2-text-button" onClick={resetPassword}>¿Has olvidado tu contraseña?</button>}
         </div>
-        <small className="auth2-legal">Al registrarte aceptas las <b>normas de convivencia, privacidad y seguridad</b> de CONECTA.</small>
+        <small className="auth2-legal">Al continuar aceptas las <b>Normas de convivencia</b>, la <b>Política de privacidad</b> y las <b>Condiciones</b> de CONECTA.</small>
         <div className="auth2-security-note"><ShieldCheck /> Tus credenciales se gestionan de forma segura.</div>
       </div>
     </section>

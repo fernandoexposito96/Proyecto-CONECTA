@@ -1,8 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-const envLimit = Number.parseInt(process.env.CONECTA_ROBOT_MAX_FINDINGS ?? "1999", 10);
-const MAX_FINDINGS = Number.isFinite(envLimit) && envLimit > 0 ? Math.min(envLimit, 1999) : 1999;
+const envLimit = Number.parseInt(process.env.CONECTA_ROBOT_MAX_FINDINGS ?? "999", 10);
+const MAX_FINDINGS = Number.isFinite(envLimit) && envLimit > 0 ? Math.min(envLimit, 999) : 999;
 const checks = [
   ["Lint", ["npm", ["run", "lint"]]],
   ["TypeScript", ["npm", ["run", "check"]]],
@@ -34,35 +34,44 @@ for (const [name, [command, args]] of checks) {
 }
 
 mkdirSync("robot-reports", { recursive: true });
+const passedChecks = results.filter((item) => item.status === "passed");
 const hardFailures = results.filter((item) => item.status === "failed");
 const summary = {
   generatedAt: new Date().toISOString(),
   maxFindings: MAX_FINDINGS,
   findingsCount: findings.length,
   truncated: findings.length >= MAX_FINDINGS,
+  passedCount: passedChecks.length,
   hardFailureCount: hardFailures.length,
   checks: results,
-  findings,
+  good: passedChecks,
+  bad: findings,
 };
 writeFileSync("robot-reports/latest.json", JSON.stringify(summary, null, 2));
 
 const lines = [
-  "# CONECTA Robot · Informe completo",
+  "# NORA · CONECTA Diagnostic",
   "",
   `Generado: ${summary.generatedAt}`,
-  `Capacidad máxima: ${MAX_FINDINGS.toLocaleString("es-ES")} hallazgos`,
-  `Hallazgos detectados: ${findings.length}${summary.truncated ? " (límite alcanzado)" : ""}`,
-  `Pruebas con fallo duro: ${hardFailures.length}`,
+  `Capacidad máxima: ${MAX_FINDINGS} errores/avisos`,
+  `Correctos: ${passedChecks.length}`,
+  `Fallos duros: ${hardFailures.length}`,
+  `Errores y avisos detectados: ${findings.length}${summary.truncated ? " (límite alcanzado)" : ""}`,
+  "",
+  "## Lo que está bien",
+  "",
+  ...(passedChecks.length ? passedChecks.map((item) => `- ✅ ${item.name} · comprobación superada · exit ${item.exitCode}`) : ["- No hay comprobaciones superadas en esta ejecución."]),
+  "",
+  "## Lo que está mal",
+  "",
+  ...(hardFailures.length ? hardFailures.map((item) => `- ❌ ${item.name} · fallo duro · exit ${item.exitCode}`) : ["- No hay fallos duros en las comprobaciones ejecutadas."]),
+  ...(findings.length ? ["", "### Todos los errores y avisos", "", ...findings.map((item, index) => `${index + 1}. **${item.severity.toUpperCase()} · ${item.check}** — ${item.message.replace(/\|/g, "\\|")}`)] : ["", "No se han detectado líneas adicionales de error o aviso."]),
   "",
   "## Estado de punta a punta",
   "",
-  ...results.map((item) => `- ${item.status === "passed" ? "✅" : "❌"} ${item.name} · exit ${item.exitCode}`),
+  ...results.map((item) => `- ${item.status === "passed" ? "✅" : "❌"} ${item.name} · ${item.status} · exit ${item.exitCode}`),
   "",
-  "## Todos los fallos y avisos detectados",
-  "",
-  ...(findings.length ? findings.map((item, index) => `${index + 1}. **${item.severity.toUpperCase()} · ${item.check}** — ${item.message.replace(/\|/g, "\\|")}`) : ["No se han detectado líneas de error/aviso en esta ejecución."]),
-  "",
-  "> Este informe no convierte una prueba no ejecutada en un éxito. Si una comprobación falla, queda marcada como fallo duro.",
+  "> NORA solo marca como correcto lo que ha terminado con éxito. Una prueba fallida queda en Lo que está mal; una prueba no ejecutada nunca se convierte en OK.",
 ];
 writeFileSync("robot-reports/latest.md", lines.join("\n"));
 

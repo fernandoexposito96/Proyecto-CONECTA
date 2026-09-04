@@ -13,8 +13,15 @@ const checks = [
 ];
 
 const results = [];
-const findings = [];
-const findingPattern = /(error|warning|warn|fail|failed|failure|exception|deprecated|vulnerab|insecure|not found|missing|timeout|denied|forbidden)/i;
+const errors = [];
+const watch = [];
+const errorPattern = /(error|fail|failed|failure|exception|vulnerab|insecure|denied|forbidden|critical|fatal)/i;
+const watchPattern = /(warning|warn|deprecated|not found|missing|timeout|retry|slow|unstable|flaky|unavailable|skipped|not tested|not executed)/i;
+
+const pushFinding = (bucket, item) => {
+  if (errors.length + watch.length >= MAX_FINDINGS) return;
+  bucket.push(item);
+};
 
 for (const [name, [command, args]] of checks) {
   const startedAt = new Date().toISOString();
@@ -27,25 +34,33 @@ for (const [name, [command, args]] of checks) {
 
   for (const rawLine of output.split(/\r?\n/)) {
     const line = rawLine.trim();
-    if (!line || !findingPattern.test(line)) continue;
-    if (findings.length >= MAX_FINDINGS) break;
-    findings.push({ check: name, severity: /error|fail|exception|vulnerab|insecure|denied|forbidden/i.test(line) ? "error" : "warning", message: line.slice(0, 1200) });
+    if (!line || errors.length + watch.length >= MAX_FINDINGS) continue;
+    if (errorPattern.test(line)) {
+      pushFinding(errors, { check: name, severity: "error", message: line.slice(0, 1200) });
+      continue;
+    }
+    if (watchPattern.test(line)) {
+      pushFinding(watch, { check: name, severity: "watch", message: line.slice(0, 1200) });
+    }
   }
 }
 
 mkdirSync("robot-reports", { recursive: true });
-const passedChecks = results.filter((item) => item.status === "passed");
+const positives = results.filter((item) => item.status === "passed");
 const hardFailures = results.filter((item) => item.status === "failed");
 const summary = {
   generatedAt: new Date().toISOString(),
   maxFindings: MAX_FINDINGS,
-  findingsCount: findings.length,
-  truncated: findings.length >= MAX_FINDINGS,
-  passedCount: passedChecks.length,
+  findingsCount: errors.length + watch.length,
+  truncated: errors.length + watch.length >= MAX_FINDINGS,
+  errorCount: errors.length,
+  watchCount: watch.length,
+  positiveCount: positives.length,
   hardFailureCount: hardFailures.length,
   checks: results,
-  good: passedChecks,
-  bad: findings,
+  errors,
+  watch,
+  positives,
 };
 writeFileSync("robot-reports/latest.json", JSON.stringify(summary, null, 2));
 
@@ -53,25 +68,31 @@ const lines = [
   "# NORA · CONECTA Diagnostic",
   "",
   `Generado: ${summary.generatedAt}`,
-  `Capacidad máxima: ${MAX_FINDINGS} errores/avisos`,
-  `Correctos: ${passedChecks.length}`,
+  `Capacidad máxima: ${MAX_FINDINGS} hallazgos`,
+  `Errores: ${errors.length}`,
+  `Vigilar: ${watch.length}`,
+  `Puntos positivos: ${positives.length}`,
   `Fallos duros: ${hardFailures.length}`,
-  `Errores y avisos detectados: ${findings.length}${summary.truncated ? " (límite alcanzado)" : ""}`,
+  `Total hallazgos: ${summary.findingsCount}${summary.truncated ? " (límite alcanzado)" : ""}`,
   "",
-  "## Lo que está bien",
-  "",
-  ...(passedChecks.length ? passedChecks.map((item) => `- ✅ ${item.name} · comprobación superada · exit ${item.exitCode}`) : ["- No hay comprobaciones superadas en esta ejecución."]),
-  "",
-  "## Lo que está mal",
+  "## 1 · Errores",
   "",
   ...(hardFailures.length ? hardFailures.map((item) => `- ❌ ${item.name} · fallo duro · exit ${item.exitCode}`) : ["- No hay fallos duros en las comprobaciones ejecutadas."]),
-  ...(findings.length ? ["", "### Todos los errores y avisos", "", ...findings.map((item, index) => `${index + 1}. **${item.severity.toUpperCase()} · ${item.check}** — ${item.message.replace(/\|/g, "\\|")}`)] : ["", "No se han detectado líneas adicionales de error o aviso."]),
+  ...(errors.length ? ["", ...errors.map((item, index) => `${index + 1}. ❌ **${item.check}** — ${item.message.replace(/\|/g, "\\|")}`)] : ["", "No se han detectado errores adicionales."]),
+  "",
+  "## 2 · Vigilar",
+  "",
+  ...(watch.length ? watch.map((item, index) => `${index + 1}. ⚠️ **${item.check}** — ${item.message.replace(/\|/g, "\\|")}`) : ["- No hay avisos que vigilar en esta ejecución."]),
+  "",
+  "## 3 · Puntos positivos",
+  "",
+  ...(positives.length ? positives.map((item) => `- ✅ ${item.name} · comprobación superada · exit ${item.exitCode}`) : ["- No hay comprobaciones confirmadas como correctas en esta ejecución."]),
   "",
   "## Estado de punta a punta",
   "",
   ...results.map((item) => `- ${item.status === "passed" ? "✅" : "❌"} ${item.name} · ${item.status} · exit ${item.exitCode}`),
   "",
-  "> NORA solo marca como correcto lo que ha terminado con éxito. Una prueba fallida queda en Lo que está mal; una prueba no ejecutada nunca se convierte en OK.",
+  "> NORA separa lo crítico de lo que solo requiere vigilancia. Solo marca como positivo lo que ha sido comprobado y superado realmente; una prueba no ejecutada nunca se convierte en OK.",
 ];
 writeFileSync("robot-reports/latest.md", lines.join("\n"));
 

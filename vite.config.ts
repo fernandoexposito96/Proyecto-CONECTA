@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -12,6 +13,10 @@ export default defineConfig({
     cssCodeSplit: true,
     modulePreload: { polyfill: false },
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        almacen: resolve(__dirname, "almacen.html"),
+      },
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;

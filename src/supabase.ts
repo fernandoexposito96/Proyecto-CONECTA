@@ -18,22 +18,6 @@ const client = createClient(supabaseUrl, supabasePublishableKey, {
   realtime: { params: { eventsPerSecond: 10 } },
 });
 
-const fallbackPasskeyError = new Error("passkey disabled: use CONECTA WebAuthn fallback");
-if (client.auth.passkey) {
-  Object.defineProperty(client.auth.passkey, "list", {
-    configurable: true,
-    value: async () => ({ data: [], error: fallbackPasskeyError }),
-  });
-}
-Object.defineProperty(client.auth, "registerPasskey", {
-  configurable: true,
-  value: async () => ({ data: null, error: fallbackPasskeyError }),
-});
-Object.defineProperty(client.auth, "signInWithPasskey", {
-  configurable: true,
-  value: async () => ({ data: null, error: fallbackPasskeyError }),
-});
-
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") return;

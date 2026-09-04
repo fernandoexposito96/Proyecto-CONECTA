@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import type { Provider, User } from "@supabase/supabase-js";
 import { Bell, Check, ChevronRight, CircleAlert, Fingerprint, LoaderCircle, LockKeyhole, LogOut, MailCheck, MapPin, RefreshCw, ShieldCheck, Sparkles, UserRoundPlus, Users } from "lucide-react";
 import { Toaster, toast } from "../ui";
 import { supabase } from "../supabase";
@@ -10,11 +10,13 @@ import type { Profile } from "../types";
 import "../auth-premium-final.css";
 
 type AuthMode = "signin" | "signup";
+type SocialProvider = "google" | "apple";
 export function LoadingScreen({ label }: { label: string }) { return <main className="loading-screen"><span className="brand-mark large">C</span><LoaderCircle className="spin" /><strong>{label}</strong></main>; }
 
 export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { mode: AuthMode; pendingEmail: string; setMode: (mode: AuthMode) => void; setPendingEmail: (email: string) => void; }) {
   const [busy, setBusy] = useState(false);
   const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState<SocialProvider | null>(null);
   const [message, setMessage] = useState("");
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -41,6 +43,22 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
       setMessage(friendlyAuthError(error));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const signInWithOAuth = async (provider: SocialProvider) => {
+    setOauthBusy(provider);
+    setMessage("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider as Provider,
+        options: { redirectTo: authRedirectUrl(), skipBrowserRedirect: false },
+      });
+      if (error) setMessage(friendlyAuthError(error));
+    } catch (error) {
+      setMessage(friendlyAuthError(error));
+    } finally {
+      setOauthBusy(null);
     }
   };
 
@@ -96,17 +114,30 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
           <button type="button" className={mode === "signup" ? "active" : ""} onClick={() => setMode("signup")}>Registrarme</button>
         </div>
 
+        <div className="auth2-social-grid" aria-label="Acceso rápido">
+          <button type="button" className="auth2-social auth2-google" disabled={oauthBusy !== null || busy} onClick={() => void signInWithOAuth("google")}>
+            {oauthBusy === "google" ? <LoaderCircle className="spin" /> : <span className="auth2-google-mark" aria-hidden="true">G</span>}
+            <span><strong>{mode === "signin" ? "Entrar con Google" : "Registrarme con Google"}</strong><small>Una cuenta, acceso directo</small></span>
+          </button>
+          <button type="button" className="auth2-social auth2-apple" disabled={oauthBusy !== null || busy} onClick={() => void signInWithOAuth("apple")}>
+            {oauthBusy === "apple" ? <LoaderCircle className="spin" /> : <span className="auth2-apple-mark" aria-hidden="true">●</span>}
+            <span><strong>{mode === "signin" ? "Continuar con Apple" : "Registrarme con Apple"}</strong><small>Ideal para iPhone, iPad y Mac</small></span>
+          </button>
+        </div>
+
+        <div className="auth2-divider"><span>o usa tu correo</span></div>
+
         <form className="auth2-form" onSubmit={submit}>
           {mode === "signup" && <div className="auth2-field"><label htmlFor="auth-display-name">Nombre visible</label><input id="auth-display-name" name="display_name" required maxLength={50} autoComplete="name" placeholder="Cómo quieres que te llamen" /></div>}
           <div className="auth2-field"><label htmlFor="auth-email">Correo electrónico</label><input id="auth-email" name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" /></div>
           <div className="auth2-field"><label htmlFor="auth-password">Contraseña</label><input id="auth-password" name="password" type="password" minLength={8} required autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="Mínimo 8 caracteres" /></div>
           {message && <div className="auth2-message"><CircleAlert /> <span>{message}</span></div>}
-          <button className="auth2-primary" disabled={busy} type="submit">{busy ? <LoaderCircle className="spin" /> : mode === "signin" ? <LockKeyhole /> : <UserRoundPlus />}{busy ? "Procesando…" : mode === "signin" ? "Entrar de forma segura" : "Crear mi cuenta"}</button>
+          <button className="auth2-primary" disabled={busy || oauthBusy !== null} type="submit">{busy ? <LoaderCircle className="spin" /> : mode === "signin" ? <LockKeyhole /> : <UserRoundPlus />}{busy ? "Procesando…" : mode === "signin" ? "Entrar de forma segura" : "Crear mi cuenta"}</button>
         </form>
 
         {mode === "signin" && <>
-          <div className="auth2-divider"><span>o continúa con</span></div>
-          <button className="auth2-passkey" onClick={() => void signInWithPasskey()} disabled={passkeyBusy}>{passkeyBusy ? <LoaderCircle className="spin" /> : <Fingerprint />}<span><strong>Face ID</strong><small>Accede con tu iPhone de forma rápida y protegida</small></span><ChevronRight /></button>
+          <div className="auth2-divider"><span>o usa tu dispositivo</span></div>
+          <button className="auth2-passkey" onClick={() => void signInWithPasskey()} disabled={passkeyBusy || oauthBusy !== null}>{passkeyBusy ? <LoaderCircle className="spin" /> : <Fingerprint />}<span><strong>Face ID / Passkey</strong><small>Accede con tu iPhone de forma rápida y protegida</small></span><ChevronRight /></button>
         </>}
 
         <div className="auth2-links">
@@ -114,7 +145,7 @@ export function AuthScreen({ mode, pendingEmail, setMode, setPendingEmail }: { m
           {mode === "signin" && <button className="auth2-text-button" onClick={resetPassword}>¿Has olvidado tu contraseña?</button>}
         </div>
         <small className="auth2-legal">Al continuar aceptas las <b>Normas de convivencia</b>, la <b>Política de privacidad</b> y las <b>Condiciones</b> de CONECTA.</small>
-        <div className="auth2-security-note"><ShieldCheck /> Tus credenciales se gestionan de forma segura.</div>
+        <div className="auth2-security-note"><ShieldCheck /> Google, Apple y tus credenciales se gestionan mediante autenticación segura.</div>
       </div>
     </section>
   </main>;

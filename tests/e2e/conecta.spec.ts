@@ -14,7 +14,8 @@ test.describe('CONECTA · NORA functional checks', () => {
     page.on('pageerror', error => fatalErrors.push(error.message));
 
     await openApp(page);
-    await expect(page.locator('body')).not.toHaveText(/404|application error|failed to load/i);
+    const bodyText = await page.evaluate(() => document.body?.innerText ?? '');
+    expect(bodyText).not.toMatch(/404|application error|failed to load/i);
     expect(fatalErrors, fatalErrors.join('\n')).toEqual([]);
   });
 

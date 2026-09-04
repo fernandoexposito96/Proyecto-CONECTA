@@ -1,89 +1,112 @@
-/* CONECTA · Inicio aprobado: hero, foto y mapa realmente fusionados */
+/* CONECTA · Hero final aprobado: texto sobre foto + mapa fusionado */
 .ph-hero-fused{
   position:relative;
-  display:grid;
-  grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
-  min-height:330px;
+  min-height:392px;
   border:1px solid #ece7fb;
   border-radius:28px;
   overflow:hidden;
-  background:linear-gradient(140deg,#fff 0%,#fff 48%,#fbf4ff 100%);
-  box-shadow:0 12px 32px rgba(48,36,92,.075);
+  background:#0f172a;
+  box-shadow:0 12px 32px rgba(48,36,92,.09);
   isolation:isolate;
 }
 .ph-hero-fused>.ph-hero{display:contents!important}
 
-.ph-hero-fused .ph-hero-copy{
-  grid-column:1;
-  grid-row:1;
-  z-index:5;
-  padding:24px 22px 116px;
-  min-width:0;
-}
-.ph-hero-fused .ph-hero-copy>p{
-  margin:0 0 7px!important;
-  color:#7041f5!important;
-  font-weight:850!important;
-}
-.ph-hero-fused .ph-hero-copy h1{
-  margin:0!important;
-  max-width:8ch;
-  letter-spacing:-.055em!important;
-}
-.ph-hero-fused .ph-hero-copy>b{
-  display:block!important;
-  width:54px!important;
-  height:4px!important;
-  margin:12px 0 10px!important;
-  border-radius:999px!important;
-  background:linear-gradient(90deg,#7c3aed,#ec4899)!important;
-}
-.ph-hero-fused .ph-hero-sub{
-  display:block!important;
-  max-width:27ch;
-  color:#667085!important;
-}
-
+/* Foto a sangre como fondo principal del hero. */
 .ph-hero-fused .ph-hero-photo{
-  grid-column:2;
-  grid-row:1;
-  min-height:330px;
-  overflow:hidden;
-  border-radius:46% 0 0 0/35% 0 0 0!important;
+  position:absolute!important;
+  inset:0 0 108px 0!important;
+  min-height:0!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  z-index:1!important;
+}
+.ph-hero-fused .ph-hero-photo img{
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:center 48%!important;
+  filter:saturate(1.03) contrast(1.02)!important;
+}
+.ph-hero-fused .ph-hero-photo:before{
+  content:"";
+  position:absolute;
+  inset:0;
   z-index:2;
-  position:relative;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(6,12,29,.92) 0%,rgba(6,12,29,.82) 25%,rgba(6,12,29,.32) 52%,rgba(6,12,29,.04) 78%),
+    linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,.02) 58%,rgba(255,255,255,.08) 76%,rgba(255,255,255,.58) 100%);
 }
 .ph-hero-fused .ph-hero-photo:after{
   content:"";
   position:absolute;
-  inset:auto 0 0 0;
-  height:38%;
+  left:0;right:0;bottom:-1px;
+  height:42%;
+  z-index:3;
   pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.55) 80%,rgba(255,255,255,.9));
-}
-.ph-hero-fused .ph-hero-photo img{
-  width:100%;
-  height:100%;
-  min-height:330px;
-  display:block;
-  object-fit:cover;
-  object-position:center;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.16) 32%,rgba(255,255,255,.78) 100%);
 }
 
-/* El mapa forma la base de la misma tarjeta, no un bloque separado. */
+/* Texto directamente sobre la fotografía. */
+.ph-hero-fused .ph-hero-copy{
+  position:relative!important;
+  z-index:6!important;
+  width:min(55%,520px)!important;
+  padding:27px 24px 126px!important;
+  min-width:0!important;
+  color:#fff!important;
+}
+.ph-hero-fused .ph-hero-copy>p{
+  margin:0 0 9px!important;
+  color:#8b5cf6!important;
+  font-size:17px!important;
+  font-weight:900!important;
+  text-shadow:0 2px 12px rgba(0,0,0,.18)!important;
+}
+.ph-hero-fused .ph-hero-copy h1{
+  margin:0!important;
+  max-width:8.2ch!important;
+  color:#fff!important;
+  font-size:clamp(42px,5.6vw,62px)!important;
+  line-height:.94!important;
+  letter-spacing:-.06em!important;
+  font-weight:950!important;
+  text-shadow:0 4px 24px rgba(0,0,0,.20)!important;
+}
+.ph-hero-fused .ph-hero-copy>b{
+  display:block!important;
+  width:60px!important;
+  height:5px!important;
+  margin:16px 0 14px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,#7c3aed,#ec4899)!important;
+  box-shadow:0 3px 12px rgba(124,58,237,.22)!important;
+}
+.ph-hero-fused .ph-hero-sub{
+  display:block!important;
+  max-width:30ch!important;
+  color:rgba(255,255,255,.94)!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+  text-shadow:0 2px 10px rgba(0,0,0,.20)!important;
+}
+
+/* Mapa integrado como continuación natural de la foto. */
 .ph-hero-fused>.ph-map-card{
   position:absolute!important;
   left:0!important;
   right:0!important;
   bottom:0!important;
-  height:112px!important;
+  height:132px!important;
   margin:0!important;
   border:0!important;
   border-radius:0!important;
   box-shadow:none!important;
   overflow:hidden!important;
-  z-index:3!important;
-  background:#eaf2f9!important;
+  z-index:4!important;
+  background:#dcecf6!important;
 }
 .ph-hero-fused>.ph-map-card:before{
   content:"";
@@ -91,62 +114,62 @@
   inset:0;
   z-index:2;
   pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.96) 0%,rgba(255,255,255,.45) 18%,rgba(255,255,255,0) 47%);
+  background:linear-gradient(180deg,rgba(255,255,255,.80) 0%,rgba(255,255,255,.30) 20%,rgba(255,255,255,0) 48%);
 }
 .ph-hero-fused>.ph-map-card iframe{
   position:absolute!important;
-  inset:-14px 0 0!important;
+  inset:-12px 0 0!important;
   width:100%!important;
-  height:140px!important;
+  height:158px!important;
   border:0!important;
-  transform:scale(1.025)!important;
+  transform:scale(1.02)!important;
 }
 
-/* Marcadores más pequeños y útiles, sin competir con el texto. */
+/* Marcadores visibles por encima del mapa y de los chips. */
 .ph-hero-fused .ph-pin{
-  z-index:5!important;
-  width:30px!important;
-  height:30px!important;
-  border-width:3px!important;
-  font-size:10px!important;
-  box-shadow:0 6px 14px rgba(89,46,181,.24)!important;
-}
-.ph-hero-fused .ph-p1{left:25%!important;top:28%!important}
-.ph-hero-fused .ph-p2{left:56%!important;top:37%!important}
-.ph-hero-fused .ph-p3{left:75%!important;top:48%!important}
-.ph-hero-fused .ph-location{
   z-index:7!important;
-  width:42px!important;
-  height:42px!important;
-  right:12px!important;
-  bottom:12px!important;
-  box-shadow:0 7px 20px rgba(31,24,70,.14)!important;
+  width:34px!important;
+  height:34px!important;
+  border-width:3px!important;
+  font-size:11px!important;
+  box-shadow:0 6px 16px rgba(89,46,181,.26)!important;
+}
+.ph-hero-fused .ph-p1{left:24%!important;top:28%!important}
+.ph-hero-fused .ph-p2{left:56%!important;top:34%!important}
+.ph-hero-fused .ph-p3{left:76%!important;top:47%!important}
+.ph-hero-fused .ph-location{
+  z-index:9!important;
+  width:44px!important;
+  height:44px!important;
+  right:14px!important;
+  bottom:14px!important;
+  box-shadow:0 7px 20px rgba(31,24,70,.16)!important;
 }
 
-/* Ubicación y momento: dos chips compactos encima del mapa. */
+/* Chips compactos, como en el prototipo aprobado. */
 .ph-hero-fused .ph-hero-pills{
   position:absolute!important;
   left:18px!important;
-  right:72px!important;
-  bottom:12px!important;
-  z-index:9!important;
+  right:78px!important;
+  bottom:14px!important;
+  z-index:10!important;
   display:grid!important;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-  gap:9px!important;
+  gap:12px!important;
   width:auto!important;
   flex-wrap:nowrap!important;
 }
 .ph-hero-fused .ph-hero-pills button{
   width:100%!important;
   min-width:0!important;
-  min-height:44px!important;
-  padding:6px 11px!important;
-  border:1px solid rgba(231,226,243,.98)!important;
-  border-radius:16px!important;
-  background:rgba(255,255,255,.96)!important;
-  -webkit-backdrop-filter:blur(16px)!important;
-  backdrop-filter:blur(16px)!important;
-  box-shadow:0 7px 20px rgba(31,24,70,.09)!important;
+  min-height:48px!important;
+  padding:7px 13px!important;
+  border:1px solid rgba(231,226,243,.96)!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.95)!important;
+  -webkit-backdrop-filter:blur(18px)!important;
+  backdrop-filter:blur(18px)!important;
+  box-shadow:0 8px 22px rgba(31,24,70,.11)!important;
   overflow:hidden!important;
 }
 .ph-hero-fused .ph-hero-pills strong,
@@ -159,65 +182,61 @@
 
 @media(max-width:820px){
   .ph-hero-fused{
-    grid-template-columns:1.04fr .96fr!important;
-    min-height:300px!important;
+    min-height:338px!important;
     border-radius:24px!important;
   }
+  .ph-hero-fused .ph-hero-photo{inset:0 0 96px 0!important}
+  .ph-hero-fused .ph-hero-photo img{object-position:center 46%!important}
   .ph-hero-fused .ph-hero-copy{
-    padding:17px 8px 103px 14px!important;
+    width:58%!important;
+    padding:20px 9px 108px 16px!important;
   }
   .ph-hero-fused .ph-hero-copy>p{
     font-size:12px!important;
-    margin-bottom:5px!important;
+    margin-bottom:6px!important;
   }
   .ph-hero-fused .ph-hero-copy h1{
-    font-size:clamp(27px,8.2vw,34px)!important;
-    line-height:.96!important;
-    max-width:7.7ch!important;
+    font-size:clamp(30px,8.8vw,38px)!important;
+    line-height:.94!important;
+    max-width:7.8ch!important;
   }
   .ph-hero-fused .ph-hero-copy>b{
-    width:46px!important;
-    margin:9px 0 7px!important;
+    width:48px!important;
+    height:4px!important;
+    margin:11px 0 9px!important;
   }
   .ph-hero-fused .ph-hero-sub{
     font-size:10px!important;
-    line-height:1.27!important;
-    max-width:23ch!important;
-    margin:0!important;
+    line-height:1.28!important;
+    max-width:25ch!important;
   }
-  .ph-hero-fused .ph-hero-photo,
-  .ph-hero-fused .ph-hero-photo img{
-    min-height:300px!important;
-  }
-  .ph-hero-fused>.ph-map-card{
-    height:98px!important;
-  }
+  .ph-hero-fused>.ph-map-card{height:108px!important}
   .ph-hero-fused>.ph-map-card iframe{
-    inset:-11px 0 0!important;
-    height:124px!important;
+    inset:-10px 0 0!important;
+    height:135px!important;
   }
   .ph-hero-fused .ph-pin{
-    width:27px!important;
-    height:27px!important;
+    width:28px!important;
+    height:28px!important;
     font-size:9px!important;
   }
-  .ph-hero-fused .ph-p1{left:24%!important;top:29%!important}
-  .ph-hero-fused .ph-p2{left:54%!important;top:36%!important}
-  .ph-hero-fused .ph-p3{left:72%!important;top:48%!important}
+  .ph-hero-fused .ph-p1{left:23%!important;top:30%!important}
+  .ph-hero-fused .ph-p2{left:56%!important;top:37%!important}
+  .ph-hero-fused .ph-p3{left:75%!important;top:47%!important}
   .ph-hero-fused .ph-location{
     width:38px!important;
     height:38px!important;
-    right:8px!important;
-    bottom:9px!important;
+    right:9px!important;
+    bottom:10px!important;
   }
   .ph-hero-fused .ph-hero-pills{
     left:10px!important;
     right:54px!important;
-    bottom:9px!important;
-    gap:6px!important;
+    bottom:10px!important;
+    gap:7px!important;
   }
   .ph-hero-fused .ph-hero-pills button{
-    min-height:39px!important;
+    min-height:40px!important;
     padding:5px 8px!important;
     border-radius:14px!important;
     gap:5px!important;
@@ -234,12 +253,10 @@
 }
 
 @media(max-width:390px){
-  .ph-hero-fused{min-height:292px!important}
-  .ph-hero-fused .ph-hero-copy{padding-left:12px!important;padding-right:6px!important}
-  .ph-hero-fused .ph-hero-copy h1{font-size:26px!important}
-  .ph-hero-fused .ph-hero-photo,
-  .ph-hero-fused .ph-hero-photo img{min-height:292px!important}
-  .ph-hero-fused>.ph-map-card{height:94px!important}
+  .ph-hero-fused{min-height:326px!important}
+  .ph-hero-fused .ph-hero-copy{width:60%!important;padding-left:13px!important;padding-right:5px!important}
+  .ph-hero-fused .ph-hero-copy h1{font-size:29px!important}
+  .ph-hero-fused>.ph-map-card{height:104px!important}
   .ph-hero-fused .ph-hero-pills{right:50px!important}
   .ph-hero-fused .ph-hero-pills button{padding-left:6px!important;padding-right:6px!important}
 }

@@ -1,0 +1,138 @@
+/* CONECTA Premium V4 — Explora, Crear plan y Detalle de plan. */
+
+.view-page{display:grid;gap:14px}
+.view-page>.page-hero{
+  position:relative;
+  overflow:hidden;
+  padding:22px!important;
+  background:linear-gradient(135deg,#fff 0%,#faf7ff 72%,#fff1f8 100%)!important;
+}
+.view-page>.page-hero::after{
+  content:"";
+  position:absolute;
+  width:180px;
+  aspect-ratio:1;
+  right:-62px;
+  top:-92px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(124,58,237,.14),rgba(236,72,153,.04) 52%,transparent 72%);
+  pointer-events:none;
+}
+.view-page>.page-hero h1{font-size:clamp(30px,5vw,46px)!important;line-height:.98!important;margin-bottom:8px!important}
+.view-page>.page-hero p{color:var(--p4-muted)!important;max-width:58ch!important}
+
+.filter-layout{display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1fr);gap:16px;align-items:start}
+.filter-panel{
+  position:sticky;
+  top:82px;
+  display:grid!important;
+  gap:13px!important;
+  padding:18px!important;
+  border-radius:22px!important;
+  background:#fff!important;
+  box-shadow:0 10px 28px rgba(38,29,65,.055)!important;
+}
+.filter-panel>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.filter-panel>div:first-child strong{font-size:18px;color:var(--p4-ink)}
+.filter-panel>div:first-child button{border:0;background:transparent;color:var(--p4-purple);font-weight:850}
+.filter-panel label{display:grid;gap:7px;color:var(--p4-ink);font-weight:750}
+.filter-panel input,.filter-panel select{min-height:44px;padding:0 12px!important}
+.filter-panel input[type="range"]{padding:0!important;min-height:auto}
+
+.view-page .plans-grid{align-items:stretch}
+.view-page .plan-card,.view-page .plans-grid>article{
+  border-radius:22px!important;
+  box-shadow:0 12px 30px rgba(38,29,65,.07)!important;
+}
+.view-page .plan-card img,.view-page .plans-grid>article img{height:178px!important;width:100%!important;object-fit:cover!important}
+.view-page .primary-action{min-height:46px!important;border-radius:14px!important}
+
+/* Crear plan */
+.create-plan-dialog{padding:0!important;overflow:hidden!important}
+.create-plan-dialog>.dialog-header,
+.create-plan-dialog>form{padding-left:24px!important;padding-right:24px!important}
+.create-plan-dialog>.dialog-header{padding-top:24px!important;margin-bottom:12px!important}
+.create-plan-dialog .dialog-title{font-size:30px!important;letter-spacing:-.04em!important;color:var(--p4-ink)!important}
+.create-plan-dialog .dialog-description{color:var(--p4-muted)!important}
+.create-plan-dialog form{padding-bottom:24px!important;display:grid!important;gap:14px!important}
+.create-plan-dialog .template-picker{padding:14px!important;border:1px solid var(--p4-line)!important;border-radius:18px!important;background:#faf8ff!important}
+.create-plan-dialog .template-picker>div{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+.create-plan-dialog .template-picker button{min-height:40px!important;padding:0 12px!important;border-radius:13px!important;border:1px solid #e7e2ee!important;background:#fff!important;color:var(--p4-ink)!important;font-weight:750!important}
+.create-plan-dialog .form-grid{gap:12px!important}
+.create-plan-dialog input,.create-plan-dialog select,.create-plan-dialog textarea{
+  min-height:46px!important;
+  padding:11px 13px!important;
+  border:1px solid #e5e1ec!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.create-plan-dialog textarea{min-height:110px!important}
+.create-plan-dialog .primary-action{min-height:50px!important;font-size:15px!important;border-radius:15px!important}
+
+/* Detalle de plan */
+.plan-detail-dialog{padding:0!important;overflow:hidden!important}
+.plan-detail-cover{position:relative!important;height:260px!important;background:#111827!important;overflow:hidden!important}
+.plan-detail-cover img{width:100%!important;height:100%!important;object-fit:cover!important}
+.plan-detail-body{padding:22px 24px 24px!important;display:grid!important;gap:16px!important}
+.plan-detail-body>header{padding-bottom:14px!important;border-bottom:1px solid var(--p4-line)!important}
+.plan-detail-body>header h2{font-size:30px!important;line-height:1!important;letter-spacing:-.045em!important;color:var(--p4-ink)!important;margin-bottom:6px!important}
+.plan-detail-body>header p,.plan-detail-body>header small{color:var(--p4-muted)!important}
+.detail-facts{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}
+.detail-facts>*{padding:12px!important;border:1px solid var(--p4-line)!important;border-radius:15px!important;background:#faf9fc!important}
+.detail-columns{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr)!important;gap:14px!important}
+.detail-columns>*{padding:16px!important;border:1px solid var(--p4-line)!important;border-radius:18px!important;background:#fff!important}
+.public-place-notice{padding:14px!important;border:1px solid #ddd6fe!important;border-radius:16px!important;background:#f7f3ff!important;color:#5b21b6!important}
+.plan-detail-actions{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto!important;gap:9px!important;position:sticky!important;bottom:-1px!important;padding-top:12px!important;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 26%)!important}
+.plan-detail-actions .primary-action{min-height:50px!important}
+.plan-detail-actions .secondary-action{min-height:50px!important;border-radius:14px!important}
+
+@media(max-width:820px){
+  .view-page{gap:10px!important}
+  .view-page>.page-hero{padding:16px!important;border-radius:22px!important}
+  .view-page>.page-hero h1{font-size:31px!important}
+  .view-page>.page-hero p{font-size:13px!important;line-height:1.45!important}
+  .filter-layout{display:block!important}
+  .filter-panel{
+    position:static!important;
+    margin-bottom:12px!important;
+    padding:13px!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+    border-radius:19px!important;
+  }
+  .filter-panel>div:first-child{grid-column:1/-1}
+  .filter-panel label{font-size:12px!important}
+  .filter-panel input,.filter-panel select{min-height:42px!important;font-size:13px!important}
+  .view-page .plans-grid{grid-auto-columns:minmax(246px,79vw)!important}
+  .view-page .plan-card img,.view-page .plans-grid>article img{height:162px!important}
+
+  .create-plan-dialog,.plan-detail-dialog{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - max(8px,env(safe-area-inset-top)))!important;
+    border-radius:26px 26px 14px 14px!important;
+  }
+  .create-plan-dialog>.dialog-header,.create-plan-dialog>form{padding-left:16px!important;padding-right:16px!important}
+  .create-plan-dialog>.dialog-header{padding-top:18px!important}
+  .create-plan-dialog .dialog-title{font-size:25px!important}
+  .create-plan-dialog .form-grid,.create-plan-dialog .form-grid.four{grid-template-columns:1fr!important}
+  .create-plan-dialog .template-picker{padding:12px!important}
+  .create-plan-dialog .template-picker>div{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+  .plan-detail-cover{height:220px!important}
+  .plan-detail-body{padding:16px!important;gap:12px!important}
+  .plan-detail-body>header h2{font-size:27px!important}
+  .detail-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .detail-columns{grid-template-columns:1fr!important}
+  .plan-detail-actions{grid-template-columns:1fr 48px 48px!important;gap:8px!important;padding-bottom:calc(4px + env(safe-area-inset-bottom))!important}
+  .plan-detail-actions .secondary-action{width:48px!important;min-width:48px!important;padding:0!important}
+}
+
+@media(max-width:390px){
+  .filter-panel{grid-template-columns:1fr!important}
+  .filter-panel>div:first-child{grid-column:auto}
+  .view-page .plans-grid{grid-auto-columns:minmax(230px,84vw)!important}
+  .create-plan-dialog .template-picker>div{grid-template-columns:1fr!important}
+}

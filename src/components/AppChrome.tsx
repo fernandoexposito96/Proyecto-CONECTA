@@ -1,4 +1,4 @@
-import { Activity, BadgeCheck, Bell, ChevronRight, Compass, Heart, Home, MailCheck, Menu, MessageCircle, Moon, Plus, RefreshCw, Search, Shield, Sparkles, Sun, UserCheck } from "lucide-react";
+import { Activity, BadgeCheck, Bell, ChevronRight, Compass, Home, MailCheck, Menu, MessageCircle, Moon, Plus, RefreshCw, Search, Shield, Sparkles, Sun, UserCheck } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../ui";
 import { EmptyCompact } from "./common";
@@ -35,20 +35,14 @@ export function Topbar({ query, setQuery, profile, notifications, dataLoading, o
 }
 
 export function MobileNavigation({ active, go, onCreate }: { active: View; go: (view: View) => void; onCreate: () => void }) {
-  const items: Array<{ label: string; view: View; icon: typeof Home }> = [
-    { label: "Inicio", view: "Inicio", icon: Home },
-    { label: "Explorar", view: "Explorar", icon: Compass },
-    { label: "Conectar", view: "Conecta+", icon: Heart },
-    { label: "Chat", view: "Chat", icon: MessageCircle },
-  ];
   if (typeof document === "undefined") return null;
   return createPortal(
     <nav className="bottom-nav" aria-label="Navegación móvil">
-      <button className={active === items[0].view ? "active" : ""} onClick={() => go(items[0].view)}><Home /><span>Inicio</span></button>
-      <button className={active === items[1].view ? "active" : ""} onClick={() => go(items[1].view)}><Compass /><span>Explorar</span></button>
+      <button className={active === "Inicio" ? "active" : ""} onClick={() => go("Inicio")}><Home /><span>Inicio</span></button>
+      <button className={active === "Explorar" ? "active" : ""} onClick={() => go("Explorar")}><Compass /><span>Explorar</span></button>
       <button className="floating-create" onClick={onCreate} aria-label="Crear plan"><Plus /></button>
-      <button className={active === items[2].view ? "active" : ""} onClick={() => go(items[2].view)}><Heart /><span>Conectar</span></button>
-      <button className={active === items[3].view ? "active" : ""} onClick={() => go(items[3].view)}><MessageCircle /><span>Chat</span></button>
+      <button className={active === "Chat" ? "active" : ""} onClick={() => go("Chat")}><MessageCircle /><span>Chat</span></button>
+      <button className={active === "Perfil" ? "active" : ""} onClick={() => go("Perfil")}><UserCheck /><span>Perfil</span></button>
     </nav>,
     document.body,
   );

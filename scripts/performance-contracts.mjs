@@ -18,7 +18,8 @@ assert.match(telemetry, /__CONECTA_PERF__/);
 assert.doesNotMatch(telemetry, /fetch\(|sendBeacon|XMLHttpRequest/);
 
 const main = await read("src/main.tsx");
-assert.match(main, /setTimeout\([\s\S]*startTelemetry\(\)[\s\S]*5_250/);
+// Telemetry must remain deferred until after the 4 second startup splash.
+assert.match(main, /setTimeout\([\s\S]*startTelemetry\(\)[\s\S]*4_250/);
 assert.match(main, /startImagePerformance\(\)/);
 assert.match(main, /scheduleIdlePrefetch\(\)/);
 

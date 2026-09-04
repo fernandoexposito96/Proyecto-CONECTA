@@ -1,6 +1,7 @@
-const SHELL_CACHE='conecta-v1-shell-5';
-const ASSET_CACHE='conecta-v1-assets';
-const IMAGE_CACHE='conecta-v1-images';
+const SHELL_CACHE='conecta-v2-shell';
+const ASSET_CACHE='conecta-v2-assets';
+const IMAGE_CACHE='conecta-v2-images';
+const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
 const APP_ROOT='/Proyecto-CONECTA/';
 const APP_INDEX='/Proyecto-CONECTA/index.html';
 const CORE=[APP_ROOT,APP_INDEX,'/Proyecto-CONECTA/manifest.json','/Proyecto-CONECTA/conecta-icon.svg'];
@@ -61,21 +62,23 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
-    await Promise.all(keys.filter(key=>key.startsWith('conecta-v1-shell-')&&key!==SHELL_CACHE).map(key=>caches.delete(key)));
+    await Promise.all(
+      keys
+        .filter(key=>key.startsWith('conecta-')&&!CURRENT_CACHES.has(key))
+        .map(key=>caches.delete(key)),
+    );
     await Promise.all([trimCache(ASSET_CACHE),trimCache(IMAGE_CACHE)]);
     await self.clients.claim();
 
-    // iOS puede mantener la PWA suspendida con el bundle anterior durante mucho tiempo.
-    // Al activar una versión nueva, recargamos los clientes abiertos de CONECTA una sola vez.
     const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
     await Promise.all(clients.map(async client=>{
       try{
         const url=new URL(client.url);
-        if(url.origin===self.location.origin && url.pathname.startsWith(APP_ROOT)){
+        if(url.origin===self.location.origin&&url.pathname.startsWith(APP_ROOT)){
           await client.navigate(client.url);
         }
       }catch{
-        // Un cliente que se esté cerrando no debe bloquear la activación del SW.
+        // Un cliente que se cierre durante la activación no debe bloquear el SW.
       }
     }));
   })());
@@ -96,7 +99,7 @@ self.addEventListener('fetch',event=>{
   }
 
   if(url.pathname.includes('/assets/')){
-    /* Vite assets are content-hashed: unchanged chunks can survive app releases. */
+    /* Vite usa nombres con hash: los chunks inmutables pueden cachearse con seguridad. */
     event.respondWith(cacheFirst(event.request));
     return;
   }

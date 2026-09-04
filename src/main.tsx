@@ -62,7 +62,14 @@ window.setTimeout(() => {
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-auth-prototype-final-v4", { updateViaCache: "none" });
+      let reloadScheduled = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloadScheduled) return;
+        reloadScheduled = true;
+        window.location.reload();
+      });
+
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-auth-prototype-final-v5", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
 

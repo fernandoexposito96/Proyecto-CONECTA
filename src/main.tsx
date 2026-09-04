@@ -9,7 +9,6 @@ import { startTelemetry } from "./telemetry";
 import "./ui.css";
 import "./homePremiumEnhancer";
 import "./home-fused-hero";
-import "./home-final-hero.css";
 import "./structure-overhaul";
 import "./conecta-calm-enhancer";
 

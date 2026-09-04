@@ -6,7 +6,10 @@ type OpenValue = { open: boolean; setOpen: (open: boolean) => void };
 const DialogContext = createContext<OpenValue | null>(null);
 const SheetContext = createContext<OpenValue | null>(null);
 const AlertContext = createContext<OpenValue | null>(null);
-const TabsC…155 tokens truncated…ole="presentation" onMouseDown={() => context.setOpen(false)}><section className={`modal-panel ${className}`} role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Cerrar" onClick={() => context.setOpen(false)}><X /></button>{children}</section></div>; }
+const TabsContext = createContext<{ value: string; setValue: (value: string) => void } | null>(null);
+
+export function Dialog({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: ReactNode }) { return <DialogContext.Provider value={{ open, setOpen: onOpenChange }}>{children}</DialogContext.Provider>; }
+export function DialogContent({ className = "", children }: { className?: string; children: ReactNode }) { const context = useContext(DialogContext); if (!context?.open) return null; return <div className="modal-overlay" role="presentation" onMouseDown={() => context.setOpen(false)}><section className={`modal-panel ${className}`} role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Cerrar" onClick={() => context.setOpen(false)}><X /></button>{children}</section></div>; }
 export function DialogHeader({ className = "", children }: { className?: string; children: ReactNode }) { return <header className={`dialog-header ${className}`}>{children}</header>; }
 export function DialogTitle({ children }: { children: ReactNode }) { return <h2 className="dialog-title">{children}</h2>; }
 export function DialogDescription({ children }: { children: ReactNode }) { return <p className="dialog-description">{children}</p>; }

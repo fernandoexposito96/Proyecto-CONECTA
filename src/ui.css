@@ -33,6 +33,7 @@
 /* Vistas V4 aprobadas, separadas por pantalla para evitar hotfixes globales. */
 @import "./views/home-reference-v4.css";
 @import "./views/explore-reference-v4.css";
+@import "./views/chat-profile-reference-v4.css";
 
 /* Siempre último: móvil, tablet, ordenador y PWA */
 @import "./universal-responsive.css";

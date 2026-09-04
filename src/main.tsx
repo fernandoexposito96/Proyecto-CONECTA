@@ -46,34 +46,26 @@ createRoot(root).render(
 
 startImagePerformance();
 
-window.setTimeout(() => {
+window.requestAnimationFrame(() => {
   const splash = document.getElementById("boot-splash");
   document.documentElement.classList.add("boot-complete");
   if (!splash) return;
   splash.classList.add("boot-hide");
   window.setTimeout(() => splash.remove(), 280);
-}, 4_000);
+});
 
 scheduleIdlePrefetch();
 window.setTimeout(() => {
   void startTelemetry();
-}, 4_250);
+}, 1_500);
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      let reloadScheduled = false;
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
-        if (reloadScheduled) return;
-        reloadScheduled = true;
-        window.location.reload();
-      });
-
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-social-auth-v9", { updateViaCache: "none" });
-      if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      const registration = await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
       await registration.update();
-    } catch {
-      // La aplicación continúa funcionando aunque no haya modo offline.
+    } catch (error) {
+      console.error("No se pudo activar el modo offline de CONECTA.", error);
     }
   });
 }

@@ -59,8 +59,7 @@ const staleWhileRevalidate=async(request)=>{
 self.addEventListener('install',event=>{
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then(cache=>cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'}))))
-      .then(()=>self.skipWaiting()),
+      .then(cache=>cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'})))),
   );
 });
 
@@ -74,22 +73,7 @@ self.addEventListener('activate',event=>{
     );
     await self.clients.claim();
 
-    const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-    await Promise.all(clients.map(async client=>{
-      try{
-        const url=new URL(client.url);
-        if(url.origin===self.location.origin&&url.pathname.startsWith(APP_ROOT)){
-          await client.navigate(client.url);
-        }
-      }catch{
-        // Un cliente que se cierre durante la activación no debe bloquear la actualización.
-      }
-    }));
   })());
-});
-
-self.addEventListener('message',event=>{
-  if(event.data?.type==='SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch',event=>{

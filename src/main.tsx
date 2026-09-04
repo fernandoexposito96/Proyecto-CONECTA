@@ -9,7 +9,6 @@ import { startTelemetry } from "./telemetry";
 import "./ui.css";
 import "./homePremiumEnhancer";
 import "./home-fused-hero";
-import "./structure-overhaul";
 import "./conecta-calm-enhancer";
 import "./premiumMembershipEnhancer";
 import "./accountCenterEnhancer";
@@ -45,11 +44,8 @@ createRoot(root).render(
   </StrictMode>,
 );
 
-// Ajusta imágenes renderizadas por React sin bloquear el primer pintado.
 startImagePerformance();
 
-// Mantén la presentación visible durante 5 s y no reveles la app hasta el final.
-// Así iOS nunca llega a enseñar iconos o elementos sin estilos durante el arranque.
 window.setTimeout(() => {
   const splash = document.getElementById("boot-splash");
   document.documentElement.classList.add("boot-complete");
@@ -58,7 +54,6 @@ window.setTimeout(() => {
   window.setTimeout(() => splash.remove(), 280);
 }, 5_000);
 
-// Trabajo no crítico: siempre después de revelar la aplicación.
 scheduleIdlePrefetch();
 window.setTimeout(() => {
   void startTelemetry();
@@ -67,7 +62,7 @@ window.setTimeout(() => {
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-home-approved-8", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-menu-clean-1", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
     } catch {

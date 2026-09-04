@@ -73,7 +73,8 @@ jobs:
 
       - name: Record diagnostic outcome
         if: always()
-        run: echo "NORA scan outcome: ${{ steps.nora_scan.outcome }}. The panel is published even when findings exist, so failures remain visible instead of leaving a stale report."
+        run: |
+          echo "NORA scan outcome: ${{ steps.nora_scan.outcome }}. The panel is published even when findings exist, so failures remain visible instead of leaving a stale report."
 
   deploy:
     runs-on: ubuntu-latest

@@ -9,4 +9,3 @@ robot-reports/
 .env.*
 !.env.example
 *.log
-

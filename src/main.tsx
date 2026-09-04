@@ -11,6 +11,8 @@ import "./homePremiumEnhancer";
 import "./conecta-calm-enhancer";
 import "./premiumMembershipEnhancer";
 import "./accountCenterEnhancer";
+import "./planPremiumEnhancer";
+import "./plan-premium-final.css";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 const savedTheme = window.localStorage.getItem("conecta-theme");

@@ -7,11 +7,7 @@ import { scheduleIdlePrefetch } from "./idle-prefetch";
 import { startImagePerformance } from "./image-performance";
 import { startTelemetry } from "./telemetry";
 import "./ui.css";
-import "./homePremiumEnhancer";
-import "./conecta-calm-enhancer";
-import "./premiumMembershipEnhancer";
-import "./accountCenterEnhancer";
-import "./planPremiumEnhancer";
+import "./bootstrapEnhancers";
 
 // CONECTA nueva: una sola interfaz React y una sola fuente de verdad.
 const savedTheme = window.localStorage.getItem("conecta-theme");

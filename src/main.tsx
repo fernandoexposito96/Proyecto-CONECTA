@@ -62,7 +62,7 @@ window.setTimeout(() => {
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-startup-4s-v1", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=conecta-auth-final-v2", { updateViaCache: "none" });
       if (registration.waiting) registration.waiting.postMessage({ type: "SKIP_WAITING" });
       await registration.update();
     } catch {

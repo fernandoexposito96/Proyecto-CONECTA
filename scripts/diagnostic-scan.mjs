@@ -62,7 +62,7 @@ const run = (id, area, label, command, args, severity = "error") => {
   const output = `${proc.stdout || ""}\n${proc.stderr || ""}`.trim();
   const ok = proc.status === 0;
   add(id, area, label, ok ? "ok" : "fail", ok ? `Correcto · ${Math.round((Date.now() - t0) / 100) / 10}s` : clean(output.slice(-1800)) || `Salida ${proc.status}`, ok ? "info" : severity, { duration_ms: Date.now() - t0, source: "command" });
-  parseCommandOutput(id, area, label, output);
+  if (!ok) parseCommandOutput(id, area, label, output);
 };
 
 const exists = (rel) => fs.existsSync(path.join(root, rel));

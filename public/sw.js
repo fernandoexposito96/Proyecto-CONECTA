@@ -1,6 +1,6 @@
-const SHELL_CACHE='conecta-v6-shell';
-const ASSET_CACHE='conecta-v6-assets';
-const IMAGE_CACHE='conecta-v6-images';
+const SHELL_CACHE='conecta-v7-shell';
+const ASSET_CACHE='conecta-v7-assets';
+const IMAGE_CACHE='conecta-v7-images';
 const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
 
 const scopeUrl=new URL(self.registration.scope);
@@ -72,7 +72,6 @@ self.addEventListener('activate',event=>{
         .map(key=>caches.delete(key)),
     );
     await self.clients.claim();
-
   })());
 });
 

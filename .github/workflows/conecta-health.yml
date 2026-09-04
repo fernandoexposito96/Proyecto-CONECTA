@@ -1,6 +1,8 @@
 name: CONECTA Health Check
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       job_id:

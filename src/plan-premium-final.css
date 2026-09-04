@@ -1,0 +1,289 @@
+/* CONECTA · plan cards and detail polish
+   Imported last so every plan uses one consistent structure. */
+
+.plan-card[data-premium-plan-card="true"] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-width: 1px !important;
+  border-color: rgba(109, 94, 252, 0.12) !important;
+  border-radius: 24px !important;
+  background: #fff;
+  box-shadow: 0 14px 38px rgba(31, 24, 55, 0.08) !important;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-image {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.42 / 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #f4f1fb;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-image > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 16px 15px !important;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-topline {
+  min-height: 30px;
+  margin-bottom: 5px;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-title {
+  display: block;
+  min-height: 52px;
+  width: 100%;
+  text-align: left;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-title h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.08;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-location {
+  min-height: 38px;
+  margin: 7px 0 8px;
+}
+
+.plan-card[data-premium-plan-card="true"] .plan-tags {
+  min-height: 31px;
+  margin-bottom: 9px;
+}
+
+.plan-card[data-premium-plan-card="true"] .attendance-row {
+  min-height: 50px;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.plan-card[data-premium-plan-card="true"] .join-plan[data-premium-plan-cta="true"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  margin-top: auto !important;
+  border: 0 !important;
+  border-radius: 15px !important;
+  background: linear-gradient(100deg, #6f35ff 0%, #d833c3 55%, #ff2f8f 100%) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em;
+  box-shadow: 0 10px 22px rgba(156, 57, 224, 0.18);
+}
+
+.plan-card[data-premium-plan-card="true"] .join-plan[data-premium-plan-cta="true"]:active {
+  transform: translateY(1px);
+}
+
+/* Premium detail: the same page opens from every plan card. */
+.plan-detail-dialog[data-premium-plan-detail="true"] {
+  width: min(94vw, 760px) !important;
+  max-width: 760px !important;
+  max-height: min(92dvh, 940px) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(91, 69, 171, 0.10) !important;
+  border-radius: 30px !important;
+  background: #fbfaff !important;
+  box-shadow: 0 28px 80px rgba(31, 24, 55, 0.22) !important;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-cover {
+  position: relative;
+  min-height: 300px;
+  max-height: 390px;
+  overflow: hidden;
+  border-radius: 0 0 28px 28px;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-cover > img {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  object-fit: cover;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-cover > div {
+  background: linear-gradient(180deg, rgba(9, 10, 17, 0.06), rgba(9, 10, 17, 0.44));
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: calc(92dvh - 300px);
+  padding: 22px 22px 100px !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-body > header {
+  align-items: flex-start;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-body > header h2 {
+  margin: 4px 0 5px;
+  font-size: clamp(28px, 5vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .detail-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .detail-facts article,
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-description,
+.plan-detail-dialog[data-premium-plan-detail="true"] .detail-columns > section,
+.plan-detail-dialog[data-premium-plan-detail="true"] .attendance-summary {
+  border: 1px solid rgba(93, 73, 166, 0.10) !important;
+  border-radius: 20px !important;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(44, 34, 78, 0.045);
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .detail-facts article {
+  min-height: 78px;
+  padding: 13px !important;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-description {
+  padding: 18px !important;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-description > span::after {
+  content: " · SOBRE ESTE PLAN";
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .detail-columns {
+  gap: 12px;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .detail-columns > section {
+  padding: 18px !important;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .attendance-summary {
+  padding: 16px !important;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-actions {
+  position: sticky;
+  z-index: 12;
+  bottom: -100px;
+  display: grid;
+  grid-template-columns: minmax(130px, 0.42fr) minmax(0, 1fr);
+  gap: 10px;
+  margin: 4px -22px -100px;
+  padding: 14px 22px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(91, 69, 171, 0.10);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -10px 30px rgba(31, 24, 55, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-actions .primary-action {
+  min-height: 56px;
+  border: 0 !important;
+  border-radius: 17px !important;
+  background: linear-gradient(100deg, #6f35ff 0%, #d833c3 55%, #ff2f8f 100%) !important;
+  color: #fff !important;
+  font-weight: 800;
+}
+
+.plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-actions .secondary-action {
+  min-height: 56px;
+  border-radius: 17px !important;
+  background: #fff !important;
+}
+
+@media (max-width: 760px) {
+  .plans-grid {
+    align-items: stretch;
+  }
+
+  .plan-card[data-premium-plan-card="true"] {
+    min-height: 100%;
+  }
+
+  .plan-card[data-premium-plan-card="true"] .plan-title {
+    min-height: 47px;
+  }
+
+  .plan-card[data-premium-plan-card="true"] .plan-location {
+    min-height: 34px;
+  }
+
+  .plan-detail-dialog[data-premium-plan-detail="true"] {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 26px !important;
+  }
+
+  .plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-cover,
+  .plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-cover > img {
+    min-height: 250px;
+    max-height: 290px;
+  }
+
+  .plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-body {
+    max-height: calc(100dvh - 266px);
+    gap: 12px;
+    padding: 18px 16px 92px !important;
+  }
+
+  .plan-detail-dialog[data-premium-plan-detail="true"] .detail-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-detail-dialog[data-premium-plan-detail="true"] .detail-columns {
+    grid-template-columns: 1fr !important;
+  }
+
+  .plan-detail-dialog[data-premium-plan-detail="true"] .plan-detail-actions {
+    bottom: -92px;
+    grid-template-columns: 0.42fr 1fr;
+    margin: 2px -16px -92px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 430px) {
+  .plan-card[data-premium-plan-card="true"] .plan-body {
+    padding: 13px 12px 12px !important;
+  }
+
+  .plan-card[data-premium-plan-card="true"] .join-plan[data-premium-plan-cta="true"] {
+    min-height: 50px;
+    border-radius: 14px !important;
+  }
+
+  .plan-detail-dialog[data-premium-plan-detail="true"] .detail-facts article {
+    min-height: 72px;
+    padding: 11px !important;
+  }
+}

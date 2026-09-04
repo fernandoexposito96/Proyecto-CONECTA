@@ -1,6 +1,16 @@
 name: CONECTA Diagnostic Robot
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "public/**"
+      - "scripts/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/**"
   schedule:
     - cron: "17 */5 * * *"
       timezone: "Europe/Madrid"
@@ -12,12 +22,13 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: conecta-nora-pages
+  cancel-in-progress: true
 
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -26,18 +37,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Install
-        run: npm install --no-audit --no-fund
+      - name: Install exact dependencies
+        run: npm ci --no-audit --no-fund
 
-      - name: NORA end-to-end diagnostic
+      - name: NORA deep end-to-end diagnostic
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           CONECTA_ROBOT_MAX_FINDINGS: "999"
         run: node scripts/diagnostic-scan.mjs
 
-      - name: Build app with latest report
+      - name: Build app with latest diagnostic report
         run: npm run build
 
       - name: Configure Pages
@@ -52,6 +64,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: scan
     environment:
       name: github-pages

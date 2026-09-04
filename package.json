@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.19.0",
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
@@ -17,8 +18,8 @@
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:iphone": "playwright test --project=webkit-iphone",
     "test:accessibility": "playwright test -g accessibility",
-    "test": "npm run test:unit && npm run build && npm run test:smoke && npm run test:performance && npm run test:security && npm run test:e2e",
-    "validate": "npm run lint && npm run check && npm run test:unit && npm run build && npm run test:smoke && npm run test:performance && npm run test:security && npm run test:e2e"
+    "test": "pnpm run test:unit && pnpm run build && pnpm run test:smoke && pnpm run test:performance && pnpm run test:security && pnpm run test:e2e",
+    "validate": "pnpm run lint && pnpm run check && pnpm run test:unit && pnpm run build && pnpm run test:smoke && pnpm run test:performance && pnpm run test:security && pnpm run test:e2e"
   },
   "dependencies": {
     "@sentry/react": "10.73.0",

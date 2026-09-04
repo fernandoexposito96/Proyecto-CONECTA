@@ -40,4 +40,18 @@ const supabaseClient = await readFile("src/supabase.ts", "utf8");
 assert.match(supabaseClient, /VITE_SUPABASE_PUBLISHABLE_KEY/);
 assert.doesNotMatch(supabaseClient, /SUPABASE_SERVICE_ROLE|sb_secret_/i);
 
+const leastPrivilegeMigration = await readFile(
+  "supabase/migrations/20260904163000_enforce_least_privilege_api_roles.sql",
+  "utf8",
+);
+assert.match(leastPrivilegeMigration, /revoke all privileges on all tables in schema public from anon/i);
+assert.match(leastPrivilegeMigration, /revoke truncate, references, trigger[\s\S]*from authenticated/i);
+assert.match(leastPrivilegeMigration, /revoke execute on all functions in schema private from public/i);
+
+const retiredPasskeysMigration = await readFile(
+  "supabase/migrations/20260904164500_retire_legacy_passkey_table.sql",
+  "utf8",
+);
+assert.match(retiredPasskeysMigration, /revoke all privileges on table public\.passkey_credentials from anon, authenticated/i);
+
 console.log(`✓ CONECTA security contracts passed — scanned ${frontendFiles.length} frontend files`);

@@ -4,7 +4,7 @@ CONECTA es una aplicación social para descubrir personas compatibles, organizar
 
 ## Funcionalidades
 
-- Autenticación, verificación de correo y passkeys con fallback WebAuthn.
+- Autenticación, verificación de correo y passkeys nativas de Supabase Auth.
 - Descubrimiento de personas, planes y comunidades.
 - Inscripción, guardado y gestión de planes.
 - Chat en tiempo real, notificaciones y confirmaciones de lectura.
@@ -23,12 +23,13 @@ CONECTA es una aplicación social para descubrir personas compatibles, organizar
 
 ## Desarrollo local
 
-Requisitos: Node.js 22 y npm.
+Requisitos: Node.js 22 y pnpm 11 (fijado en `packageManager`).
 
 ```bash
-npm install
+corepack enable
+pnpm install --frozen-lockfile
 cp .env.example .env.local
-npm run dev
+pnpm dev
 ```
 
 ## Variables de entorno
@@ -44,18 +45,18 @@ Nunca almacenes claves privadas o `service_role` en variables `VITE_*`: Vite las
 ## Calidad
 
 ```bash
-npm run lint
-npm run check
-npm run test:unit
-npm run build
-npm run test:smoke
-npm run test:performance
-npm run test:security
-npx playwright install
-npm run test:e2e
+pnpm lint
+pnpm check
+pnpm test:unit
+pnpm build
+pnpm test:smoke
+pnpm test:performance
+pnpm test:security
+pnpm exec playwright install chromium webkit
+pnpm test:e2e
 ```
 
-La puerta completa se ejecuta con `npm run validate`.
+La puerta completa se ejecuta con `pnpm validate`.
 
 ## Arquitectura
 

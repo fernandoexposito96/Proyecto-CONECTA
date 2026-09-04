@@ -113,14 +113,15 @@ test("desktop labels stay readable and offscreen rendering is bounded", async ()
   assert.match(css, /grid-template-columns:repeat\(auto-fit,minmax\(min\(260px,100%\),1fr\)\)!important/);
 });
 
-test("startup splash stays simple and four seconds", async () => {
+test("startup splash is removed as soon as React paints", async () => {
   const html = await read("index.html");
   const main = await read("src/main.tsx");
   assert.match(html, /#boot-splash[^}]*background:#000/s);
   assert.match(html, /boot-word[^}]*font-size:clamp\(30px,8vw,46px\)/s);
   assert.match(html, />CONECTA<\/div>/);
   assert.doesNotMatch(html, /boot-line|spinner|LoaderCircle/i);
-  assert.match(main, /4_000|4000/);
+  assert.match(main, /requestAnimationFrame/);
+  assert.doesNotMatch(main, /4_000|4000/);
 });
 
 test("critical product views are present", async () => {

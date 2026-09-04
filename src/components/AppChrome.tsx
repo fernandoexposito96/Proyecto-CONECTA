@@ -1,18 +1,13 @@
-import { Activity, BadgeCheck, Bell, CalendarDays, ChevronRight, Compass, Heart, Home, ListChecks, MailCheck, Map, Menu, MessageCircle, Moon, Plus, RefreshCw, Search, Shield, Sparkles, Sun, UserCheck, UsersRound, Zap } from "lucide-react";
+import { Activity, BadgeCheck, Bell, ChevronRight, Compass, Heart, Home, MailCheck, Menu, MessageCircle, Moon, Plus, RefreshCw, Search, Shield, Sparkles, Sun, UserCheck } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../ui";
 import { EmptyCompact } from "./common";
 import type { NotificationRecord, Profile, View } from "../types";
 import { formatPlanDate } from "../utils";
+import { primaryNavigation } from "../navigation";
 
 type Theme = "light" | "dark";
 const avatarFallback = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=84";
-export const primaryNavigation: Array<{ label: View; icon: typeof Home }> = [
-  { label: "Inicio", icon: Home }, { label: "Explorar", icon: Compass }, { label: "Ahora", icon: Zap },
-  { label: "Mapa", icon: Map }, { label: "Planes", icon: CalendarDays }, { label: "Grupos", icon: UsersRound },
-  { label: "Chat", icon: MessageCircle }, { label: "Calendario", icon: ListChecks },
-];
-
 export function Sidebar({ active, profile, unread, go }: { active: View; profile: Profile | null; unread: number; go: (view: View) => void; }) {
   return <aside className="sidebar">
     <button className="brand" onClick={() => go("Inicio")}><span className="brand-mark">C</span><span><strong>CONECTA</strong><small>Planes que unen</small></span></button>

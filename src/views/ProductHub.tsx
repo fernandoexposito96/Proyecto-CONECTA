@@ -3,7 +3,7 @@ import { Award, Baby, BadgeCheck, BriefcaseBusiness, Building2, CalendarDays, Ca
 import { supabase } from "../supabase";
 import type { Message, Plan, PlanMember, Profile } from "../types";
 import { PageHero, SectionTitle } from "../components/common";
-import { toast } from "../ui";
+import { toast } from "../toast";
 import { categoryColor } from "../catalog";
 import { CommunityTools } from "./CommunityTools";
 import { TrustAutomationTools } from "./TrustAutomationTools";

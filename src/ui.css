@@ -7,7 +7,6 @@
 
 /* Base visual */
 @import "./conecta-premium.css";
-@import "./home-premium.css";
 
 /* Ajustes generales de móvil */
 @import "./mobile-premium-fix.css";
@@ -34,14 +33,8 @@
 @import "./mobile-dialogs-safe.css";
 @import "./confirmation-final-polish.css";
 
-/* Conecta+: divulgación progresiva y verificación compacta */
-@import "./conecta-calm-enhancer.css";
-
 /* Pulido específico de escritorio sin alterar móvil */
 @import "./desktop-final-polish.css";
-
-/* Tarjetas y detalle premium de planes */
-@import "./plan-premium-final.css";
 
 /* Siempre el último import: móvil, tablet, ordenador y PWA */
 @import "./universal-responsive.css";

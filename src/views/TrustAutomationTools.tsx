@@ -3,7 +3,7 @@ import { Bell, CalendarClock, CheckCircle2, Copy, QrCode, RefreshCw, ShieldCheck
 import { supabase } from "../supabase";
 import type { Plan, PlanMember } from "../types";
 import { Field, SectionTitle } from "../components/common";
-import { toast } from "../ui";
+import { toast } from "../toast";
 
 type NotificationPrefs = { user_id: string; messages: boolean; connections: boolean; plans: boolean; events: boolean; communities: boolean };
 type Consent = { id: string; consent_type: string | null; granted: boolean | null; policy_version: string | null; created_at: string };
@@ -16,9 +16,9 @@ export function TrustAutomationTools({ userId, plans, planMembers }: Props) {
   const managedPlans = useMemo(() => plans.filter((plan) => plan.creator_id === userId), [plans, userId]);
   const joinedPlans = useMemo(() => { const ids = new Set(planMembers.filter((member) => member.user_id === userId).map((member) => member.plan_id)); return plans.filter((plan) => ids.has(plan.id) || plan.creator_id === userId); }, [planMembers, plans, userId]);
   const [prefs, setPrefs] = useState<NotificationPrefs>({ ...defaultPrefs, user_id: userId }); const [consents, setConsents] = useState<Consent[]>([]); const [reminders, setReminders] = useState<Reminder[]>([]); const [challenges, setChallenges] = useState<Challenge[]>([]); const [managedPlanId, setManagedPlanId] = useState(managedPlans[0]?.id ?? ""); const [issuedCode, setIssuedCode] = useState(""); const [checkinCode, setCheckinCode] = useState("");
-  useEffect(() => { if (!managedPlanId && managedPlans[0]?.id) setManagedPlanId(managedPlans[0].id); }, [managedPlanId, managedPlans]);
+  useEffect(() => { if (!managedPlanId && managedPlans[0]?.id) { const timer = window.setTimeout(() => setManagedPlanId(managedPlans[0].id), 0); return () => window.clearTimeout(timer); } }, [managedPlanId, managedPlans]);
   const load = useCallback(async () => { const [prefResult, consentResult, reminderResult, challengeResult] = await Promise.all([supabase.from("notification_preferences").select("user_id,messages,connections,plans,events,communities").eq("user_id", userId).maybeSingle(),supabase.from("privacy_consents").select("id,consent_type,granted,policy_version,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),supabase.from("plan_reminder_receipts").select("user_id,plan_id,kind,sent_at").eq("user_id", userId).order("sent_at", { ascending: false }).limit(20),supabase.from("user_challenges").select("id,challenge_key,title,target,progress,starts_at,ends_at,completed_at").eq("user_id", userId).order("starts_at", { ascending: false }).limit(20)]); setPrefs((prefResult.data as NotificationPrefs | null) ?? { ...defaultPrefs, user_id: userId }); setConsents((consentResult.data as Consent[] | null) ?? []); setReminders((reminderResult.data as Reminder[] | null) ?? []); setChallenges((challengeResult.data as Challenge[] | null) ?? []); }, [userId]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, [load]);
   const updatePref = async (key: keyof Omit<NotificationPrefs, "user_id">, value: boolean) => { const next = { ...prefs, [key]: value, user_id: userId }; setPrefs(next); const result = await supabase.from("notification_preferences").upsert(next, { onConflict: "user_id" }); if (result.error) { setPrefs(prefs); return toast.error(result.error.message); } toast.success("Preferencias de avisos guardadas"); };
   const setConsent = async (consentType: string, granted: boolean) => { const result = await supabase.from("privacy_consents").insert({ user_id: userId, consent_type: consentType, granted, policy_version: "2026-09", metadata: { source: "privacy_center" } }); if (result.error) return toast.error(result.error.message); toast.success("Preferencia de privacidad registrada"); await load(); };
   const refreshReminders = async () => { const result = await supabase.rpc("refresh_my_plan_reminders"); if (result.error) return toast.error(result.error.message); toast.success(`${Number(result.data ?? 0)} recordatorios revisados`); await load(); };

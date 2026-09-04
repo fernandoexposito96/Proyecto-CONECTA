@@ -2,7 +2,7 @@ name: CONECTA Validate
 
 on:
   push:
-    branches: [main]
+    branches: [main, "audit/**"]
   pull_request:
     branches: [main]
 
@@ -14,22 +14,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
       - name: Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
+          cache: pnpm
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: pnpm install --frozen-lockfile
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
       - name: TypeScript
-        run: npm run check
+        run: pnpm run check
+      - name: Unit tests
+        run: pnpm run test:unit
       - name: Build
-        run: npm run build
+        run: pnpm run build
       - name: Automated smoke tests
-        run: npm run test:smoke
+        run: pnpm run test:smoke
       - name: Performance contracts
-        run: npm run test:performance
+        run: pnpm run test:performance
       - name: Security contracts
-        run: npm run test:security
+        run: pnpm run test:security
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
+      - name: End-to-end, mobile and accessibility tests
+        run: pnpm run test:e2e

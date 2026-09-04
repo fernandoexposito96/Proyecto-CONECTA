@@ -5,12 +5,15 @@ This document defines the permanent engineering bar for changes after 1.0.
 ## Required on every release candidate
 
 - TypeScript check passes.
+- Lint passes without warnings.
+- Unit and end-to-end tests pass in Chromium and WebKit/iPhone.
 - Production build passes.
 - Smoke tests pass.
 - No temporary migration/refactor workflows are left enabled after their work is integrated.
 - No obsolete `Index1996` or `raw.githack` references.
 - No blocking browser prompts in product flows.
 - Hot Supabase reads use explicit projections rather than unbounded `select('*')`.
+- Public tables keep RLS enabled and browser roles follow least privilege.
 - Security-sensitive database changes remain versioned as migrations.
 
 ## Architecture direction

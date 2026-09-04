@@ -1,6 +1,6 @@
-const SHELL_CACHE='conecta-v5-shell';
-const ASSET_CACHE='conecta-v5-assets';
-const IMAGE_CACHE='conecta-v5-images';
+const SHELL_CACHE='conecta-v6-shell';
+const ASSET_CACHE='conecta-v6-assets';
+const IMAGE_CACHE='conecta-v6-images';
 const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
 
 const scopeUrl=new URL(self.registration.scope);
@@ -59,8 +59,7 @@ const staleWhileRevalidate=async(request)=>{
 self.addEventListener('install',event=>{
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then(cache=>cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'}))))
-      .then(()=>self.skipWaiting()),
+      .then(cache=>cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'})))),
   );
 });
 
@@ -74,22 +73,7 @@ self.addEventListener('activate',event=>{
     );
     await self.clients.claim();
 
-    const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-    await Promise.all(clients.map(async client=>{
-      try{
-        const url=new URL(client.url);
-        if(url.origin===self.location.origin&&url.pathname.startsWith(APP_ROOT)){
-          await client.navigate(client.url);
-        }
-      }catch{
-        // Un cliente que se cierre durante la activación no debe bloquear la actualización.
-      }
-    }));
   })());
-});
-
-self.addEventListener('message',event=>{
-  if(event.data?.type==='SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch',event=>{
@@ -115,5 +99,6 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  event.respondWith(networkFirst(event.request));
+  // Do not proxy unrelated same-origin requests. Browser-managed requests such
+  // as telemetry and development probes must keep their native error semantics.
 });

@@ -24,7 +24,7 @@ permissions:
   contents: read
 
 env:
-  CONECTA_ROBOT_MAX_FINDINGS: "1000"
+  CONECTA_ROBOT_MAX_FINDINGS: "1999"
 
 jobs:
   health:

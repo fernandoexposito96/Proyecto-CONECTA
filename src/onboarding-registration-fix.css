@@ -1,0 +1,144 @@
+/* CONECTA — corrección aislada del onboarding/registro móvil. */
+.onboarding-screen{
+  position:relative;
+  isolation:isolate;
+  width:100%;
+  max-width:100vw;
+  min-height:100dvh;
+  overflow-x:hidden;
+}
+
+.onboarding-screen .onboarding-card{
+  width:min(100% - 32px, 720px);
+  max-width:720px;
+  margin-inline:auto;
+  box-sizing:border-box;
+}
+
+.onboarding-screen .form-grid{
+  min-width:0;
+}
+
+.onboarding-screen .field,
+.onboarding-screen .field > *,
+.onboarding-screen input,
+.onboarding-screen textarea,
+.onboarding-screen select{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+/* Los selectores del paso 3 dejan de usar el fieldset nativo, que en iPhone
+   podía desbordar y dar una apariencia rota. */
+.onboarding-screen .choice-field{
+  min-width:0;
+  margin:18px 0 0;
+  padding:16px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  border:1px solid rgba(124,58,237,.14);
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(31,24,62,.045);
+}
+
+.onboarding-screen .choice-field legend{
+  padding:0 7px;
+  color:#25203a;
+  font-weight:850;
+  font-size:14px;
+}
+
+.onboarding-screen .choice-field label{
+  min-width:0;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px 12px;
+  border:1px solid #ece8f3;
+  border-radius:14px;
+  background:#fbfaff;
+  color:#242033;
+  font-size:14px;
+  line-height:1.25;
+  overflow-wrap:anywhere;
+}
+
+.onboarding-screen .choice-field input[type="checkbox"]{
+  width:20px;
+  height:20px;
+  flex:0 0 20px;
+  margin:0;
+  accent-color:#7c3aed;
+}
+
+/* El aviso de registro nunca debe convertirse en un panel gigante por reglas
+   heredadas de drawers/modales. */
+.onboarding-screen .toast-premium{
+  position:fixed!important;
+  z-index:100000!important;
+  top:calc(12px + env(safe-area-inset-top))!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(calc(100vw - 28px),420px)!important;
+  max-width:420px!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:48px!important;
+  max-height:160px!important;
+  margin:0!important;
+  padding:11px 14px!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:9px!important;
+  overflow:auto!important;
+  border-radius:14px!important;
+  box-shadow:0 14px 34px rgba(25,20,50,.18)!important;
+  white-space:normal!important;
+  word-break:break-word!important;
+}
+
+.onboarding-screen .toast-premium > span{
+  flex:0 0 auto!important;
+}
+
+@media (max-width:480px){
+  .onboarding-screen header,
+  .onboarding-screen .onboarding-card{
+    width:min(100% - 24px,720px);
+  }
+
+  .onboarding-screen .choice-field{
+    grid-template-columns:1fr 1fr;
+    padding:13px;
+    gap:8px;
+  }
+
+  .onboarding-screen .choice-field label{
+    min-height:46px;
+    padding:9px 10px;
+    font-size:13px;
+  }
+
+  .onboarding-screen .step-actions{
+    display:grid;
+    grid-template-columns:minmax(104px,.75fr) minmax(0,1.75fr);
+    gap:9px;
+  }
+
+  .onboarding-screen .step-actions > button{
+    min-width:0;
+    width:100%;
+  }
+}
+
+@media (max-width:360px){
+  .onboarding-screen .choice-field{
+    grid-template-columns:1fr;
+  }
+}

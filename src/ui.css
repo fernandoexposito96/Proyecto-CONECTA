@@ -3,7 +3,7 @@
  *
  * Esta rama elimina capas históricas de hotfix/compatibilidad y conserva
  * únicamente módulos de estructura, vistas, accesibilidad y la referencia
- * visual Premium V3 aprobada. La protección responsive universal sigue última.
+ * visual Premium V4 aprobada. La protección responsive universal sigue última.
  */
 
 /* Base visual estable */
@@ -27,8 +27,8 @@
 /* Escritorio */
 @import "./desktop-final-polish.css";
 
-/* Diseño Premium V3 aprobado: única capa de acabado visual */
-@import "./premium-reference-v3.css";
+/* Diseño Premium V4 aprobado: única capa de acabado visual */
+@import "./premium-reference-v4.css";
 
 /* Siempre último: móvil, tablet, ordenador y PWA */
 @import "./universal-responsive.css";

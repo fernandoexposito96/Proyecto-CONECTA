@@ -41,6 +41,9 @@
 /* Pulido específico de escritorio sin alterar móvil */
 @import "./desktop-final-polish.css";
 
+/* Portada final aprobada */
+@import "./home-final-hero.css";
+
 /* Siempre el último import: móvil, tablet, ordenador y PWA */
 @import "./universal-responsive.css";
 

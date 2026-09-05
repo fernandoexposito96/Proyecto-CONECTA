@@ -6,7 +6,7 @@ import { offlineVisual } from "./offlineVisuals";
 import { scheduleIdlePrefetch } from "./idle-prefetch";
 import { startImagePerformance } from "./image-performance";
 import { startTelemetry } from "./telemetry";
-import { initMonitoring } from "./monitoring";
+import { captureMonitoringError, initMonitoring } from "./monitoring";
 import "./ui.css";
 
 // Monitoring is intentionally optional: without VITE_SENTRY_DSN nothing is sent.
@@ -64,7 +64,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
       const registration = await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
       await registration.update();
     } catch (error) {
-      console.error("No se pudo activar el modo offline de CONECTA.", error);
+      void captureMonitoringError(error, "service-worker-registration");
     }
   });
 }

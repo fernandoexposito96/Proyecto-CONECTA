@@ -160,6 +160,9 @@ export default function ConectaApp() {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [selectedMapPlan, setSelectedMapPlan] = useState<Plan | null>(null);
+  const [reportTarget, setReportTarget] = useState<Profile | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [referenceNow, setReferenceNow] = useState(0);
 
@@ -406,15 +409,24 @@ export default function ConectaApp() {
   };
 
   const reportPerson = async (person: Profile) => {
-    if (!user) return;
-    const reason = window.prompt("Motivo del reporte (sin datos sensibles):");
-    if (!reason?.trim()) return;
+    setReportTarget(person);
+    setReportReason("");
+  };
+
+  const submitReport = async () => {
+    if (!user || !reportTarget || reportSubmitting) return;
+    const reason = reportReason.trim();
+    if (!reason) return;
+    setReportSubmitting(true);
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
-      reported_user_id: person.id,
-      reason: reason.trim(),
+      reported_user_id: reportTarget.id,
+      reason,
     });
+    setReportSubmitting(false);
     if (error) return toast.error(error.message);
+    setReportTarget(null);
+    setReportReason("");
     toast.success("Reporte enviado para revisión");
   };
 
@@ -723,6 +735,43 @@ export default function ConectaApp() {
           await loadData(user);
         }}
       />
+      <Dialog
+        open={Boolean(reportTarget)}
+        onOpenChange={(open) => {
+          if (!open && !reportSubmitting) {
+            setReportTarget(null);
+            setReportReason("");
+          }
+        }}
+      >
+        <DialogContent className="form-dialog">
+          <DialogHeader>
+            <DialogTitle>Reportar a {reportTarget?.display_name ?? "esta persona"}</DialogTitle>
+            <DialogDescription>Describe el motivo sin incluir datos sensibles. El equipo de seguridad lo revisará.</DialogDescription>
+          </DialogHeader>
+          <form
+            className="stack-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submitReport();
+            }}
+          >
+            <Field label="Motivo del reporte">
+              <textarea
+                value={reportReason}
+                onChange={(event) => setReportReason(event.target.value)}
+                required
+                rows={4}
+                maxLength={500}
+                placeholder="Explica de forma breve qué ha ocurrido…"
+              />
+            </Field>
+            <button type="submit" className="primary-action" disabled={reportSubmitting || !reportReason.trim()}>
+              {reportSubmitting ? <LoaderCircle className="spin" /> : <Flag />} Enviar reporte
+            </button>
+          </form>
+        </DialogContent>
+      </Dialog>
       <PlanDetailDialog
         plan={selectedPlan}
         setPlan={setSelectedPlan}

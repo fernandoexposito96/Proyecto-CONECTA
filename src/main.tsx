@@ -19,15 +19,42 @@ document.documentElement.dataset.theme = initialTheme;
 document.documentElement.style.colorScheme = initialTheme;
 document.documentElement.dataset.ui = "conecta-clean-react";
 
+const appBase = new URL(import.meta.env.BASE_URL, window.location.origin);
+const localImageFallbacks = [
+  "media/cards/social-city.webp",
+  "media/cards/active-coast.webp",
+  "media/cards/creative-community.webp",
+  "media/cards/safe-planning.webp",
+].map((path) => new URL(path, appBase).href);
+
+function fallbackIndex(seed: string) {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) hash = (hash * 31 + seed.charCodeAt(index)) | 0;
+  return Math.abs(hash) % localImageFallbacks.length;
+}
+
 document.addEventListener(
   "error",
   (event) => {
     const target = event.target;
     if (!(target instanceof HTMLImageElement)) return;
-    if (target.dataset.offlineFallback === "1") return;
-    target.dataset.offlineFallback = "1";
+
+    const stage = target.dataset.imageFallbackStage ?? "0";
     const seed = `${target.currentSrc || target.src}|${target.alt}|${target.closest("article,button,section")?.textContent ?? ""}`;
-    target.src = offlineVisual(seed.slice(0, 220));
+
+    // Primer rescate: usa una fotografía local empaquetada con la aplicación.
+    // Así una URL externa rota nunca convierte la tarjeta en el antiguo logo genérico.
+    if (stage === "0") {
+      target.dataset.imageFallbackStage = "1";
+      target.src = localImageFallbacks[fallbackIndex(seed)];
+      return;
+    }
+
+    // Último rescate totalmente offline si incluso el asset local no puede cargarse.
+    if (stage === "1") {
+      target.dataset.imageFallbackStage = "2";
+      target.src = offlineVisual(seed.slice(0, 220));
+    }
   },
   true,
 );
@@ -61,7 +88,7 @@ window.setTimeout(() => {
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { updateViaCache: "none" });
       await registration.update();
     } catch (error) {
       void captureMonitoringError(error, "service-worker-registration");

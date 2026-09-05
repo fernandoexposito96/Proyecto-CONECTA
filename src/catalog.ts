@@ -37,42 +37,63 @@ function demoVisual(label: string, color: string, variant: number) {
 }
 
 const cardMedia = (file: string) => `${import.meta.env.BASE_URL}media/cards/${file}`;
-const originalCardMedia = [
+const localFallbackMedia = [
   cardMedia("social-city.webp"),
   cardMedia("active-coast.webp"),
   cardMedia("creative-community.webp"),
   cardMedia("safe-planning.webp"),
 ] as const;
 
-function imagePool(base: string, label: string, color: string) {
-  const offset = hashSeed(label + color) % originalCardMedia.length;
-  return [base, ...originalCardMedia.filter((_, index) => index !== offset)];
+const unsplash = (photoId: string) =>
+  `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=1100&q=82`;
+
+const realPhotos = {
+  running: unsplash("photo-1629185752152-fe65698ddee4"),
+  hiking: unsplash("photo-1551632811-561732d1e306"),
+  gym: unsplash("photo-1534438327276-14e5300c3a48"),
+  racket: unsplash("photo-1622279457486-62dcc4a431d6"),
+  cafe: unsplash("photo-1501339847302-ac426a4a7cbb"),
+  food: unsplash("photo-1504674900247-0877df9cc836"),
+  party: unsplash("photo-1492684223066-81342ee5ff30"),
+  music: unsplash("photo-1501386761578-eac5c94b800a"),
+  dj: unsplash("photo-1470225620780-dba8ba36b745"),
+  museum: unsplash("photo-1643841368618-4aa128ae63c2"),
+  friends: unsplash("photo-1529156069898-49953e39b3ac"),
+  students: unsplash("photo-1523240795612-9a054b0db644"),
+  travel: unsplash("photo-1500530855697-b586d89ba3ee"),
+  city: unsplash("photo-1517248135467-4c7edcad34c4"),
+  learning: unsplash("photo-1524178232363-1fb2b075b655"),
+  books: unsplash("photo-1512820790803-83ca734da794"),
+} as const;
+
+function photoPool(primary: string, ...alternates: string[]) {
+  return [primary, ...alternates.filter((image) => image !== primary)];
 }
 
 export const categories = [
-  { label: "Running", icon: Footprints, color: "#22c55e", image: cardMedia("active-coast.webp"), images: imagePool(cardMedia("active-coast.webp"), "Running", "#22c55e") },
-  { label: "Ciclismo", icon: Bike, color: "#16a34a", image: cardMedia("active-coast.webp"), images: imagePool(cardMedia("active-coast.webp"), "Ciclismo", "#16a34a") },
-  { label: "Senderismo", icon: Mountain, color: "#84cc16", image: cardMedia("active-coast.webp"), images: imagePool(cardMedia("active-coast.webp"), "Senderismo", "#84cc16") },
-  { label: "Gimnasio", icon: Dumbbell, color: "#10b981", image: cardMedia("active-coast.webp"), images: imagePool(cardMedia("active-coast.webp"), "Gimnasio", "#10b981") },
-  { label: "Pádel", icon: Volleyball, color: "#14b8a6", image: cardMedia("active-coast.webp"), images: imagePool(cardMedia("active-coast.webp"), "Pádel", "#14b8a6") },
-  { label: "Café", icon: Coffee, color: "#3b82f6", image: cardMedia("social-city.webp"), images: imagePool(cardMedia("social-city.webp"), "Café", "#3b82f6") },
-  { label: "Gastronomía", icon: Soup, color: "#f97316", image: cardMedia("social-city.webp"), images: imagePool(cardMedia("social-city.webp"), "Gastronomía", "#f97316") },
-  { label: "Fiesta", icon: PartyPopper, color: "#a855f7", image: cardMedia("social-city.webp"), images: imagePool(cardMedia("social-city.webp"), "Fiesta", "#a855f7") },
-  { label: "Música", icon: Music2, color: "#d946ef", image: cardMedia("social-city.webp"), images: imagePool(cardMedia("social-city.webp"), "Música", "#d946ef") },
-  { label: "Cultura", icon: Palette, color: "#eab308", image: cardMedia("creative-community.webp"), images: imagePool(cardMedia("creative-community.webp"), "Cultura", "#eab308") },
-  { label: "Juegos", icon: Gamepad2, color: "#06b6d4", image: cardMedia("creative-community.webp"), images: imagePool(cardMedia("creative-community.webp"), "Juegos", "#06b6d4") },
-  { label: "Idiomas", icon: Languages, color: "#0ea5e9", image: cardMedia("creative-community.webp"), images: imagePool(cardMedia("creative-community.webp"), "Idiomas", "#0ea5e9") },
-  { label: "Viajes", icon: Plane, color: "#8b5cf6", image: cardMedia("safe-planning.webp"), images: imagePool(cardMedia("safe-planning.webp"), "Viajes", "#8b5cf6") },
-  { label: "Networking", icon: BriefcaseBusiness, color: "#64748b", image: cardMedia("safe-planning.webp"), images: imagePool(cardMedia("safe-planning.webp"), "Networking", "#64748b") },
-  { label: "Familias", icon: UsersRound, color: "#ec4899", image: cardMedia("safe-planning.webp"), images: imagePool(cardMedia("safe-planning.webp"), "Familias", "#ec4899") },
-  { label: "Estudiantes", icon: GraduationCap, color: "#6366f1", image: cardMedia("creative-community.webp"), images: imagePool(cardMedia("creative-community.webp"), "Estudiantes", "#6366f1") },
-  { label: "Nuevos en la ciudad", icon: Sparkles, color: "#f43f5e", image: cardMedia("social-city.webp"), images: imagePool(cardMedia("social-city.webp"), "Nuevos en la ciudad", "#f43f5e") },
-  { label: "Lectura", icon: BookOpen, color: "#f59e0b", image: cardMedia("creative-community.webp"), images: imagePool(cardMedia("creative-community.webp"), "Lectura", "#f59e0b") },
+  { label: "Running", icon: Footprints, color: "#22c55e", image: realPhotos.running, images: photoPool(realPhotos.running, realPhotos.hiking, realPhotos.gym) },
+  { label: "Ciclismo", icon: Bike, color: "#16a34a", image: realPhotos.travel, images: photoPool(realPhotos.travel, realPhotos.running, realPhotos.hiking) },
+  { label: "Senderismo", icon: Mountain, color: "#84cc16", image: realPhotos.hiking, images: photoPool(realPhotos.hiking, realPhotos.running, realPhotos.travel) },
+  { label: "Gimnasio", icon: Dumbbell, color: "#10b981", image: realPhotos.gym, images: photoPool(realPhotos.gym, realPhotos.running, realPhotos.racket) },
+  { label: "Pádel", icon: Volleyball, color: "#14b8a6", image: realPhotos.racket, images: photoPool(realPhotos.racket, realPhotos.gym, realPhotos.running) },
+  { label: "Café", icon: Coffee, color: "#3b82f6", image: realPhotos.cafe, images: photoPool(realPhotos.cafe, realPhotos.food, realPhotos.friends) },
+  { label: "Gastronomía", icon: Soup, color: "#f97316", image: realPhotos.food, images: photoPool(realPhotos.food, realPhotos.cafe, realPhotos.city) },
+  { label: "Fiesta", icon: PartyPopper, color: "#a855f7", image: realPhotos.party, images: photoPool(realPhotos.party, realPhotos.dj, realPhotos.music) },
+  { label: "Música", icon: Music2, color: "#d946ef", image: realPhotos.music, images: photoPool(realPhotos.music, realPhotos.dj, realPhotos.party) },
+  { label: "Cultura", icon: Palette, color: "#eab308", image: realPhotos.museum, images: photoPool(realPhotos.museum, realPhotos.books, realPhotos.city) },
+  { label: "Juegos", icon: Gamepad2, color: "#06b6d4", image: realPhotos.friends, images: photoPool(realPhotos.friends, realPhotos.students, realPhotos.cafe) },
+  { label: "Idiomas", icon: Languages, color: "#0ea5e9", image: realPhotos.friends, images: photoPool(realPhotos.friends, realPhotos.students, realPhotos.learning) },
+  { label: "Viajes", icon: Plane, color: "#8b5cf6", image: realPhotos.travel, images: photoPool(realPhotos.travel, realPhotos.friends, realPhotos.city) },
+  { label: "Networking", icon: BriefcaseBusiness, color: "#64748b", image: realPhotos.learning, images: photoPool(realPhotos.learning, realPhotos.students, realPhotos.cafe) },
+  { label: "Familias", icon: UsersRound, color: "#ec4899", image: realPhotos.friends, images: photoPool(realPhotos.friends, realPhotos.travel, realPhotos.cafe) },
+  { label: "Estudiantes", icon: GraduationCap, color: "#6366f1", image: realPhotos.students, images: photoPool(realPhotos.students, realPhotos.learning, realPhotos.books) },
+  { label: "Nuevos en la ciudad", icon: Sparkles, color: "#f43f5e", image: realPhotos.city, images: photoPool(realPhotos.city, realPhotos.friends, realPhotos.cafe) },
+  { label: "Lectura", icon: BookOpen, color: "#f59e0b", image: realPhotos.books, images: photoPool(realPhotos.books, realPhotos.cafe, realPhotos.students) },
 ] as const;
 
 export const planTemplates = ["Corremos 5 kilómetros","Desayuno el domingo","Busco gente para jugar al pádel","Cena para conocer gente nueva","Salir de fiesta","Plan improvisado ahora","Busco compañero para entrenar","Quiero hacer senderismo","Busco gente para practicar idiomas","Ruta en bici al atardecer","Tarde de juegos de mesa","Concierto y algo después","Visita cultural y café","Escapada de un día","Networking sin corbata"];
 
-export const fallbackImage = originalCardMedia[0];
+export const fallbackImage = localFallbackMedia[0];
 const categoryCounters = new Map<string, number>();
 export function categoryImage(category?: string | null, variant?: string | number | null) { const item = categories.find((candidate) => candidate.label === category) ?? categories[0]; const images = item.images; const index = variant == null ? categoryCounters.get(item.label) ?? 0 : hashSeed(variant); if (variant == null) categoryCounters.set(item.label, index + 1); return images[index % images.length] ?? fallbackImage; }
 export function visualFallback(label = "CONECTA", variant: string | number = label) { const item = categories.find((candidate) => label.toLowerCase().includes(candidate.label.toLowerCase())); return demoVisual(item?.label ?? label.slice(0, 28), item?.color ?? "#7c3aed", hashSeed(variant) % 5); }

@@ -1,0 +1,147 @@
+name: NORA safe autofix once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/nora-autofix-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Replace native report prompt with premium dialog
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("src/App.tsx")
+          with path.open("r", encoding="utf-8", newline="") as handle:
+              text = handle.read()
+
+          eol = "\r\n" if text.count("\r\n") > text.count("\n") / 2 else "\n"
+
+          state_pattern = re.compile(
+              r'(  const \[selectedMapPlan, setSelectedMapPlan\] = useState<Plan \| null>\(null\);\r?\n)(  const \[mobileMenuOpen, setMobileMenuOpen\] = useState\(false\);)'
+          )
+          state_replacement = (
+              r'\1'
+              + f'  const [reportTarget, setReportTarget] = useState<Profile | null>(null);{eol}'
+              + f'  const [reportReason, setReportReason] = useState("");{eol}'
+              + f'  const [reportSubmitting, setReportSubmitting] = useState(false);{eol}'
+              + r'\2'
+          )
+          text, count = state_pattern.subn(state_replacement, text, count=1)
+          if count != 1:
+              raise SystemExit("NORA autofix: report state insertion point not found exactly once")
+
+          report_pattern = re.compile(
+              r'  const reportPerson = async \(person: Profile\) => \{\r?\n'
+              r'.*?'
+              r'  \};\r?\n\r?\n'
+              r'  const blockPerson = async \(person: Profile\) => \{',
+              re.S,
+          )
+          report_replacement = eol.join([
+              '  const reportPerson = async (person: Profile) => {',
+              '    setReportTarget(person);',
+              '    setReportReason("");',
+              '  };',
+              '',
+              '  const submitReport = async () => {',
+              '    if (!user || !reportTarget || reportSubmitting) return;',
+              '    const reason = reportReason.trim();',
+              '    if (!reason) return;',
+              '    setReportSubmitting(true);',
+              '    const { error } = await supabase.from("reports").insert({',
+              '      reporter_id: user.id,',
+              '      reported_user_id: reportTarget.id,',
+              '      reason,',
+              '    });',
+              '    setReportSubmitting(false);',
+              '    if (error) return toast.error(error.message);',
+              '    setReportTarget(null);',
+              '    setReportReason("");',
+              '    toast.success("Reporte enviado para revisión");',
+              '  };',
+              '',
+              '  const blockPerson = async (person: Profile) => {',
+          ])
+          text, count = report_pattern.subn(lambda _m: report_replacement, text, count=1)
+          if count != 1:
+              raise SystemExit("NORA autofix: native report prompt block not found exactly once")
+
+          marker = '      <PlanDetailDialog'
+          if text.count(marker) != 1:
+              raise SystemExit("NORA autofix: dialog insertion point not found exactly once")
+          dialog = eol.join([
+              '      <Dialog',
+              '        open={Boolean(reportTarget)}',
+              '        onOpenChange={(open) => {',
+              '          if (!open && !reportSubmitting) {',
+              '            setReportTarget(null);',
+              '            setReportReason("");',
+              '          }',
+              '        }}',
+              '      >',
+              '        <DialogContent className="form-dialog">',
+              '          <DialogHeader>',
+              '            <DialogTitle>Reportar a {reportTarget?.display_name ?? "esta persona"}</DialogTitle>',
+              '            <DialogDescription>Describe el motivo sin incluir datos sensibles. El equipo de seguridad lo revisará.</DialogDescription>',
+              '          </DialogHeader>',
+              '          <form',
+              '            className="stack-form"',
+              '            onSubmit={(event) => {',
+              '              event.preventDefault();',
+              '              void submitReport();',
+              '            }}',
+              '          >',
+              '            <Field label="Motivo del reporte">',
+              '              <textarea',
+              '                value={reportReason}',
+              '                onChange={(event) => setReportReason(event.target.value)}',
+              '                required',
+              '                rows={4}',
+              '                maxLength={500}',
+              '                placeholder="Explica de forma breve qué ha ocurrido…"',
+              '              />',
+              '            </Field>',
+              '            <button type="submit" className="primary-action" disabled={reportSubmitting || !reportReason.trim()}>',
+              '              {reportSubmitting ? <LoaderCircle className="spin" /> : <Flag />} Enviar reporte',
+              '            </button>',
+              '          </form>',
+              '        </DialogContent>',
+              '      </Dialog>',
+              '',
+          ])
+          text = text.replace(marker, dialog + marker, 1)
+
+          if 'window.prompt("Motivo del reporte' in text:
+              raise SystemExit("NORA autofix: native prompt still present")
+
+          with path.open("w", encoding="utf-8", newline="") as handle:
+              handle.write(text)
+          PY
+      - name: Commit safe fix
+        shell: bash
+        run: |
+          if git diff --quiet -- src/App.tsx; then
+            echo "No change produced"
+            exit 1
+          fi
+          git config user.name "NORA Autofix"
+          git config user.email "nora-autofix@users.noreply.github.com"
+          git add src/App.tsx
+          git commit -m "Fix native report dialog warning"
+          git push origin HEAD:main

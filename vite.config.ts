@@ -2,7 +2,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  base: "./",
+  // Proyecto-CONECTA se publica con GitHub Pages bajo /Proyecto-CONECTA/.
+  // Usar una base absoluta evita que imágenes, iconos y assets se resuelvan
+  // contra una ruta relativa incorrecta al abrir la PWA desde iPhone.
+  base: "/Proyecto-CONECTA/",
   plugins: [react()],
   build: {
     outDir: "dist",

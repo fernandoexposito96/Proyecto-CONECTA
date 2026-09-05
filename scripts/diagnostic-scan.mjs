@@ -41,6 +41,9 @@ function parseCommandOutput(checkId, area, label, output, includeErrors = true) 
   for (const raw of String(output || "").split(/\r?\n/)) {
     const line = clean(raw, 1200);
     if (!line || /^>\s|^npm notice/i.test(line)) continue;
+    // The parent command finding already contains this exit summary. Counting it again
+    // creates a duplicate NORA error without adding an independent failure.
+    if (/^Visual release contracts failed:\s*\d+\/\d+$/i.test(line)) continue;
     if (includeErrors && errorPattern.test(line)) {
       addUnique(`${checkId}-error-${++errorIndex}-${slug(line)}`, area, `${label} · fallo ${errorIndex}`, "fail", line, "error", { source: "command-output", parent_check: checkId });
     } else if (warningPattern.test(line)) {

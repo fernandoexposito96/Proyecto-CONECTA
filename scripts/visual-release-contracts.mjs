@@ -45,7 +45,7 @@ const ui = read("src/ui.css");
 check("no-photo-enhancer-file", !exists("src/photoEnhancer.ts"), "No debe existir src/photoEnhancer.ts");
 check("no-photo-enhancer-bootstrap", !/photoEnhancer|startPhotoEnhancer/.test(main), "main.tsx no debe importar ni ejecutar photoEnhancer");
 check("no-hotfix-imports", !/@import\s+["'][^"']*(?:hotfix|legacy|prototype)[^"']*["']/i.test(ui), "ui.css no importa hotfixes, prototipos ni capas legacy");
-check("single-home-css-entry", importCount(ui, "home-reference-v4.css") === 1, "Inicio debe tener una sola entrada CSS final");
+check("single-home-css-entry", importCount(ui, "premium-reference-v5.css") === 1 && importCount(ui, "home-reference-v4.css") === 0, "Inicio debe usar una sola capa visual Premium V5 y ninguna capa V4 superpuesta");
 check("single-chat-css-entry", importCount(ui, "advanced-chat.css") === 1, "Chat debe tener una sola entrada CSS final");
 
 // Cobertura de imágenes y fallbacks.

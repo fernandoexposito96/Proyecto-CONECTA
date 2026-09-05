@@ -57,10 +57,11 @@ const staleWhileRevalidate=async(request)=>{
 };
 
 self.addEventListener('install',event=>{
-  event.waitUntil(
-    caches.open(SHELL_CACHE)
-      .then(cache=>cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'})))),
-  );
+  event.waitUntil((async()=>{
+    const cache=await caches.open(SHELL_CACHE);
+    await cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'})));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate',event=>{

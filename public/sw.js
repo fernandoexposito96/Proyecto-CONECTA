@@ -1,7 +1,7 @@
-const VERSION='conecta-v10-premium-v5';
-const SHELL_CACHE=`${VERSION}-shell`;
-const IMAGE_CACHE=`${VERSION}-images`;
-const CURRENT_CACHES=new Set([SHELL_CACHE,IMAGE_CACHE]);
+const SHELL_CACHE='conecta-v10-shell';
+const ASSET_CACHE='conecta-v10-assets';
+const IMAGE_CACHE='conecta-v10-images';
+const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
 
 const scopeUrl=new URL(self.registration.scope);
 const APP_ROOT=scopeUrl.pathname.endsWith('/')?scopeUrl.pathname:`${scopeUrl.pathname}/`;
@@ -10,7 +10,14 @@ const MANIFEST=new URL('manifest.json',scopeUrl).pathname;
 const ICON=new URL('conecta-icon.svg',scopeUrl).pathname;
 const CORE=[APP_ROOT,APP_INDEX,MANIFEST,ICON];
 
-const trimCache=async(cacheName,limit)=>{
+const CACHE_LIMITS={
+  [ASSET_CACHE]:120,
+  [IMAGE_CACHE]:80,
+};
+
+const trimCache=async(cacheName)=>{
+  const limit=CACHE_LIMITS[cacheName];
+  if(!limit) return;
   const cache=await caches.open(cacheName);
   const requests=await cache.keys();
   const overflow=requests.length-limit;
@@ -22,7 +29,7 @@ const put=async(cacheName,request,response)=>{
   if(!response || (!response.ok && response.type!=='opaque')) return response;
   const cache=await caches.open(cacheName);
   await cache.put(request,response.clone());
-  if(cacheName===IMAGE_CACHE) await trimCache(cacheName,80);
+  await trimCache(cacheName);
   return response;
 };
 
@@ -35,7 +42,14 @@ const networkFirst=async(request,fallback)=>{
   }
 };
 
-const staleWhileRevalidateImage=async(request)=>{
+const cacheFirst=async(request)=>{
+  const cached=await caches.match(request);
+  if(cached) return cached;
+  const response=await fetch(request,{cache:'reload'});
+  return put(ASSET_CACHE,request,response);
+};
+
+const staleWhileRevalidate=async(request)=>{
   const cached=await caches.match(request);
   const refresh=fetch(request,{cache:'no-store'}).then(response=>put(IMAGE_CACHE,request,response)).catch(()=>null);
   if(cached){void refresh;return cached;}
@@ -44,7 +58,7 @@ const staleWhileRevalidateImage=async(request)=>{
 
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
-    /* Corte limpio: al instalar V5 eliminamos cualquier cache CONECTA anterior. */
+    // Corte limpio V5: elimina cualquier cache CONECTA anterior antes de precargar la nueva base.
     const keys=await caches.keys();
     await Promise.all(keys.filter(key=>key.startsWith('conecta-')).map(key=>caches.delete(key)));
     const cache=await caches.open(SHELL_CACHE);
@@ -73,30 +87,31 @@ self.addEventListener('message',event=>{
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
   const url=new URL(event.request.url);
+
   if(url.origin!==self.location.origin){
-    if(event.request.destination==='image') event.respondWith(staleWhileRevalidateImage(event.request));
+    if(event.request.destination==='image') event.respondWith(staleWhileRevalidate(event.request));
     return;
   }
 
-  /* NORA y diagnóstico siempre desde red. */
+  // NORA y diagnóstico siempre desde red.
   if(url.pathname.includes('/diagnostic/')){
     event.respondWith(fetch(event.request,{cache:'no-store'}));
     return;
   }
 
-  /* HTML y navegación nunca usan una versión antigua si hay red. */
+  // HTML y navegación priorizan red para no reutilizar una interfaz antigua.
   if(event.request.mode==='navigate'){
     event.respondWith(networkFirst(event.request,APP_INDEX));
     return;
   }
 
-  /* JS/CSS/assets de cada despliegue: red primero para evitar parches antiguos. */
+  // Assets versionados de Vite son inmutables por hash; cacheFirst evita descargas repetidas sin mezclar versiones.
   if(url.pathname.includes('/assets/')){
-    event.respondWith(networkFirst(event.request));
+    event.respondWith(cacheFirst(event.request));
     return;
   }
 
   if(event.request.destination==='image'){
-    event.respondWith(staleWhileRevalidateImage(event.request));
+    event.respondWith(staleWhileRevalidate(event.request));
   }
 });

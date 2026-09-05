@@ -5,7 +5,6 @@ import { AppErrorBoundary, NetworkStatusBanner } from "./components/AppResilienc
 import { offlineVisual } from "./offlineVisuals";
 import { scheduleIdlePrefetch } from "./idle-prefetch";
 import { startImagePerformance } from "./image-performance";
-import { startPhotoEnhancer } from "./photoEnhancer";
 import { startTelemetry } from "./telemetry";
 import { initMonitoring } from "./monitoring";
 import "./ui.css";
@@ -45,7 +44,6 @@ createRoot(root).render(
 );
 
 startImagePerformance();
-startPhotoEnhancer();
 
 window.requestAnimationFrame(() => {
   const splash = document.getElementById("boot-splash");

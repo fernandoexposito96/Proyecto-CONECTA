@@ -33,6 +33,7 @@ function ensureInlinePhoto(element: Element) {
 
 function ensureAvatarPhoto(element: Element) {
   if (!(element instanceof HTMLElement)) return;
+  if (element.querySelector("img, picture")) return;
   if (element.classList.contains("has-auto-photo")) return;
   element.classList.add("has-auto-photo");
   element.style.backgroundImage = `url("${pickPhoto(element.parentElement || element)}")`;

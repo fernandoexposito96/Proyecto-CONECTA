@@ -33,7 +33,7 @@ const addUnique = (id, area, label, status, detail, severity = "info", meta = {}
 };
 
 const errorPattern = /\b(error|failed|failure|exception|fatal|critical|vulnerab|insecure|denied|forbidden|cannot|can't|invalid|broken)\b/i;
-const warningPattern = /\b(warn(?:ing)?|deprecated|missing|not found|timeout|retry|slow|unstable|flaky|unavailable|skipped|not tested|not executed|todo|fixme|hack|debt)\b/i;
+const warningPattern = /\b(warn(?:ing)?|deprecated|missing|not found|timeout|retry|slow|unstable|flaky|unavailable|skipped|not tested|not executed|debt)\b/i;
 
 function parseCommandOutput(checkId, area, label, output, includeErrors = true) {
   let errorIndex = 0;
@@ -41,9 +41,10 @@ function parseCommandOutput(checkId, area, label, output, includeErrors = true) 
   for (const raw of String(output || "").split(/\r?\n/)) {
     const line = clean(raw, 1200);
     if (!line || /^>\s|^npm notice/i.test(line)) continue;
-    // The parent command finding already contains this exit summary. Counting it again
-    // creates a duplicate NORA error without adding an independent failure.
+    // Summaries repeat information already represented by the individual finding.
     if (/^Visual release contracts failed:\s*\d+\/\d+$/i.test(line)) continue;
+    if (/^[✖×]\s*\d+\s+problems?\s*\(/i.test(line)) continue;
+    if (/^\d+\s+problems?\s*\(/i.test(line)) continue;
     if (includeErrors && errorPattern.test(line)) {
       addUnique(`${checkId}-error-${++errorIndex}-${slug(line)}`, area, `${label} · fallo ${errorIndex}`, "fail", line, "error", { source: "command-output", parent_check: checkId });
     } else if (warningPattern.test(line)) {
@@ -118,6 +119,7 @@ function staticWatch(file, lineNo, label, detail, kind = "warning") {
 for (const file of sourceFiles) {
   const text = fs.readFileSync(file, "utf8");
   const lines = text.split(/\r?\n/);
+  const relativeFile = rel(file);
   scannedBytes += Buffer.byteLength(text);
   scannedLines += lines.length;
 
@@ -129,8 +131,11 @@ for (const file of sourceFiles) {
 
   lines.forEach((line, index) => {
     const n = index + 1;
-    if (/\b(?:TODO|FIXME|HACK)\b/i.test(line)) staticWatch(file, n, "Trabajo pendiente marcado en código", clean(line, 420));
-    if (/console\.(?:log|warn|error)\s*\(/.test(line) && !rel(file).includes("monitoring")) staticWatch(file, n, "Console en código de cliente", clean(line, 420));
+    // Marcadores de ingeniería reales, solo en comentarios y respetando mayúsculas.
+    // Así palabras españolas como "todo" no se convierten en un TODO falso.
+    if (/(?:\/\/|\/\*|\*)\s*(?:TODO|FIXME|HACK)\b/.test(line)) staticWatch(file, n, "Trabajo pendiente marcado en código", clean(line, 420));
+    const intentionalLoggingFile = /(?:^|\/)(?:monitoring|telemetry)\.(?:ts|tsx|js)$/.test(relativeFile);
+    if (/console\.(?:log|warn|error)\s*\(/.test(line) && !intentionalLoggingFile) staticWatch(file, n, "Console en código de cliente", clean(line, 420));
     if (/dangerouslySetInnerHTML\s*=/.test(line)) staticWatch(file, n, "HTML dinámico sensible", "Uso de dangerouslySetInnerHTML; revisar sanitización y origen del contenido.");
     if (/href\s*=\s*["']#["']/.test(line)) staticWatch(file, n, "Enlace placeholder", clean(line, 420));
     if (/\b(?:alert|confirm|prompt)\s*\(/.test(line) && /\.(?:ts|tsx|js)$/.test(file)) staticWatch(file, n, "Diálogo nativo en experiencia de usuario", clean(line, 420));

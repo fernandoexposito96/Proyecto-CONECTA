@@ -1,45 +1,27 @@
-/*
- * CONECTA — entrada única de estilos.
- *
- * Esta rama elimina capas históricas de hotfix/compatibilidad y conserva
- * únicamente módulos de estructura, vistas, accesibilidad y la referencia
- * visual Premium V4 aprobada. La protección responsive universal sigue última.
- */
+/* CONECTA — entrada única de estilos, Premium V5.
+   Sin capas históricas V4 ni hotfixes visuales superpuestos. */
 
-/* Base visual estable */
+/* Base funcional */
 @import "./conecta-premium.css";
+@import "./structure-overhaul.css";
+@import "./core-views-visual.css";
+@import "./views/community-activity.css";
+@import "./views/advanced-chat.css";
+
+/* Componentes funcionales */
+@import "./drawer-reference-premium.css";
+@import "./mobile-dialogs-safe.css";
 
 /* Accesibilidad */
 @import "./accessibility.css";
 
-/* Estructura y vistas funcionales */
-@import "./structure-overhaul.css";
-@import "./core-views-visual.css";
-@import "./premium-social-experience.css";
-@import "./views/community-activity.css";
-@import "./views/advanced-chat.css";
+/* Única capa visual oficial */
+@import "./premium-reference-v5.css";
 
-/* Menú, diálogos y confirmaciones */
-@import "./drawer-reference-premium.css";
-@import "./mobile-dialogs-safe.css";
-@import "./confirmation-final-polish.css";
-
-/* Escritorio */
-@import "./desktop-final-polish.css";
-
-/* Diseño Premium V4 aprobado: única capa de acabado visual */
-@import "./premium-reference-v4.css";
-
-/* Vistas V4 aprobadas, separadas por pantalla para evitar hotfixes globales. */
-@import "./views/home-reference-v4.css";
-@import "./views/explore-reference-v4.css";
-@import "./views/chat-profile-reference-v4.css";
-@import "./views/settings-premium-reference-v4.css";
-
-/* Siempre último: móvil, tablet, ordenador y PWA */
+/* Responsive funcional, siempre último */
 @import "./universal-responsive.css";
 
-/* Fallback de arranque: negro + CONECTA, sin spinner. */
+/* Arranque limpio: marca, sin spinner ni flashes de UI antigua. */
 .loading-screen{
   position:fixed;
   inset:0;
@@ -48,19 +30,20 @@
   place-items:center;
   min-height:100dvh;
   overflow:hidden;
-  background:#000;
+  background:#fff;
 }
 .loading-screen>*{display:none!important}
 .loading-screen::before{
   content:"CONECTA";
   display:block;
-  color:#fff;
+  color:#07133f;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
   font-size:clamp(30px,8vw,46px);
-  font-weight:800;
+  font-weight:950;
   line-height:1;
-  letter-spacing:.16em;
-  text-indent:.16em;
+  letter-spacing:-.05em;
   white-space:nowrap;
 }
 .loading-screen::after{content:none!important}
+html[data-theme="dark"] .loading-screen{background:#0b1020}
+html[data-theme="dark"] .loading-screen::before{color:#fff}

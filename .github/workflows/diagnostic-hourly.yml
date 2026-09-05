@@ -5,16 +5,13 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/diagnostic-hourly.yml"
-      - "scripts/diagnostic-scan.mjs"
-      - "scripts/visual-release-contracts.mjs"
-      - "src/App.tsx"
-      - "src/main.tsx"
-      - "src/ui.css"
-      - "src/views/AdvancedChatView.tsx"
-      - "src/views/advanced-chat.css"
-      - "src/views/home-reference-v4.css"
+      - "scripts/**"
+      - "src/**"
+      - "public/**"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "vite.config.ts"
+      - "index.html"
   schedule:
     # GitHub Actions cron is evaluated in UTC.
     - cron: "17 */5 * * *"
@@ -53,7 +50,7 @@ jobs:
         run: pnpm run validate
       - name: Validate clean Home and Chat release
         run: node scripts/visual-release-contracts.mjs
-      - name: Generate diagnostic report
+      - name: Generate NORA v4 report
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
@@ -79,6 +76,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Publish CONECTA and diagnostic
+      - name: Publish CONECTA and NORA diagnostic
         id: deployment
         uses: actions/deploy-pages@v4

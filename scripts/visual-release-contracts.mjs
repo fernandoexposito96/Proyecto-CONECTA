@@ -24,7 +24,7 @@ check("global-image-fallback", /HTMLImageElement/.test(main) && /offlineVisual/.
 check("home-hero-photo", /className=\"hero-card\"/.test(app) && /media\/cards\/social-city\.webp/.test(app), "Inicio conserva hero fotográfico real");
 check("home-plan-photo-cards", /<PlanCard/.test(app) && /className=\"plans-grid\"/.test(app), "Inicio contiene tarjetas de planes con imagen");
 check("home-people-avatars", /className=\"people-list\"/.test(app) && /<PersonRow/.test(app), "Inicio contiene personas con avatar");
-check("home-mobile-cards", /@media\s*\(max-width:820px\)/.test(homeCss) && /action-card-grid/.test(homeCss) && /grid-template-columns\s*:\s*repeat\(4\s*,/.test(homeCss), "Accesos móviles de Inicio estructurados en cuatro tarjetas");
+check("home-mobile-cards", /@media\s*\(\s*max-width\s*:\s*820px\s*\)/.test(homeCss) && /action-card-grid/.test(homeCss) && /grid-template-columns\s*:\s*repeat\(4\s*,/.test(homeCss), "Accesos móviles de Inicio estructurados en cuatro tarjetas");
 check("home-bottom-nav-safe", /bottom-nav/.test(homeCss) && /safe-area-inset-bottom/.test(homeCss), "Barra inferior móvil respeta safe area");
 
 check("chat-photo-avatar", /conversation-avatar photo/.test(chat) && /conversationPhoto\(/.test(chat) && /<img src=\{conversationPhoto/.test(chat), "Chat usa fotos reales/fallback en conversaciones y cabecera");

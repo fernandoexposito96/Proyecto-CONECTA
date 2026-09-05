@@ -1,4 +1,4 @@
-name: NORA safe autofix once
+name: NORA verify safe fix once
 
 on:
   push:
@@ -7,141 +7,62 @@ on:
       - ".github/workflows/nora-autofix-once.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  fix:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 35
     steps:
       - name: Checkout main
         uses: actions/checkout@v6
         with:
           ref: main
-          fetch-depth: 0
-      - name: Replace native report prompt with premium dialog
-        shell: bash
+      - name: pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - name: Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Verify native report prompt is gone
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("src/App.tsx")
-          with path.open("r", encoding="utf-8", newline="") as handle:
-              text = handle.read()
-
-          eol = "\r\n" if text.count("\r\n") > text.count("\n") / 2 else "\n"
-
-          state_pattern = re.compile(
-              r'(  const \[selectedMapPlan, setSelectedMapPlan\] = useState<Plan \| null>\(null\);\r?\n)(  const \[mobileMenuOpen, setMobileMenuOpen\] = useState\(false\);)'
-          )
-          state_replacement = (
-              r'\1'
-              + f'  const [reportTarget, setReportTarget] = useState<Profile | null>(null);{eol}'
-              + f'  const [reportReason, setReportReason] = useState("");{eol}'
-              + f'  const [reportSubmitting, setReportSubmitting] = useState(false);{eol}'
-              + r'\2'
-          )
-          text, count = state_pattern.subn(state_replacement, text, count=1)
-          if count != 1:
-              raise SystemExit("NORA autofix: report state insertion point not found exactly once")
-
-          report_pattern = re.compile(
-              r'  const reportPerson = async \(person: Profile\) => \{\r?\n'
-              r'.*?'
-              r'  \};\r?\n\r?\n'
-              r'  const blockPerson = async \(person: Profile\) => \{',
-              re.S,
-          )
-          report_replacement = eol.join([
-              '  const reportPerson = async (person: Profile) => {',
-              '    setReportTarget(person);',
-              '    setReportReason("");',
-              '  };',
-              '',
-              '  const submitReport = async () => {',
-              '    if (!user || !reportTarget || reportSubmitting) return;',
-              '    const reason = reportReason.trim();',
-              '    if (!reason) return;',
-              '    setReportSubmitting(true);',
-              '    const { error } = await supabase.from("reports").insert({',
-              '      reporter_id: user.id,',
-              '      reported_user_id: reportTarget.id,',
-              '      reason,',
-              '    });',
-              '    setReportSubmitting(false);',
-              '    if (error) return toast.error(error.message);',
-              '    setReportTarget(null);',
-              '    setReportReason("");',
-              '    toast.success("Reporte enviado para revisión");',
-              '  };',
-              '',
-              '  const blockPerson = async (person: Profile) => {',
-          ])
-          text, count = report_pattern.subn(lambda _m: report_replacement, text, count=1)
-          if count != 1:
-              raise SystemExit("NORA autofix: native report prompt block not found exactly once")
-
-          marker = '      <PlanDetailDialog'
-          if text.count(marker) != 1:
-              raise SystemExit("NORA autofix: dialog insertion point not found exactly once")
-          dialog = eol.join([
-              '      <Dialog',
-              '        open={Boolean(reportTarget)}',
-              '        onOpenChange={(open) => {',
-              '          if (!open && !reportSubmitting) {',
-              '            setReportTarget(null);',
-              '            setReportReason("");',
-              '          }',
-              '        }}',
-              '      >',
-              '        <DialogContent className="form-dialog">',
-              '          <DialogHeader>',
-              '            <DialogTitle>Reportar a {reportTarget?.display_name ?? "esta persona"}</DialogTitle>',
-              '            <DialogDescription>Describe el motivo sin incluir datos sensibles. El equipo de seguridad lo revisará.</DialogDescription>',
-              '          </DialogHeader>',
-              '          <form',
-              '            className="stack-form"',
-              '            onSubmit={(event) => {',
-              '              event.preventDefault();',
-              '              void submitReport();',
-              '            }}',
-              '          >',
-              '            <Field label="Motivo del reporte">',
-              '              <textarea',
-              '                value={reportReason}',
-              '                onChange={(event) => setReportReason(event.target.value)}',
-              '                required',
-              '                rows={4}',
-              '                maxLength={500}',
-              '                placeholder="Explica de forma breve qué ha ocurrido…"',
-              '              />',
-              '            </Field>',
-              '            <button type="submit" className="primary-action" disabled={reportSubmitting || !reportReason.trim()}>',
-              '              {reportSubmitting ? <LoaderCircle className="spin" /> : <Flag />} Enviar reporte',
-              '            </button>',
-              '          </form>',
-              '        </DialogContent>',
-              '      </Dialog>',
-              '',
-          ])
-          text = text.replace(marker, dialog + marker, 1)
-
-          if 'window.prompt("Motivo del reporte' in text:
-              raise SystemExit("NORA autofix: native prompt still present")
-
-          with path.open("w", encoding="utf-8", newline="") as handle:
-              handle.write(text)
-          PY
-      - name: Commit safe fix
-        shell: bash
-        run: |
-          if git diff --quiet -- src/App.tsx; then
-            echo "No change produced"
+          if grep -R 'window\.prompt("Motivo del reporte' src/App.tsx; then
+            echo "Native report prompt still present"
             exit 1
           fi
-          git config user.name "NORA Autofix"
-          git config user.email "nora-autofix@users.noreply.github.com"
-          git add src/App.tsx
-          git commit -m "Fix native report dialog warning"
-          git push origin HEAD:main
+          grep -q 'DialogTitle>Reportar a' src/App.tsx
+      - name: Validate production quality gate
+        run: |
+          pnpm run validate
+          pnpm run test:accessibility
+          mkdir -p .nora
+          printf '{"unit":true,"e2e":true,"accessibility":true,"commit":"%s"}\n' "$GITHUB_SHA" > .nora/validate-ok.json
+      - name: Validate clean Home and Chat release
+        run: node scripts/visual-release-contracts.mjs
+      - name: Generate NORA base report
+        env:
+          VITE_SUPABASE_URL: https://qdjuypoqiafqncwgmicf.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_cJAhkB9oDjK-ecmrEshNvA_79F3_G55
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          CONECTA_ROBOT_MAX_FINDINGS: "999"
+        run: node scripts/diagnostic-scan.mjs
+      - name: Deep NORA functional verification
+        run: node scripts/nora-deep-checks.mjs
+      - name: Build with latest diagnostic
+        run: pnpm run build
+      - name: Upload NORA evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: nora-safe-fix-evidence
+          path: |
+            public/diagnostic/report.json
+            .nora/validate-ok.json
+            playwright-report
+          if-no-files-found: error

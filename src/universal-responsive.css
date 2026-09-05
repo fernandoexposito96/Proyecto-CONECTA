@@ -90,3 +90,30 @@ input,textarea,select,button{max-width:100%}
 @media (display-mode:standalone){
   .app-shell,.main-content{min-height:100dvh}.sidebar{height:100dvh;overflow-y:auto;overscroll-behavior:contain}.topbar{padding-top:max(10px,env(safe-area-inset-top))}.bottom-nav{padding-bottom:env(safe-area-inset-bottom)}
 }
+
+/* Premium V4 convergence: universal stays last without overriding the approved mobile composition. */
+@media (max-width:820px){
+  .mobile-menu-button{display:none!important}
+  .mobile-brand{display:flex!important}
+  .action-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .plans-grid{display:grid!important;grid-auto-flow:column!important;grid-auto-columns:minmax(252px,78vw)!important;grid-template-columns:none!important;overflow-x:auto!important;overflow-y:visible!important;scroll-snap-type:x mandatory!important}
+  .plans-grid>*{scroll-snap-align:start!important}
+  .bottom-nav{grid-template-columns:1fr 1fr 1.12fr 1fr 1fr!important}
+  .bottom-nav>.floating-create{transform:translateY(-10px)!important}
+  .section-block,.action-card,.plan-card,.person-card{content-visibility:visible!important;contain-intrinsic-size:auto!important}
+  .section-title h2{color:var(--p4-ink)!important}
+}
+
+@media (max-width:600px){
+  .hero-card{min-height:310px!important}
+  .hero-copy{left:22px!important;right:42%!important;bottom:20px!important;max-width:none!important;width:auto!important;padding:0!important}
+  .hero-copy h2{font-size:clamp(33px,9vw,46px)!important}
+  .action-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+
+@media (max-width:390px){
+  .hero-card{min-height:292px!important}
+  .hero-copy{right:37%!important}
+  .hero-copy h2{font-size:34px!important}
+  .plans-grid{grid-auto-columns:minmax(248px,82vw)!important}
+}

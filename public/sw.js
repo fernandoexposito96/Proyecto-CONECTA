@@ -1,6 +1,6 @@
-const SHELL_CACHE='conecta-v7-shell';
-const ASSET_CACHE='conecta-v7-assets';
-const IMAGE_CACHE='conecta-v7-images';
+const SHELL_CACHE='conecta-v8-shell';
+const ASSET_CACHE='conecta-v8-assets';
+const IMAGE_CACHE='conecta-v8-images';
 const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
 
 const scopeUrl=new URL(self.registration.scope);
@@ -42,6 +42,8 @@ const networkFirst=async(request,fallback)=>{
   }
 };
 
+const networkOnly=async(request)=>fetch(request,{cache:'no-store'});
+
 const cacheFirst=async(request)=>{
   const cached=await caches.match(request);
   if(cached) return cached;
@@ -81,6 +83,11 @@ self.addEventListener('fetch',event=>{
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin){
     if(event.request.destination==='image') event.respondWith(staleWhileRevalidate(event.request));
+    return;
+  }
+
+  if(url.pathname.includes('/diagnostic/')){
+    event.respondWith(networkOnly(event.request));
     return;
   }
 

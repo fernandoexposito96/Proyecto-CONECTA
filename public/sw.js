@@ -1,6 +1,6 @@
-const SHELL_CACHE='conecta-v10-shell';
-const ASSET_CACHE='conecta-v10-assets';
-const IMAGE_CACHE='conecta-v10-images';
+const SHELL_CACHE='conecta-v11-shell';
+const ASSET_CACHE='conecta-v11-assets';
+const IMAGE_CACHE='conecta-v11-images';
 const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
 
 const scopeUrl=new URL(self.registration.scope);
@@ -58,7 +58,6 @@ const staleWhileRevalidate=async(request)=>{
 
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
-    // Corte limpio V5: elimina cualquier cache CONECTA anterior antes de precargar la nueva base.
     const keys=await caches.keys();
     await Promise.all(keys.filter(key=>key.startsWith('conecta-')).map(key=>caches.delete(key)));
     const cache=await caches.open(SHELL_CACHE);
@@ -93,19 +92,16 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  // NORA y diagnóstico siempre desde red.
   if(url.pathname.includes('/diagnostic/')){
     event.respondWith(fetch(event.request,{cache:'no-store'}));
     return;
   }
 
-  // HTML y navegación priorizan red para no reutilizar una interfaz antigua.
   if(event.request.mode==='navigate'){
     event.respondWith(networkFirst(event.request,APP_INDEX));
     return;
   }
 
-  // Assets versionados de Vite son inmutables por hash; cacheFirst evita descargas repetidas sin mezclar versiones.
   if(url.pathname.includes('/assets/')){
     event.respondWith(cacheFirst(event.request));
     return;

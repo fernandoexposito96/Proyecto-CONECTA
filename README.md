@@ -82,3 +82,5 @@ La clave publicable de Supabase está diseñada para ejecutarse en cliente. La a
 ## Licencia
 
 No se ha declarado una licencia de código abierto. Todos los derechos permanecen reservados al autor.
+
+<!-- deploy-retrigger: 2026-09-05T09:54Z -->

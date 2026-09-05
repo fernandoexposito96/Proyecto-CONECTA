@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const reportPath = path.join(root, "public", "diagnostic", "report.json");
+const validateMarker = path.join(root, ".nora", "validate-ok.json");
 if (!fs.existsSync(reportPath)) {
   console.error("NORA deep checks: falta public/diagnostic/report.json");
   process.exit(1);
@@ -13,14 +14,35 @@ const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
 const clean = (value, max = 1800) => String(value ?? "").replace(/\x1b\[[0-9;]*m/g, "").trim().slice(-max);
 
 const checks = [
-  { id: "deep-unit", area: "Pruebas", label: "Tests unitarios", script: "test:unit", severity: "error" },
-  { id: "deep-e2e", area: "Pruebas", label: "E2E Chromium + iPhone/WebKit", script: "test:e2e", severity: "critical" },
-  { id: "deep-accessibility", area: "Accesibilidad", label: "Escaneo automatizado de accesibilidad", script: "test:accessibility", severity: "error" },
+  { id: "deep-unit", area: "Pruebas", label: "Tests unitarios", script: "test:unit", severity: "error", markerKey: "unit" },
+  { id: "deep-e2e", area: "Pruebas", label: "E2E Chromium + iPhone/WebKit", script: "test:e2e", severity: "critical", markerKey: "e2e" },
+  { id: "deep-accessibility", area: "Accesibilidad", label: "Escaneo automatizado de accesibilidad", script: "test:accessibility", severity: "error", markerKey: "accessibility" },
 ];
 
 const results = Array.isArray(report.results) ? report.results.filter((item) => !checks.some((check) => check.id === item.id)) : [];
+let validated = null;
+try {
+  if (fs.existsSync(validateMarker)) validated = JSON.parse(fs.readFileSync(validateMarker, "utf8"));
+} catch {
+  validated = null;
+}
 
 for (const check of checks) {
+  if (validated?.[check.markerKey] === true) {
+    results.push({
+      id: check.id,
+      area: check.area,
+      label: check.label,
+      status: "ok",
+      severity: "info",
+      detail: `Correcto · verificado por la puerta de calidad completa (${validated.commit || "commit actual"})`,
+      duration_ms: 0,
+      source: "validated-quality-gate",
+    });
+    continue;
+  }
+
+  // Fallback para ejecuciones locales: si no existe el marcador de CI, se ejecuta la prueba.
   const started = Date.now();
   const proc = spawnSync("pnpm", ["run", check.script], {
     cwd: root,
@@ -66,7 +88,7 @@ const penalty = report.counts.critical * 12 + report.counts.errors * 4 + report.
 report.score = Math.max(0, Math.min(100, Math.round(100 - penalty)));
 report.overall = report.counts.critical ? "critical" : report.counts.errors ? "error" : report.counts.warnings ? "warning" : "healthy";
 report.schema = 5;
-report.engine = "deep-diagnostic-v5";
+report.engine = "deep-diagnostic-v5.1";
 report.coverage = {
   ...(report.coverage || {}),
   unit_tests_checked: true,
@@ -74,8 +96,8 @@ report.coverage = {
   accessibility_checked: true,
   executable_checks: Number(report.coverage?.executable_checks || 0) + 3,
 };
-report.coverage_note = `NORA v5 revisa código, TypeScript, build, tests unitarios, smoke, rendimiento, seguridad, dependencias, E2E Chromium + iPhone/WebKit, accesibilidad, contrato visual, imágenes, PWA, Supabase y producción. FALLOS son problemas confirmados; AVERÍAS / VIGILAR son riesgos o comprobaciones pendientes; CORREGIDOS son fallos anteriores resueltos; POSITIVOS son comprobaciones correctas actuales. Capacidad máxima visible: ${maxFindings}.`;
+report.coverage_note = `NORA v5.1 revisa código, TypeScript, build, tests unitarios, smoke, rendimiento, seguridad, dependencias, E2E Chromium + iPhone/WebKit, accesibilidad, contrato visual, imágenes, PWA, Supabase y producción. FALLOS son problemas confirmados; AVERÍAS / VIGILAR son riesgos o comprobaciones pendientes; CORREGIDOS son fallos anteriores resueltos; POSITIVOS son comprobaciones correctas actuales. Capacidad máxima visible: ${maxFindings}.`;
 report.finished_at = new Date().toISOString();
 
 fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-console.log(`NORA v5: ${report.overall} · salud ${report.score}/100 · fallos ${report.errors.length} · averías/vigilar ${report.watch.length} · positivos ${report.positives.length}`);
+console.log(`NORA v5.1: ${report.overall} · salud ${report.score}/100 · fallos ${report.errors.length} · averías/vigilar ${report.watch.length} · positivos ${report.positives.length}`);

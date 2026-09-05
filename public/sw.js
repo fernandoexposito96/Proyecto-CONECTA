@@ -1,7 +1,7 @@
-const SHELL_CACHE='conecta-v8-shell';
-const ASSET_CACHE='conecta-v8-assets';
-const IMAGE_CACHE='conecta-v8-images';
-const CURRENT_CACHES=new Set([SHELL_CACHE,ASSET_CACHE,IMAGE_CACHE]);
+const VERSION='conecta-v10-premium-v5';
+const SHELL_CACHE=`${VERSION}-shell`;
+const IMAGE_CACHE=`${VERSION}-images`;
+const CURRENT_CACHES=new Set([SHELL_CACHE,IMAGE_CACHE]);
 
 const scopeUrl=new URL(self.registration.scope);
 const APP_ROOT=scopeUrl.pathname.endsWith('/')?scopeUrl.pathname:`${scopeUrl.pathname}/`;
@@ -10,14 +10,7 @@ const MANIFEST=new URL('manifest.json',scopeUrl).pathname;
 const ICON=new URL('conecta-icon.svg',scopeUrl).pathname;
 const CORE=[APP_ROOT,APP_INDEX,MANIFEST,ICON];
 
-const CACHE_LIMITS={
-  [ASSET_CACHE]:120,
-  [IMAGE_CACHE]:80,
-};
-
-const trimCache=async(cacheName)=>{
-  const limit=CACHE_LIMITS[cacheName];
-  if(!limit) return;
+const trimCache=async(cacheName,limit)=>{
   const cache=await caches.open(cacheName);
   const requests=await cache.keys();
   const overflow=requests.length-limit;
@@ -29,7 +22,7 @@ const put=async(cacheName,request,response)=>{
   if(!response || (!response.ok && response.type!=='opaque')) return response;
   const cache=await caches.open(cacheName);
   await cache.put(request,response.clone());
-  await trimCache(cacheName);
+  if(cacheName===IMAGE_CACHE) await trimCache(cacheName,80);
   return response;
 };
 
@@ -42,24 +35,18 @@ const networkFirst=async(request,fallback)=>{
   }
 };
 
-const networkOnly=async(request)=>fetch(request,{cache:'no-store'});
-
-const cacheFirst=async(request)=>{
+const staleWhileRevalidateImage=async(request)=>{
   const cached=await caches.match(request);
-  if(cached) return cached;
-  const response=await fetch(request,{cache:'default'});
-  return put(ASSET_CACHE,request,response);
-};
-
-const staleWhileRevalidate=async(request)=>{
-  const cached=await caches.match(request);
-  const refresh=fetch(request,{cache:'default'}).then(response=>put(IMAGE_CACHE,request,response)).catch(()=>null);
+  const refresh=fetch(request,{cache:'no-store'}).then(response=>put(IMAGE_CACHE,request,response)).catch(()=>null);
   if(cached){void refresh;return cached;}
   return (await refresh) || Response.error();
 };
 
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
+    /* Corte limpio: al instalar V5 eliminamos cualquier cache CONECTA anterior. */
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key.startsWith('conecta-')).map(key=>caches.delete(key)));
     const cache=await caches.open(SHELL_CACHE);
     await cache.addAll(CORE.map(url=>new Request(url,{cache:'reload'})));
     await self.skipWaiting();
@@ -69,43 +56,47 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
-    await Promise.all(
-      keys
-        .filter(key=>key.startsWith('conecta-')&&!CURRENT_CACHES.has(key))
-        .map(key=>caches.delete(key)),
-    );
+    await Promise.all(keys.filter(key=>key.startsWith('conecta-')&&!CURRENT_CACHES.has(key)).map(key=>caches.delete(key)));
     await self.clients.claim();
   })());
+});
+
+self.addEventListener('message',event=>{
+  if(event.data?.type==='CONECTA_PURGE_CACHES'){
+    event.waitUntil((async()=>{
+      const keys=await caches.keys();
+      await Promise.all(keys.filter(key=>key.startsWith('conecta-')).map(key=>caches.delete(key)));
+    })());
+  }
 });
 
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin){
-    if(event.request.destination==='image') event.respondWith(staleWhileRevalidate(event.request));
+    if(event.request.destination==='image') event.respondWith(staleWhileRevalidateImage(event.request));
     return;
   }
 
+  /* NORA y diagnóstico siempre desde red. */
   if(url.pathname.includes('/diagnostic/')){
-    event.respondWith(networkOnly(event.request));
+    event.respondWith(fetch(event.request,{cache:'no-store'}));
     return;
   }
 
+  /* HTML y navegación nunca usan una versión antigua si hay red. */
   if(event.request.mode==='navigate'){
     event.respondWith(networkFirst(event.request,APP_INDEX));
     return;
   }
 
+  /* JS/CSS/assets de cada despliegue: red primero para evitar parches antiguos. */
   if(url.pathname.includes('/assets/')){
-    event.respondWith(cacheFirst(event.request));
+    event.respondWith(networkFirst(event.request));
     return;
   }
 
   if(event.request.destination==='image'){
-    event.respondWith(staleWhileRevalidate(event.request));
-    return;
+    event.respondWith(staleWhileRevalidateImage(event.request));
   }
-
-  // Do not proxy unrelated same-origin requests. Browser-managed requests such
-  // as telemetry and development probes must keep their native error semantics.
 });

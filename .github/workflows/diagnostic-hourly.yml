@@ -6,6 +6,13 @@ on:
     paths:
       - ".github/workflows/diagnostic-hourly.yml"
       - "scripts/diagnostic-scan.mjs"
+      - "scripts/visual-release-contracts.mjs"
+      - "src/App.tsx"
+      - "src/main.tsx"
+      - "src/ui.css"
+      - "src/views/AdvancedChatView.tsx"
+      - "src/views/advanced-chat.css"
+      - "src/views/home-reference-v4.css"
       - "package.json"
       - "pnpm-lock.yaml"
   schedule:
@@ -44,6 +51,8 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium webkit
       - name: Validate production quality gate
         run: pnpm run validate
+      - name: Validate clean Home and Chat release
+        run: node scripts/visual-release-contracts.mjs
       - name: Generate diagnostic report
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

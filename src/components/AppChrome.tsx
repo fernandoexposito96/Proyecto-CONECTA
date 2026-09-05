@@ -11,7 +11,7 @@ const avatarFallback = "https://images.unsplash.com/photo-1535713875002-d1d0cf37
 export function Sidebar({ active, profile, unread, go }: { active: View; profile: Profile | null; unread: number; go: (view: View) => void; }) {
   return <aside className="sidebar">
     <button className="brand" onClick={() => go("Inicio")}><span className="brand-mark">C</span><span><strong>CONECTA</strong><small>Planes que unen</small></span></button>
-    <nav className="side-nav" aria-label="Navegación principal">{primaryNavigation.map(({ label, icon: Icon }) => <button key={label} className={active === label ? "active" : ""} onClick={() => go(label)}><Icon /><span>{label}</span>{label === "Ahora" && <i className="live-dot" />}{label === "Chat" && unread > 0 && <b>{Math.min(unread, 9)}</b>}</button>)}</nav>
+    <nav className="side-nav" aria-label="Navegación principal">{primaryNavigation.map(({ label, icon: Icon }) => <button key={label} className={active === label ? "active" : ""} onClick={() => go(label)}><Icon /><span>{label === "Chat" ? "Mensajes" : label}</span>{label === "Ahora" && <i className="live-dot" />}{label === "Chat" && unread > 0 && <b>{Math.min(unread, 9)}</b>}</button>)}</nav>
     <div className="side-section-label">TU ESPACIO</div>
     <nav className="side-nav compact"><button className={active === "Perfil" ? "active" : ""} onClick={() => go("Perfil")}><UserCheck /><span>Mi perfil</span><BadgeCheck className="verified-icon" /></button><button className={active === "Seguridad" ? "active" : ""} onClick={() => go("Seguridad")}><Shield /><span>Seguridad</span></button><button className={active === "Vida" ? "active" : ""} onClick={() => go("Vida")}><Activity /><span>CONECTA Vida</span><em>PRO</em></button><button className={active === "Conecta+" ? "active" : ""} onClick={() => go("Conecta+")}><Sparkles /><span>CONECTA+</span><em>NUEVO</em></button></nav>
     <button className="email-ready-card" onClick={() => go("Seguridad")}><MailCheck /><span><strong>Cuenta protegida</strong><small>Correo confirmado y Face ID disponible.</small></span><ChevronRight /></button>
@@ -23,7 +23,7 @@ export function Topbar({ query, setQuery, profile, notifications, dataLoading, o
   return <header className="topbar">
     <button className="mobile-menu-button" onClick={onMenu} aria-label="Abrir menú"><Menu /></button>
     <button className="mobile-brand" onClick={() => go("Inicio")}><span className="brand-mark">C</span><strong>CONECTA</strong></button>
-    <label className="search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Busca planes, personas, grupos o lugares…" /></label>
+    <label className="search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar planes, personas..." /></label>
     <div className="top-actions">
       <button className="icon-button theme-button" onClick={onTheme} aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}>{theme === "light" ? <Moon /> : <Sun />}</button>
       <button className="icon-button desktop-refresh" onClick={() => void onRefresh()} aria-label="Sincronizar"><RefreshCw className={dataLoading ? "spin" : ""} /></button>
@@ -41,7 +41,7 @@ export function MobileNavigation({ active, go, onCreate }: { active: View; go: (
       <button className={active === "Inicio" ? "active" : ""} onClick={() => go("Inicio")}><Home /><span>Inicio</span></button>
       <button className={active === "Explorar" ? "active" : ""} onClick={() => go("Explorar")}><Compass /><span>Explora</span></button>
       <button className="floating-create" onClick={onCreate} aria-label="Crear plan"><Plus /></button>
-      <button className={active === "Chat" ? "active" : ""} onClick={() => go("Chat")}><MessageCircle /><span>Chat</span></button>
+      <button className={active === "Chat" ? "active" : ""} onClick={() => go("Chat")}><MessageCircle /><span>Mensajes</span></button>
       <button className={active === "Perfil" ? "active" : ""} onClick={() => go("Perfil")}><UserCheck /><span>Perfil</span></button>
     </nav>,
     document.body,

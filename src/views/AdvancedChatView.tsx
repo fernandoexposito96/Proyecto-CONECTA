@@ -48,14 +48,14 @@ export function AdvancedChatView({ conversations, selected, setSelected, message
     return "Conexión privada";
   };
 
-  const visibleConversations = useMemo(() => conversations.filter((conversation) => {
+  const visibleConversations = conversations.filter((conversation) => {
     const title = conversation.title || "Conversación privada";
     if (search && !`${title} ${conversationDescription(conversation)}`.toLowerCase().includes(search.toLowerCase())) return false;
     if (filter === "people") return !conversation.plan_id && !conversation.community_id;
     if (filter === "plans") return Boolean(conversation.plan_id);
     if (filter === "groups") return Boolean(conversation.community_id || conversation.type === "group");
     return true;
-  }), [conversations, filter, search]);
+  });
 
   const recentConversations = visibleConversations.slice(0, 8);
 

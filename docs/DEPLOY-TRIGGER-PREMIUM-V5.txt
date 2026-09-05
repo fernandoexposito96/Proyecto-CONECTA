@@ -1,0 +1,3 @@
+Trigger de despliegue limpio Premium V5
+Fecha: 2026-09-05
+Motivo: relanzar GitHub Pages tras un run cancelado.

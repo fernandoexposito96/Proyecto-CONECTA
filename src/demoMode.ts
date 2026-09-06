@@ -1,7 +1,7 @@
 import type { Community, Plan, Profile } from "./types";
 
 const DEMO_STORAGE_KEY = "conecta-demo-mode";
-export const DEMO_MODE_DEFAULT = true;
+export const DEMO_MODE_DEFAULT = false;
 export const DEMO_ID_PREFIX = "demo-";
 
 const now = Date.now();

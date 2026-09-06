@@ -72,6 +72,7 @@ import { MobileNavigation, Sidebar, Topbar } from "./components/AppChrome";
 import { primaryNavigation } from "./navigation";
 import { RetryState, ScreenSkeleton } from "./components/AppResilience";
 import { AuthScreen, EmailVerificationScreen, LoadingScreen, OnboardingScreen } from "./views/AuthFlowViews";
+import { ChatView } from "./views/ChatView";
 import { ReputationReviews } from "./components/ReputationReviews";
 import type {
   Community,
@@ -124,7 +125,6 @@ const avatarFallback =
 const SecurityView = lazy(() => import("./views/SecurityView").then((m) => ({ default: m.SecurityView })));
 const ProductHub = lazy(() => import("./views/ProductHub").then((m) => ({ default: m.ProductHub })));
 const LifeView = lazy(() => import("./views/StatusViews").then((m) => ({ default: m.LifeView })));
-const AdvancedChatView = lazy(() => import("./views/AdvancedChatView").then((m) => ({ default: m.AdvancedChatView })));
 const CommunityActivityTools = lazy(() => import("./views/CommunityActivityTools").then((m) => ({ default: m.CommunityActivityTools })));
 
 export default function ConectaApp() {
@@ -1067,19 +1067,6 @@ function GroupsView({
     })}</div> : <EmptyFeature icon={<UsersRound />} title="Crea la primera comunidad" text="Organiza una actividad semanal o mensual con chat, calendario, normas y coorganizadores." action="Crear grupo" onAction={onCreate} />}
     <Suspense fallback={<ScreenSkeleton />}><CommunityActivityTools communities={communities} members={members} userId={userId} /></Suspense>
   </div>;
-}
-
-function ChatView(props: {
-  conversations: Conversation[];
-  selected: string | null;
-  setSelected: (id: string) => void;
-  messages: Message[];
-  profiles: Profile[];
-  profile: Profile | null;
-  userId: string;
-  onSend: (content: string) => Promise<void>;
-}) {
-  return <Suspense fallback={<ScreenSkeleton />}><AdvancedChatView conversations={props.conversations} selected={props.selected} setSelected={props.setSelected} messages={props.messages} profiles={props.profiles} profile={props.profile} userId={props.userId} /></Suspense>;
 }
 
 function CalendarView({

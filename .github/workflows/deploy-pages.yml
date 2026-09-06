@@ -1,8 +1,6 @@
 name: Deploy CONECTA Pages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +9,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-manual
   cancel-in-progress: false
 
 jobs:

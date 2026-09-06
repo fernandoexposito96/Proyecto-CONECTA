@@ -18,7 +18,10 @@ function slug(value: string) {
 }
 
 function ensureAvatarFallbacks(root: ParentNode = document) {
-  root.querySelectorAll<HTMLImageElement>('img.profile-avatar').forEach((img) => {
+  const images: HTMLImageElement[] = [];
+  if (root instanceof HTMLImageElement && root.matches('.profile-avatar')) images.push(root);
+  root.querySelectorAll?.<HTMLImageElement>('img.profile-avatar').forEach((img) => images.push(img));
+  images.forEach((img) => {
     const fallback = document.querySelector<HTMLImageElement>('.top-actions img')?.src ||
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=220&q=90';
     const useFallback = () => {
@@ -36,7 +39,10 @@ function ensureAvatarFallbacks(root: ParentNode = document) {
 }
 
 function updatePrivacyScore(root: ParentNode = document) {
-  root.querySelectorAll<HTMLElement>('.settings-security-score').forEach((score) => {
+  const scores: HTMLElement[] = [];
+  if (root instanceof HTMLElement && root.matches('.settings-security-score')) scores.push(root);
+  root.querySelectorAll?.<HTMLElement>('.settings-security-score').forEach((score) => scores.push(score));
+  scores.forEach((score) => {
     const container = score.parentElement;
     if (!container) return;
     const recommended = [...container.querySelectorAll<HTMLElement>('.switch-row')]
@@ -55,7 +61,7 @@ function updatePrivacyScore(root: ParentNode = document) {
       const input = row.querySelector<HTMLInputElement>('input[type="checkbox"]');
       if (input && !input.dataset.scoreBound) {
         input.dataset.scoreBound = '1';
-        input.addEventListener('change', () => updatePrivacyScore(document));
+        input.addEventListener('change', () => updatePrivacyScore(container));
       }
     });
   });
@@ -63,7 +69,10 @@ function updatePrivacyScore(root: ParentNode = document) {
 
 function enhancePlanLikes(root: ParentNode = document) {
   const state = loadActionState();
-  root.querySelectorAll<HTMLElement>('.plan-card').forEach((card) => {
+  const cards: HTMLElement[] = [];
+  if (root instanceof HTMLElement && root.matches('.plan-card')) cards.push(root);
+  root.querySelectorAll?.<HTMLElement>('.plan-card').forEach((card) => cards.push(card));
+  cards.forEach((card) => {
     const title = card.querySelector('h3')?.textContent || 'plan';
     const key = `plan:${slug(title)}`;
     const button = card.querySelector<HTMLButtonElement>('.plan-image > button');
@@ -88,7 +97,10 @@ function enhancePlanLikes(root: ParentNode = document) {
 
 function enhancePeopleActions(root: ParentNode = document) {
   const state = loadActionState();
-  root.querySelectorAll<HTMLElement>('.people-strip article').forEach((card) => {
+  const cards: HTMLElement[] = [];
+  if (root instanceof HTMLElement && root.matches('.people-strip article')) cards.push(root);
+  root.querySelectorAll?.<HTMLElement>('.people-strip article').forEach((card) => cards.push(card));
+  cards.forEach((card) => {
     const name = card.querySelector('strong')?.textContent || 'persona';
     const key = `person:${slug(name)}`;
     let actions = card.querySelector<HTMLElement>('.person-actions');
@@ -130,5 +142,14 @@ function applyUxFixes(root: ParentNode = document) {
 
 applyUxFixes();
 
-const observer = new MutationObserver(() => applyUxFixes(document));
+const observer = new MutationObserver((mutations) => {
+  const roots = new Set<ParentNode>();
+  for (const mutation of mutations) {
+    mutation.addedNodes.forEach((node) => {
+      if (node instanceof HTMLElement || node instanceof DocumentFragment) roots.add(node);
+    });
+  }
+  if (!roots.size) return;
+  requestAnimationFrame(() => roots.forEach((root) => applyUxFixes(root)));
+});
 observer.observe(document.body, { childList: true, subtree: true });

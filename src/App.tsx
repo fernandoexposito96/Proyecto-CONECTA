@@ -70,6 +70,7 @@ import { AuthScreen, EmailVerificationScreen, LoadingScreen, OnboardingScreen } 
 import { ChatView } from "./views/ChatView";
 import { CalendarView } from "./views/CalendarView";
 import { PlansView } from "./views/PlansView";
+import { GroupsView } from "./views/GroupsView";
 import { ReputationReviews } from "./components/ReputationReviews";
 import { PersonCard, PersonRow } from "./components/PersonCards";
 import { PlanCard } from "./components/PlanCard";
@@ -121,7 +122,6 @@ const initialFilters: Filters = {
 const SecurityView = lazy(() => import("./views/SecurityView").then((m) => ({ default: m.SecurityView })));
 const ProductHub = lazy(() => import("./views/ProductHub").then((m) => ({ default: m.ProductHub })));
 const LifeView = lazy(() => import("./views/StatusViews").then((m) => ({ default: m.LifeView })));
-const CommunityActivityTools = lazy(() => import("./views/CommunityActivityTools").then((m) => ({ default: m.CommunityActivityTools })));
 
 export default function ConectaApp() {
   const demoModeEnabled = isDemoModeEnabled();
@@ -1004,31 +1004,6 @@ function MapView({
       <aside className="map-results"><div className="map-results-title"><strong>{mapped.length || plans.length} resultados</strong><small>Cerca de {profile?.city || "tu ubicación"}</small></div>{(mapped.length ? mapped : plans).map((plan) => <button key={plan.id} className={selected?.id === plan.id ? "active" : ""} onClick={() => setSelected(plan)}><span style={{ background: categoryColor(plan.category) }}><MapPin /></span><div><strong>{plan.title}</strong><small>{formatPlanDate(plan.starts_at)} · {plan.location_name}</small></div><ChevronRight /></button>)}{!plans.length && <EmptyCompact icon={<MapPin />} title="Sin planes geolocalizados" text="Los nuevos planes aparecerán en el mapa cuando incluyan ubicación." />}</aside>
       <section className="map-canvas"><iframe title="Mapa de planes CONECTA" src={mapEmbedUrl(selected)} loading="lazy" /><div className="map-legend"><span><i className="green" /> Deporte</span><span><i className="blue" /> Café</span><span><i className="orange" /> Comida</span><span><i className="purple" /> Fiesta</span><span><i className="red" /> Empieza pronto</span></div>{selected && <article className="map-plan-popover"><img src={selected.image_url || categoryImage(selected.category)} alt="" /><div><span>{selected.category}</span><strong>{selected.title}</strong><small>{selected.location_name} · {formatMoney(selected.cost_cents)}</small></div><button onClick={() => onPlan(selected)}>Ver plan</button></article>}</section>
     </div>
-  </div>;
-}
-
-function GroupsView({
-  communities,
-  members,
-  userId,
-  onCreate,
-  onJoin,
-}: {
-  communities: Community[];
-  members: CommunityMember[];
-  userId: string;
-  onCreate: () => void;
-  onJoin: (community: Community) => Promise<void>;
-}) {
-  return <div className="view-page">
-    <PageHero eyebrow="COMUNIDADES RECURRENTES" title="Grupos para volver a encontrarse" text="Running semanal, pádel, idiomas, gastronomía, viajes, familias y mucho más." icon={<UsersRound />} action={<button onClick={onCreate}><Plus /> Crear grupo</button>} />
-    <div className="group-chips"><button className="active">Recomendados</button><button>Semanal</button><button>Mensual</button><button>Cerca de mí</button><button>Nuevos</button></div>
-    {communities.length ? <div className="groups-grid">{communities.map((community) => {
-      const communityMemberships = members.filter((member) => member.community_id === community.id && member.status === "active");
-      const mine = members.find((member) => member.community_id === community.id && member.user_id === userId);
-      return <article className="group-card" key={community.id}><div className="group-cover"><img src={community.image_url || categoryImage(community.category)} alt="" width={1280} height={853} loading="lazy" decoding="async" /><span>{community.category || "Comunidad"}</span><b>{community.organizer_tier}</b></div><div className="group-body"><h2>{community.name}</h2><p>{community.description || "Una comunidad para compartir actividades reales."}</p><div className="group-facts"><span><MapPin />{community.location_name || "Ubicación variable"}</span><span><CalendarDays />{community.recurrence_rule || "Próximas fechas en el calendario"}</span><span><Users />{communityMemberships.length} miembros</span></div><div className="group-rules"><ShieldCheck /> {community.rules[0] || "Respeto, puntualidad y convivencia"}</div><button className={mine ? "joined" : ""} onClick={() => void onJoin(community)}>{mine ? <><Check /> Miembro</> : <><UserRoundPlus /> Unirme al grupo</>}</button></div></article>;
-    })}</div> : <EmptyFeature icon={<UsersRound />} title="Crea la primera comunidad" text="Organiza una actividad semanal o mensual con chat, calendario, normas y coorganizadores." action="Crear grupo" onAction={onCreate} />}
-    <Suspense fallback={<ScreenSkeleton />}><CommunityActivityTools communities={communities} members={members} userId={userId} /></Suspense>
   </div>;
 }
 

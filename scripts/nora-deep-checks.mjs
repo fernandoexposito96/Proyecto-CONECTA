@@ -6,7 +6,7 @@ const root = process.cwd();
 const reportPath = path.join(root, "public", "diagnostic", "report.json");
 const validateMarker = path.join(root, ".nora", "validate-ok.json");
 if (!fs.existsSync(reportPath)) {
-  console.error("NORA deep checks: falta public/diagnostic/report.json");
+  console.error("NORA v6: falta public/diagnostic/report.json");
   process.exit(1);
 }
 
@@ -35,14 +35,14 @@ for (const check of checks) {
       label: check.label,
       status: "ok",
       severity: "info",
-      detail: `Correcto · verificado por la puerta de calidad completa (${validated.commit || "commit actual"})`,
+      detail: `Correcto · evidencia de la puerta de calidad (${validated.commit || "commit actual"})`,
       duration_ms: 0,
       source: "validated-quality-gate",
+      verified: true,
     });
     continue;
   }
 
-  // Fallback para ejecuciones locales: si no existe el marcador de CI, se ejecuta la prueba.
   const started = Date.now();
   const proc = spawnSync("pnpm", ["run", check.script], {
     cwd: root,
@@ -50,54 +50,96 @@ for (const check of checks) {
     env: { ...process.env, CI: "1", FORCE_COLOR: "0" },
     maxBuffer: 24 * 1024 * 1024,
   });
-  const ok = proc.status === 0;
   const output = clean(`${proc.stdout || ""}\n${proc.stderr || ""}`);
+  const executed = typeof proc.status === "number";
+  const ok = executed && proc.status === 0;
   results.push({
     id: check.id,
     area: check.area,
     label: check.label,
-    status: ok ? "ok" : "fail",
-    severity: ok ? "info" : check.severity,
-    detail: ok ? `Correcto · ${Math.round((Date.now() - started) / 100) / 10}s` : output || `Salida ${proc.status}`,
+    status: !executed ? "unknown" : ok ? "ok" : "fail",
+    severity: !executed ? "unverified" : ok ? "info" : check.severity,
+    detail: !executed ? "No se pudo ejecutar esta comprobación; no cuenta como avería ni como positivo." : ok ? `Correcto · ${Math.round((Date.now() - started) / 100) / 10}s` : output || `Salida ${proc.status}`,
     duration_ms: Date.now() - started,
     source: "deep-functional-check",
+    verified: executed,
+    not_executed: !executed,
   });
+}
+
+// Normaliza cualquier comprobación pendiente del escáner base. Una prueba no ejecutada
+// nunca debe aparecer como avería ni reducir artificialmente la salud.
+for (const item of results) {
+  if (item.not_executed === true) {
+    item.status = "unknown";
+    item.severity = "unverified";
+    item.verified = false;
+  } else if (item.status === "ok" || item.status === "warn" || item.status === "fail") {
+    item.verified = true;
+  }
 }
 
 report.results = results;
 const maxFindings = report.max_findings || 999;
 const rawErrors = results.filter((item) => item.status === "fail");
 const rawWatch = results.filter((item) => item.status === "warn" || (item.status === "ok" && item.severity === "warning"));
+const rawUnverified = results.filter((item) => item.status === "unknown" || item.verified === false || item.not_executed === true);
+
 report.errors = rawErrors.slice(0, maxFindings);
 report.watch = rawWatch.slice(0, Math.max(0, maxFindings - report.errors.length));
-report.positives = results.filter((item) => item.status === "ok" && item.severity !== "warning").slice(0, maxFindings);
+report.unverified = rawUnverified.slice(0, maxFindings);
+report.positives = results.filter((item) => item.status === "ok" && item.severity !== "warning" && item.verified !== false).slice(0, maxFindings);
+
+const verifiedResults = results.filter((item) => !rawUnverified.includes(item));
+const verifiedCount = verifiedResults.length;
+const totalChecks = results.length;
+const coveragePercent = totalChecks ? Math.round((verifiedCount / totalChecks) * 100) : 0;
 
 report.counts = {
   ...(report.counts || {}),
   critical: report.errors.filter((item) => item.severity === "critical").length,
   errors: report.errors.filter((item) => item.severity !== "critical").length,
   warnings: report.watch.length,
+  unverified: report.unverified.length,
   corrected: Array.isArray(report.corrected) ? report.corrected.length : 0,
   positives: report.positives.length,
   ok: report.positives.length,
-  total_checks: results.length,
+  total_checks: totalChecks,
+  verified_checks: verifiedCount,
   detected_before_limit: rawErrors.length + rawWatch.length,
 };
 
+// Salud = calidad de lo que realmente se ejecutó. Cobertura = cuánto se pudo verificar.
+// No se mezcla una falta de evidencia con una avería real.
 const penalty = report.counts.critical * 12 + report.counts.errors * 4 + report.counts.warnings * 1.2;
-report.score = Math.max(0, Math.min(100, Math.round(100 - penalty)));
+report.score = verifiedCount ? Math.max(0, Math.min(100, Math.round(100 - penalty))) : 0;
+report.verification = {
+  coverage_percent: coveragePercent,
+  verified_checks: verifiedCount,
+  total_checks: totalChecks,
+  fully_verified: totalChecks > 0 && verifiedCount === totalChecks,
+  evidence_based: true,
+};
 report.overall = report.counts.critical ? "critical" : report.counts.errors ? "error" : report.counts.warnings ? "warning" : "healthy";
-report.schema = 5;
-report.engine = "deep-diagnostic-v5.1";
+report.schema = 6;
+report.engine = "evidence-diagnostic-v6";
 report.coverage = {
   ...(report.coverage || {}),
-  unit_tests_checked: true,
-  e2e_chromium_iphone_checked: true,
-  accessibility_checked: true,
+  unit_tests_checked: results.some((item) => item.id === "deep-unit" && item.verified === true),
+  e2e_chromium_iphone_checked: results.some((item) => item.id === "deep-e2e" && item.verified === true),
+  accessibility_checked: results.some((item) => item.id === "deep-accessibility" && item.verified === true),
   executable_checks: Number(report.coverage?.executable_checks || 0) + 3,
+  verified_percent: coveragePercent,
 };
-report.coverage_note = `NORA v5.1 revisa código, TypeScript, build, tests unitarios, smoke, rendimiento, seguridad, dependencias, E2E Chromium + iPhone/WebKit, accesibilidad, contrato visual, imágenes, PWA, Supabase y producción. FALLOS son problemas confirmados; AVERÍAS / VIGILAR son riesgos o comprobaciones pendientes; CORREGIDOS son fallos anteriores resueltos; POSITIVOS son comprobaciones correctas actuales. Capacidad máxima visible: ${maxFindings}.`;
+report.category_labels = {
+  errors: "Fallos confirmados",
+  watch: "Riesgos / Vigilar",
+  unverified: "No verificado",
+  corrected: "Corregidos",
+  positives: "Comprobaciones correctas",
+};
+report.coverage_note = `NORA v6 usa evidencia real. SALUD mide solo comprobaciones ejecutadas; COBERTURA indica qué porcentaje del diagnóstico pudo verificarse. Una prueba no ejecutada no se convierte en avería ni en positivo. Cobertura actual: ${coveragePercent}% (${verifiedCount}/${totalChecks}).`;
 report.finished_at = new Date().toISOString();
 
 fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-console.log(`NORA v5.1: ${report.overall} · salud ${report.score}/100 · fallos ${report.errors.length} · averías/vigilar ${report.watch.length} · positivos ${report.positives.length}`);
+console.log(`NORA v6: ${report.overall} · salud ${report.score}/100 · cobertura ${coveragePercent}% · fallos ${report.errors.length} · vigilar ${report.watch.length} · no verificado ${report.unverified.length} · positivos ${report.positives.length}`);

@@ -18,11 +18,11 @@
 /* Única capa visual oficial */
 @import "./premium-reference-v5.css";
 
-/* Responsive funcional */
-@import "./universal-responsive.css";
-
 /* Pulido visual de Inicio: fotos reales, marcos y corrección móvil. */
 @import "./home-photo-polish.css";
+
+/* Responsive funcional: siempre debe ser la última importación CSS. */
+@import "./universal-responsive.css";
 
 /* Arranque limpio: marca, sin spinner ni flashes de UI antigua. */
 .loading-screen{

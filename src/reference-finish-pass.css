@@ -35,17 +35,44 @@
   html,body,#root{overflow-x:hidden!important}
   .content-wrap{width:100%!important;max-width:430px!important;margin:0 auto!important}
 
-  /* Cabecera móvil minimalista como referencia */
+  /* Cabecera móvil minimalista y legible en todas las pantallas */
   .topbar{
     min-height:56px!important;
     border:0!important;
     box-shadow:none!important;
+    color:var(--rf-navy)!important;
   }
+  .mobile-brand strong{color:var(--rf-navy)!important}
   .mobile-menu-button,.icon-button{
     width:40px!important;
     height:40px!important;
     min-width:40px!important;
     border-radius:14px!important;
+    color:var(--rf-navy)!important;
+    background:#fff!important;
+    border:1px solid var(--rf-line)!important;
+  }
+  /* En Inicio la cabecera sí flota sobre la foto, como en la referencia */
+  .topbar:has(+ .main-content .content-wrap .hero-card),
+  .topbar:has(+ .main-content .hero-card){
+    position:absolute!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    z-index:30!important;
+    background:transparent!important;
+    color:#fff!important;
+  }
+  .topbar:has(+ .main-content .content-wrap .hero-card) .mobile-brand strong,
+  .topbar:has(+ .main-content .hero-card) .mobile-brand strong{color:#fff!important}
+  .topbar:has(+ .main-content .content-wrap .hero-card) .mobile-menu-button,
+  .topbar:has(+ .main-content .content-wrap .hero-card) .icon-button,
+  .topbar:has(+ .main-content .hero-card) .mobile-menu-button,
+  .topbar:has(+ .main-content .hero-card) .icon-button{
+    color:#fff!important;
+    background:rgba(255,255,255,.16)!important;
+    border:1px solid rgba(255,255,255,.28)!important;
+    backdrop-filter:blur(12px)!important;
   }
 
   /* Hero con composición más parecida a la imagen aprobada */
@@ -76,6 +103,7 @@
   .action-card strong{font-size:25px!important}
   .action-card b{font-size:14px!important}
   .action-card p{font-size:10.5px!important}
+  .action-card::after{background:linear-gradient(180deg,rgba(7,13,40,.02) 20%,rgba(7,13,40,.26) 50%,rgba(7,13,40,.88) 100%)!important}
 
   /* Categorías visibles de un vistazo */
   .category-row{gap:9px!important}
@@ -89,7 +117,7 @@
   .discovery-copy strong{font-size:20px!important}
 
   /* Planes con una tarjeta principal y la siguiente asomando */
-  .plans-grid{grid-auto-columns:78vw!important;gap:10px!important}
+  .plans-grid{grid-auto-columns:78vw!important;gap:10px!important;padding-right:18px!important}
   .plan-card,.plans-grid>article,.plans-grid>button{border-radius:19px!important}
   .plan-card img,.plans-grid img{height:178px!important;min-height:178px!important;max-height:178px!important}
 
@@ -117,9 +145,15 @@
     border-radius:26px!important;
     padding:7px 8px!important;
   }
-  .bottom-nav>button{border-radius:17px!important}
+  .bottom-nav>button{border-radius:17px!important;transition:transform .16s ease,background-color .16s ease,color .16s ease!important}
+  .bottom-nav>button:active{transform:scale(.94)!important}
   .bottom-nav>button span{font-size:10px!important}
   .bottom-nav>.floating-create{width:60px!important;height:60px!important;margin-top:-21px!important}
+
+  /* Interacción táctil más natural, sin cambiar el diseño */
+  .action-card,.category,.discovery-card,.plan-card,.plans-grid>article,.plans-grid>button,.hero-create,.hero-primary,.hero-secondary{
+    -webkit-tap-highlight-color:transparent!important;
+  }
 }
 
 @media(max-width:390px){

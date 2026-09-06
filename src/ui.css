@@ -27,6 +27,9 @@
 /* Segunda capa de fidelidad: detalle, Explora, Mensajes y Perfil. */
 @import "./reference-detail-polish.css";
 
+/* Afinado final de proporciones y ritmo móvil contra la referencia aprobada. */
+@import "./reference-pixel-pass.css";
+
 /* Responsive funcional: siempre debe ser la última importación CSS. */
 @import "./universal-responsive.css";
 

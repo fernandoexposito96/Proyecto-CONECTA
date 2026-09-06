@@ -10,6 +10,29 @@ function toast(message:string){
   window.setTimeout(()=>{el.classList.remove('show');window.setTimeout(()=>el.remove(),180)},1800);
 }
 
+function findSettingsButton(label:string){
+  return [...document.querySelectorAll<HTMLButtonElement>('.settings-page .settings-list button')]
+    .find(btn=>btn.textContent?.includes(label));
+}
+
+function wirePremiumCard(root:ParentNode=document){
+  const cards:HTMLElement[]=[];
+  if(root instanceof HTMLElement && root.matches('.settings-page .gold-card'))cards.push(root);
+  root.querySelectorAll?.<HTMLElement>('.settings-page .gold-card').forEach(card=>cards.push(card));
+  cards.forEach(card=>{
+    if(card.dataset.premiumReady)return;
+    card.dataset.premiumReady='1';
+    card.setAttribute('role','button');
+    card.setAttribute('tabindex','0');
+    card.setAttribute('aria-label','Abrir CONECTA Premium');
+    const open=()=>findSettingsButton('Cuenta y Premium')?.click();
+    card.addEventListener('click',open);
+    card.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}
+    });
+  });
+}
+
 function wrapCardBody(card:HTMLElement){
   if(card.dataset.polished)return;
   card.dataset.polished='1';
@@ -65,8 +88,8 @@ function wireFeedback(sheet:HTMLElement){
   if(sheet.dataset.feedbackReady)return;
   sheet.dataset.feedbackReady='1';
   sheet.addEventListener('change',e=>{
-    const target=e.target as HTMLInputElement;
-    if(target.matches('input[type="checkbox"]')) toast(target.checked?'Activado':'Desactivado');
+    const target=e.target;
+    if(target instanceof HTMLInputElement && target.matches('input[type="checkbox"]')) toast(target.checked?'Activado':'Desactivado');
   });
   sheet.addEventListener('click',e=>{
     const target=e.target;
@@ -89,45 +112,43 @@ function polishSheet(sheet:HTMLElement){
   cards.forEach((card,i)=>{
     const setOpen=(card as HTMLElement & {__setOpen?:(value:boolean)=>void}).__setOpen;
     const heading=card.querySelector(':scope > h3')?.textContent?.trim()||'';
-    const keepOpen=i===0 || heading==='Apariencia';
-    setOpen?.(keepOpen);
+    setOpen?.(i===0 || heading==='Apariencia');
   });
   buildIndex(sheet);
   wireFeedback(sheet);
 }
 
-function polishWithin(root:ParentNode){
+function enhanceWithin(root:ParentNode){
+  wirePremiumCard(root);
   if(root instanceof HTMLElement && root.matches('.settings-max-sheet'))polishSheet(root);
   root.querySelectorAll?.<HTMLElement>('.settings-max-sheet').forEach(polishSheet);
 }
 
-function run(){polishWithin(document)}
-
 let scheduled=false;
 const pendingRoots=new Set<ParentNode>();
-const schedulePolish=()=>{
+const schedule=()=>{
   if(scheduled)return;
   scheduled=true;
   requestAnimationFrame(()=>{
     scheduled=false;
     const roots=[...pendingRoots];
     pendingRoots.clear();
-    roots.forEach(polishWithin);
+    roots.forEach(enhanceWithin);
   });
 };
 
-const polishObserver=new MutationObserver(mutations=>{
+const observer=new MutationObserver(mutations=>{
   for(const mutation of mutations){
     mutation.addedNodes.forEach(node=>{
       if(node instanceof HTMLElement || node instanceof DocumentFragment)pendingRoots.add(node);
     });
   }
-  if(pendingRoots.size)schedulePolish();
+  if(pendingRoots.size)schedule();
 });
 
 const start=()=>{
-  run();
-  if(document.body)polishObserver.observe(document.body,{subtree:true,childList:true});
+  enhanceWithin(document);
+  if(document.body)observer.observe(document.body,{subtree:true,childList:true});
 };
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();

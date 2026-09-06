@@ -21,6 +21,9 @@
 /* Pulido visual de Inicio: fotos reales, marcos y corrección móvil. */
 @import "./home-photo-polish.css";
 
+/* Bloqueo de referencia visual aprobada: aplica el diseño directamente a la app real. */
+@import "./visual-reference-lock.css";
+
 /* Responsive funcional: siempre debe ser la última importación CSS. */
 @import "./universal-responsive.css";
 

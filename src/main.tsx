@@ -15,5 +15,7 @@ import './settings-reference-final';
 import './mobile-edge-final.css';
 import './ux-fixes.css';
 import './ux-fixes';
+import './experience-features.css';
+import './experience-features';
 
 createRoot(document.getElementById('app')!).render(<StrictMode><App /></StrictMode>);

@@ -5,5 +5,7 @@ import './styles.css';
 import './home-premium-tune.css';
 import './bottom-nav-polish.css';
 import './mobile-layout-final.css';
+import './settings-max.css';
+import './settings-enhancer';
 
 createRoot(document.getElementById('app')!).render(<StrictMode><App /></StrictMode>);

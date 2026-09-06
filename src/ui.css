@@ -37,6 +37,9 @@
 /* Ajuste de dispositivo real: Mensajes + Compatibilidad según referencia aprobada. */
 @import "./live-device-polish.css";
 
+/* Capa Premium Máxima: profundidad, tactilidad y consistencia sin cambiar estructura. */
+@import "./max-premium-polish.css";
+
 /* Responsive funcional: siempre debe ser la última importación CSS. */
 @import "./universal-responsive.css";
 

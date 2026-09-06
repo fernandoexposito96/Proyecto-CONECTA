@@ -17,5 +17,7 @@ import './ux-fixes.css';
 import './ux-fixes';
 import './experience-features.css';
 import './experience-features';
+import './retention-accessibility.css';
+import './retention-accessibility';
 
 createRoot(document.getElementById('app')!).render(<StrictMode><App /></StrictMode>);

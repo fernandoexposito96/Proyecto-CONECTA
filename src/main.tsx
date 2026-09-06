@@ -10,5 +10,7 @@ import './settings-polish.css';
 import './settings-enhancer';
 import './settings-polish';
 import './premium-max-v3.css';
+import './settings-reference-final.css';
+import './settings-reference-final';
 
 createRoot(document.getElementById('app')!).render(<StrictMode><App /></StrictMode>);

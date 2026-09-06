@@ -1,3 +1,5 @@
+export {};
+
 function toast(message:string){
   document.querySelector('.settings-toast')?.remove();
   const el=document.createElement('div');
@@ -93,6 +95,6 @@ function polishSheet(sheet:HTMLElement){
 }
 
 function run(){document.querySelectorAll<HTMLElement>('.settings-max-sheet').forEach(polishSheet)}
-const observer=new MutationObserver(run);
-observer.observe(document.documentElement,{subtree:true,childList:true});
+const polishObserver=new MutationObserver(run);
+polishObserver.observe(document.documentElement,{subtree:true,childList:true});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();

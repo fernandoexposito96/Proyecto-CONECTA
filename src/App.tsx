@@ -65,7 +65,6 @@ import { supabase } from "./supabase";
 import { demoProfiles, isDemoModeEnabled, setDemoModeEnabled } from "./demoMode";
 import { loadConectaData } from "./data/loadConectaData";
 import { refreshConnections, refreshConversations, refreshPlanMembers, refreshSavedItems } from "./data/refreshConectaSlices";
-import { exportSocialCalendar } from "./socialCalendar";
 import { categories, categoryColor, categoryImage, planTemplates } from "./catalog";
 import { EmptyCompact, EmptyFeature, Field, PageHero, PlansEmpty, SectionTitle } from "./components/common";
 import { MobileNavigation, Sidebar, Topbar } from "./components/AppChrome";
@@ -73,6 +72,7 @@ import { primaryNavigation } from "./navigation";
 import { RetryState, ScreenSkeleton } from "./components/AppResilience";
 import { AuthScreen, EmailVerificationScreen, LoadingScreen, OnboardingScreen } from "./views/AuthFlowViews";
 import { ChatView } from "./views/ChatView";
+import { CalendarView } from "./views/CalendarView";
 import { ReputationReviews } from "./components/ReputationReviews";
 import type {
   Community,
@@ -1066,32 +1066,6 @@ function GroupsView({
       return <article className="group-card" key={community.id}><div className="group-cover"><img src={community.image_url || categoryImage(community.category)} alt="" width={1280} height={853} loading="lazy" decoding="async" /><span>{community.category || "Comunidad"}</span><b>{community.organizer_tier}</b></div><div className="group-body"><h2>{community.name}</h2><p>{community.description || "Una comunidad para compartir actividades reales."}</p><div className="group-facts"><span><MapPin />{community.location_name || "Ubicación variable"}</span><span><CalendarDays />{community.recurrence_rule || "Próximas fechas en el calendario"}</span><span><Users />{communityMemberships.length} miembros</span></div><div className="group-rules"><ShieldCheck /> {community.rules[0] || "Respeto, puntualidad y convivencia"}</div><button className={mine ? "joined" : ""} onClick={() => void onJoin(community)}>{mine ? <><Check /> Miembro</> : <><UserRoundPlus /> Unirme al grupo</>}</button></div></article>;
     })}</div> : <EmptyFeature icon={<UsersRound />} title="Crea la primera comunidad" text="Organiza una actividad semanal o mensual con chat, calendario, normas y coorganizadores." action="Crear grupo" onAction={onCreate} />}
     <Suspense fallback={<ScreenSkeleton />}><CommunityActivityTools communities={communities} members={members} userId={userId} /></Suspense>
-  </div>;
-}
-
-function CalendarView({
-  plans,
-  myMemberships,
-  communities,
-  communityMembers,
-  onPlan,
-}: {
-  plans: Plan[];
-  myMemberships: PlanMember[];
-  communities: Community[];
-  communityMembers: CommunityMember[];
-  onPlan: (plan: Plan) => void;
-}) {
-  const joined = plans.filter((plan) => myMemberships.some((member) => member.plan_id === plan.id));
-  const myGroups = communities.filter((community) => communityMembers.some((member) => member.community_id === community.id));
-  const currentMonth = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" }).format(new Date());
-  return <div className="view-page">
-    <PageHero eyebrow="TU AGENDA SOCIAL" title="Nada se queda en el aire" text="Planes confirmados, listas de espera, grupos recurrentes y recordatorios." icon={<CalendarDays />} action={<button onClick={() => exportSocialCalendar(joined, myGroups)}><Download /> Exportar agenda</button>} />
-    <div className="calendar-layout">
-      <section className="month-card"><header><button aria-label="Mes anterior">‹</button><strong>{currentMonth}</strong><button aria-label="Mes siguiente">›</button></header><div className="calendar-week"><b>L</b><b>M</b><b>X</b><b>J</b><b>V</b><b>S</b><b>D</b>{Array.from({ length: 35 }, (_, index) => { const day = index - 2; const events = joined.filter((plan) => plan.starts_at && new Date(plan.starts_at).getDate() === day); return <button key={index} disabled={day < 1 || day > 31} className={events.length ? "has-event" : ""}><span>{day > 0 && day <= 31 ? day : ""}</span>{events.slice(0, 2).map((plan) => <i key={plan.id} style={{ background: categoryColor(plan.category) }} />)}</button>; })}</div></section>
-      <aside className="agenda-card"><header><span>PRÓXIMOS</span><strong>Tu agenda</strong></header>{joined.map((plan) => { const membership = myMemberships.find((member) => member.plan_id === plan.id); return <article key={plan.id}><div className="agenda-date"><strong>{plan.starts_at ? new Date(plan.starts_at).getDate() : "—"}</strong><span>{plan.starts_at ? new Date(plan.starts_at).toLocaleDateString("es-ES", { month: "short" }) : "Fecha"}</span></div><div><strong>{plan.title}</strong><small><MapPin />{plan.location_name || "Por confirmar"}</small><span className={`status-pill ${membership?.status}`}>{membership?.status === "attending" ? "Asistencia confirmada" : membership?.status === "waitlist" ? "Lista de espera" : membership?.status === "requested" ? "Pendiente de aprobación" : "Me interesa"}</span></div><button onClick={() => onPlan(plan)}><ChevronRight /></button></article>; })}{!joined.length && <EmptyCompact icon={<CalendarDays />} title="Tu agenda está libre" text="Cuando te apuntes a un plan, lo verás aquí y podrás añadirlo al calendario del móvil." />}</aside>
-    </div>
-    {myGroups.length > 0 && <section className="section-block"><SectionTitle eyebrow="ACTIVIDADES RECURRENTES" title="Calendarios de tus grupos" /><div className="recurring-row">{myGroups.map((group) => <article key={group.id}><span><RefreshCw /></span><div><strong>{group.name}</strong><small>{group.recurrence_rule || "Próxima actividad por confirmar"}</small></div></article>)}</div></section>}
   </div>;
 }
 

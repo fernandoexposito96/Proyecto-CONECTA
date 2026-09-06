@@ -40,8 +40,11 @@
 /* Capa Premium Máxima: profundidad, tactilidad y consistencia sin cambiar estructura. */
 @import "./max-premium-polish.css";
 
-/* Responsive funcional: siempre debe ser la última importación CSS. */
+/* Responsive funcional base. */
 @import "./universal-responsive.css";
+
+/* Referencia de Inicio aprobada por el usuario: debe ganar sobre el responsive genérico. */
+@import "./approved-home-screen.css";
 
 /* Arranque limpio: marca, sin spinner ni flashes de UI antigua. */
 .loading-screen{

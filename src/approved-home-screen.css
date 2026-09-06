@@ -1,0 +1,190 @@
+/* CONECTA — Inicio aprobado 06-09-2026
+   Replica en la aplicación real la referencia visual aprobada por el usuario.
+   Esta capa solo corrige Inicio y se carga después del responsive universal. */
+
+/* En Inicio la referencia arranca directamente con el resumen; sin hero duplicado. */
+.welcome-row,
+.hero-card{
+  display:none!important;
+}
+
+/* Contenedor general más limpio y luminoso. */
+.content-wrap{
+  width:min(100%,1480px)!important;
+  max-width:1480px!important;
+  padding-top:18px!important;
+}
+
+.action-section.section-block{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.action-section>.section-title{
+  display:none!important;
+}
+body .action-card-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+body .action-card{
+  min-height:188px!important;
+  padding:16px!important;
+  border-radius:22px!important;
+  border:1px solid rgba(255,255,255,.76)!important;
+  box-shadow:0 14px 34px rgba(20,31,70,.15)!important;
+  overflow:hidden!important;
+}
+body .action-card strong{font-size:30px!important}
+body .action-card b{font-size:16px!important;line-height:1.04!important}
+body .action-card p{font-size:11.5px!important;max-width:27ch!important}
+
+/* Secciones principales como paneles blancos compactos de la referencia. */
+.section-block{
+  border-radius:24px!important;
+  border:1px solid #e6edf7!important;
+  background:#fff!important;
+  box-shadow:0 10px 30px rgba(31,53,94,.07)!important;
+  padding:18px 20px 20px!important;
+  margin-top:16px!important;
+}
+.section-title{
+  margin-bottom:12px!important;
+  gap:12px!important;
+}
+.section-title h2,
+.section-title h3{
+  color:#0c2460!important;
+  font-size:clamp(27px,2.3vw,38px)!important;
+  line-height:.98!important;
+  letter-spacing:-.05em!important;
+}
+.section-title button{
+  min-height:38px!important;
+  padding:0 14px!important;
+  border-radius:999px!important;
+  background:#f4f8ff!important;
+  color:#315ca8!important;
+}
+
+/* Categorías: ancho fijo real. Evita las tiras verticales estrechas del bug mostrado. */
+.category-row{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:10px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  padding:0 0 4px!important;
+  scrollbar-width:none!important;
+}
+.category-row::-webkit-scrollbar{display:none!important}
+.category-row>.category{
+  flex:0 0 104px!important;
+  width:104px!important;
+  min-width:104px!important;
+  min-height:164px!important;
+  height:164px!important;
+  padding:0!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  white-space:normal!important;
+  border:1px solid #e8edf6!important;
+  box-shadow:0 8px 22px rgba(20,38,80,.12)!important;
+  background:#dce7f7!important;
+}
+.category-row>.category img{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+}
+.category-row>.category>span{
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(180deg,rgba(5,14,36,.02) 35%,rgba(5,14,36,.88) 100%)!important;
+}
+.category-row>.category b{
+  position:absolute!important;
+  z-index:2!important;
+  left:7px!important;
+  right:7px!important;
+  bottom:9px!important;
+  display:grid!important;
+  justify-items:center!important;
+  gap:4px!important;
+  color:#fff!important;
+  text-align:center!important;
+  white-space:normal!important;
+  font-size:11px!important;
+  line-height:1.08!important;
+  font-weight:900!important;
+  text-shadow:0 1px 8px rgba(0,0,0,.46)!important;
+}
+.category-row>.category b svg{width:17px!important;height:17px!important}
+
+/* Ideas para ti: tres tarjetas grandes visibles en portátil, como la referencia. */
+body .discovery-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+body .discovery-card{
+  min-height:238px!important;
+  border-radius:18px!important;
+  box-shadow:0 12px 30px rgba(20,35,72,.14)!important;
+}
+body .discovery-copy strong{font-size:21px!important}
+
+/* Recomendados: no dejes tarjetas sin imagen ni marcos descompensados. */
+.plans-grid{
+  gap:14px!important;
+}
+.plan-card,
+.plans-grid>article,
+.plans-grid>button{
+  border-radius:20px!important;
+  border:1px solid #e6ebf3!important;
+  box-shadow:0 10px 28px rgba(20,35,72,.10)!important;
+}
+.plan-card img,
+.plans-grid img{
+  width:100%!important;
+  object-fit:cover!important;
+}
+
+@media (min-width:1200px){
+  .main-content{background:linear-gradient(180deg,#f7fbff 0%,#f3f7fd 100%)!important}
+}
+
+@media (min-width:901px) and (max-width:1199px){
+  body .action-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}
+  body .action-card{min-height:172px!important;padding:13px!important}
+  body .action-card strong{font-size:27px!important}
+  body .action-card b{font-size:14px!important}
+  body .action-card p{font-size:10.5px!important}
+  .category-row>.category{flex-basis:92px!important;width:92px!important;min-width:92px!important;height:150px!important;min-height:150px!important}
+}
+
+@media (max-width:900px){
+  .content-wrap{padding-top:12px!important}
+  .action-section.section-block{margin-top:0!important}
+  body .action-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  body .action-card{min-height:178px!important}
+  body .discovery-grid{grid-template-columns:1fr!important}
+  .category-row>.category{flex:0 0 118px!important;width:118px!important;min-width:118px!important;height:150px!important;min-height:150px!important}
+}
+
+@media (max-width:600px){
+  .section-block{padding:15px!important;border-radius:21px!important}
+  .section-title h2,.section-title h3{font-size:29px!important}
+  body .action-card{min-height:168px!important;padding:13px!important;border-radius:19px!important}
+  body .action-card strong{font-size:27px!important}
+  body .action-card b{font-size:14px!important}
+  body .action-card p{font-size:10.5px!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+  .category-row>.category{flex-basis:104px!important;width:104px!important;min-width:104px!important;height:142px!important;min-height:142px!important}
+  body .discovery-card{min-height:230px!important}
+}

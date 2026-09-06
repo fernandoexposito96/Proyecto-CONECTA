@@ -29,6 +29,7 @@ function applyPrefs(p:ThemePrefs){
   document.body.dataset.compact=p.compact?'1':'0';
   localStorage.setItem(UI_KEY,JSON.stringify(p));
 }
+function nativeShareAvailable(){return typeof (navigator as Navigator & {share?:unknown}).share==='function'}
 applyPrefs(loadPrefs());
 
 const toggles=(labels:string[])=>labels.map((x,i)=>`<label class="switch-row"><span><b>${x}</b><small>${i%2?'Configurable en cualquier momento':'Recomendado por CONECTA'}</small></span><input type="checkbox" data-toggle="${encodeURIComponent(x)}" ${i<2?'checked':''}></label>`).join('');
@@ -133,10 +134,10 @@ function wireSection(root:HTMLElement,name:SettingSection){
     }));
     root.querySelector('.settings-reset')?.addEventListener('click',()=>{localStorage.removeItem(UI_KEY);p=defaults;applyPrefs(p);sync()});
   }
-  root.querySelector('[data-share]')?.addEventListener('click',async()=>{const data={title:'CONECTA',text:'Únete a CONECTA y hacemos planes juntos. Código: CONECTA-FERNANDO'};try{if(navigator.share)await navigator.share(data);else await navigator.clipboard.writeText(data.text)}catch{}});
+  root.querySelector('[data-share]')?.addEventListener('click',async()=>{const data={title:'CONECTA',text:'Únete a CONECTA y hacemos planes juntos. Código: CONECTA-FERNANDO'};try{const nav=navigator as Navigator & {share?: (data?:ShareData)=>Promise<void>};if(typeof nav.share==='function')await nav.share(data);else await navigator.clipboard.writeText(data.text)}catch{}});
   root.querySelector('[data-copy]')?.addEventListener('click',async(e)=>{try{await navigator.clipboard.writeText('CONECTA-FERNANDO');(e.currentTarget as HTMLButtonElement).textContent='Copiado ✓'}catch{}});
   root.querySelector('[data-support]')?.addEventListener('click',()=>{const text=(root.querySelector('.support-text') as HTMLTextAreaElement|null)?.value||'';window.location.href=`mailto:soporte@conecta.app?subject=Soporte%20CONECTA&body=${encodeURIComponent(text)}`});
-  root.querySelector('[data-run-diagnostic]')?.addEventListener('click',e=>{const box=root.querySelector('.diagnostic-result') as HTMLElement|null;if(!box)return;box.hidden=false;box.innerHTML=`<b>Diagnóstico completado ✓</b><span>Navegación: OK · Almacenamiento local: ${typeof localStorage!=='undefined'?'OK':'No disponible'} · Compartir: ${navigator.share?'Disponible':'Modo copia'} · Conexión: ${navigator.onLine?'Online':'Offline'}</span>`;(e.currentTarget as HTMLButtonElement).textContent='Diagnóstico completado'});
+  root.querySelector('[data-run-diagnostic]')?.addEventListener('click',e=>{const box=root.querySelector('.diagnostic-result') as HTMLElement|null;if(!box)return;box.hidden=false;box.innerHTML=`<b>Diagnóstico completado ✓</b><span>Navegación: OK · Almacenamiento local: ${typeof localStorage!=='undefined'?'OK':'No disponible'} · Compartir: ${nativeShareAvailable()?'Disponible':'Modo copia'} · Conexión: ${navigator.onLine?'Online':'Offline'}</span>`;(e.currentTarget as HTMLButtonElement).textContent='Diagnóstico completado'});
   root.querySelector('[data-export]')?.addEventListener('click',()=>{const payload={ui:loadPrefs(),toggles:loadToggles(),exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='conecta-preferencias.json';a.click();URL.revokeObjectURL(a.href)});
   root.querySelector('[data-clear-local]')?.addEventListener('click',e=>{localStorage.removeItem(UI_KEY);localStorage.removeItem(TOGGLE_KEY);applyPrefs(defaults);(e.currentTarget as HTMLButtonElement).textContent='Datos locales limpiados ✓'});
   const search=root.querySelector('.help-search') as HTMLInputElement|null;

@@ -69,6 +69,7 @@ import { RetryState, ScreenSkeleton } from "./components/AppResilience";
 import { AuthScreen, EmailVerificationScreen, LoadingScreen, OnboardingScreen } from "./views/AuthFlowViews";
 import { ChatView } from "./views/ChatView";
 import { CalendarView } from "./views/CalendarView";
+import { PlansView } from "./views/PlansView";
 import { ReputationReviews } from "./components/ReputationReviews";
 import { PersonCard, PersonRow } from "./components/PersonCards";
 import { PlanCard } from "./components/PlanCard";
@@ -1003,39 +1004,6 @@ function MapView({
       <aside className="map-results"><div className="map-results-title"><strong>{mapped.length || plans.length} resultados</strong><small>Cerca de {profile?.city || "tu ubicación"}</small></div>{(mapped.length ? mapped : plans).map((plan) => <button key={plan.id} className={selected?.id === plan.id ? "active" : ""} onClick={() => setSelected(plan)}><span style={{ background: categoryColor(plan.category) }}><MapPin /></span><div><strong>{plan.title}</strong><small>{formatPlanDate(plan.starts_at)} · {plan.location_name}</small></div><ChevronRight /></button>)}{!plans.length && <EmptyCompact icon={<MapPin />} title="Sin planes geolocalizados" text="Los nuevos planes aparecerán en el mapa cuando incluyan ubicación." />}</aside>
       <section className="map-canvas"><iframe title="Mapa de planes CONECTA" src={mapEmbedUrl(selected)} loading="lazy" /><div className="map-legend"><span><i className="green" /> Deporte</span><span><i className="blue" /> Café</span><span><i className="orange" /> Comida</span><span><i className="purple" /> Fiesta</span><span><i className="red" /> Empieza pronto</span></div>{selected && <article className="map-plan-popover"><img src={selected.image_url || categoryImage(selected.category)} alt="" /><div><span>{selected.category}</span><strong>{selected.title}</strong><small>{selected.location_name} · {formatMoney(selected.cost_cents)}</small></div><button onClick={() => onPlan(selected)}>Ver plan</button></article>}</section>
     </div>
-  </div>;
-}
-
-function PlansView({
-  plans,
-  profile,
-  members,
-  myMemberships,
-  savedItems,
-  category,
-  setCategory,
-  onPlan,
-  onJoin,
-  onSave,
-  onCreate,
-}: {
-  plans: Plan[];
-  profile: Profile | null;
-  members: PlanMember[];
-  myMemberships: PlanMember[];
-  savedItems: SavedItem[];
-  category: string;
-  setCategory: (category: string) => void;
-  onPlan: (plan: Plan) => void;
-  onJoin: (plan: Plan) => Promise<void>;
-  onSave: (plan: Plan) => Promise<void>;
-  onCreate: () => void;
-}) {
-  return <div className="view-page">
-    <PageHero eyebrow="EXPERIENCIAS REALES" title="Planes que sí ocurren" text="Plazas, nivel, coste, ambiente, asistentes y seguridad antes de apuntarte." icon={<CalendarDays />} action={<button onClick={onCreate}><Plus /> Crear plan</button>} />
-    <div className="plan-dashboard"><div><strong>{plans.length}</strong><span>Planes disponibles</span></div><div><strong>{myMemberships.filter((item) => ["attending", "requested", "waitlist"].includes(item.status)).length}</strong><span>Próximas asistencias</span></div><div><strong>{myMemberships.filter((item) => item.status === "waitlist").length}</strong><span>En lista de espera</span></div><div><strong>{savedItems.filter((item) => item.item_type === "plan").length}</strong><span>Guardados</span></div></div>
-    <div className="filter-pills"><button className={category === "Todos" ? "active" : ""} onClick={() => setCategory("Todos")}>Todos</button>{categories.map(({ label }) => <button key={label} className={category === label ? "active" : ""} onClick={() => setCategory(label)}>{label}</button>)}</div>
-    {plans.length ? <div className="plans-grid">{plans.map((plan) => <PlanCard key={plan.id} plan={plan} profile={profile} members={members} membership={myMemberships.find((item) => item.plan_id === plan.id)} saved={savedItems.some((item) => item.item_type === "plan" && item.item_id === plan.id)} onOpen={onPlan} onJoin={onJoin} onSave={onSave} />)}</div> : <PlansEmpty onCreate={onCreate} />}
   </div>;
 }
 

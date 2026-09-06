@@ -14,13 +14,20 @@ const STALE_SELECTORS = [
 ];
 
 function removeStaleOptionalUi(root: ParentNode = document) {
+  if (root instanceof HTMLElement && STALE_SELECTORS.some((selector) => root.matches(selector))) {
+    root.remove();
+    return;
+  }
   STALE_SELECTORS.forEach((selector) => {
-    root.querySelectorAll<HTMLElement>(selector).forEach((node) => node.remove());
+    root.querySelectorAll?.<HTMLElement>(selector).forEach((node) => node.remove());
   });
 }
 
 function optimizeImages(root: ParentNode = document) {
-  root.querySelectorAll<HTMLImageElement>('img').forEach((img) => {
+  const images: HTMLImageElement[] = [];
+  if (root instanceof HTMLImageElement) images.push(root);
+  root.querySelectorAll?.<HTMLImageElement>('img').forEach((img) => images.push(img));
+  images.forEach((img) => {
     img.decoding = 'async';
     const isPriority = !!img.closest('.hero,.top-actions,.profile-head,.detail-photo');
     img.loading = isPriority ? 'eager' : 'lazy';
@@ -41,13 +48,14 @@ function applyStability(root: ParentNode = document) {
 
 applyStability();
 
-let queued = false;
-const observer = new MutationObserver(() => {
-  if (queued) return;
-  queued = true;
-  requestAnimationFrame(() => {
-    queued = false;
-    applyStability(document);
-  });
+const observer = new MutationObserver((mutations) => {
+  const roots = new Set<ParentNode>();
+  for (const mutation of mutations) {
+    mutation.addedNodes.forEach((node) => {
+      if (node instanceof HTMLElement || node instanceof DocumentFragment) roots.add(node);
+    });
+  }
+  if (!roots.size) return;
+  requestAnimationFrame(() => roots.forEach((root) => applyStability(root)));
 });
 observer.observe(document.body, { childList: true, subtree: true });

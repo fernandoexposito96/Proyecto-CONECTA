@@ -12,7 +12,5 @@ import './premium-max-v3.css';
 import './settings-reference-final.css';
 import './settings-reference-final';
 import './mobile-edge-final.css';
-import './ux-fixes.css';
-import './ux-fixes';
 
 createRoot(document.getElementById('app')!).render(<StrictMode><App /></StrictMode>);

@@ -37,7 +37,6 @@ import {
   MoreHorizontal,
   Navigation,
   Plus,
-  RefreshCw,
   Settings,
   Share2,
   Shield,

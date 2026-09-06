@@ -34,13 +34,19 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium webkit
       - name: Validate release candidate
-        run: pnpm run validate
-      - name: Generate NORA diagnostic report
+        run: |
+          pnpm run validate
+          mkdir -p .nora
+          printf '{"unit":true,"e2e":true,"accessibility":true,"commit":"%s"}\n' "$GITHUB_SHA" > .nora/validate-ok.json
+      - name: Generate NORA base report
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: https://qdjuypoqiafqncwgmicf.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_cJAhkB9oDjK-ecmrEshNvA_79F3_G55
+          CONECTA_ROBOT_MAX_FINDINGS: "999"
         run: node scripts/diagnostic-scan.mjs
-      - name: Rebuild with latest diagnostic report
+      - name: Finalize NORA evidence report
+        run: node scripts/nora-deep-checks.mjs
+      - name: Rebuild with final NORA report
         run: pnpm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5

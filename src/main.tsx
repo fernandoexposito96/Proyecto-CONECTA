@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AppErrorBoundary, NetworkStatusBanner } from "./components/AppResilience";
+import { PasswordRecoveryGate } from "./components/PasswordRecoveryGate";
 import { offlineVisual } from "./offlineVisuals";
 import { scheduleIdlePrefetch } from "./idle-prefetch";
 import { startImagePerformance } from "./image-performance";
@@ -65,7 +66,9 @@ createRoot(root).render(
   <StrictMode>
     <AppErrorBoundary>
       <NetworkStatusBanner />
-      <App />
+      <PasswordRecoveryGate>
+        <App />
+      </PasswordRecoveryGate>
     </AppErrorBoundary>
   </StrictMode>,
 );

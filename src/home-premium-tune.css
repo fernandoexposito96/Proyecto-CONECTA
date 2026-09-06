@@ -1,0 +1,187 @@
+/* CONECTA Premium Max — acabado visual del Inicio, sin alterar estructura ni funcionalidad */
+:root{
+  --premium-ink:#0c1d38;
+  --premium-violet:#6a48f5;
+  --premium-blue:#3975ff;
+  --premium-bg:#f3f6fb;
+  --premium-soft:#f8f9fd;
+}
+
+body{
+  background:
+    radial-gradient(circle at 8% 4%,rgba(108,76,245,.08),transparent 24%),
+    radial-gradient(circle at 96% 18%,rgba(56,116,255,.08),transparent 27%),
+    linear-gradient(180deg,#f8faff 0%,#eef3f8 100%)!important;
+}
+
+.home-page{
+  position:relative;
+  isolation:isolate;
+}
+.home-page::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-26px -24px 0;
+  border-radius:38px;
+  background:linear-gradient(180deg,rgba(255,255,255,.52),rgba(246,248,253,.18));
+  pointer-events:none;
+}
+
+.home-page .hero{
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:0 24px 70px rgba(22,40,75,.16),0 3px 12px rgba(31,52,87,.08);
+}
+.home-page .hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.08),transparent 38%);
+}
+.home-page .hero-search{
+  border:1px solid rgba(255,255,255,.78);
+  box-shadow:0 12px 36px rgba(10,24,48,.24);
+  backdrop-filter:blur(14px);
+}
+
+.home-page .section{
+  border-color:rgba(219,226,238,.82);
+  box-shadow:0 16px 44px rgba(24,44,77,.075);
+}
+.home-page .section-head h2{
+  color:var(--premium-ink);
+  font-weight:900;
+}
+.home-page .section-head button{
+  border-radius:999px;
+  padding:8px 10px;
+  transition:.2s ease;
+}
+.home-page .section-head button:hover{background:#f0edff}
+
+.home-page .category-strip{
+  gap:13px;
+  padding:2px 2px 6px;
+  scroll-snap-type:x proximity;
+}
+.home-page .category-strip button{
+  scroll-snap-align:start;
+  border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 12px 28px rgba(19,40,68,.13);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.home-page .category-strip button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 16px 34px rgba(19,40,68,.17);
+}
+
+.home-page .plan-grid{
+  padding:2px 2px 6px;
+  scroll-snap-type:x mandatory;
+}
+.home-page .plan-card{
+  scroll-snap-align:start;
+  border-color:#e4e9f1;
+  box-shadow:0 16px 38px rgba(20,42,74,.11);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.home-page .plan-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 22px 46px rgba(20,42,74,.15);
+}
+.home-page .plan-image::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,transparent 62%,rgba(8,20,39,.11));
+}
+.home-page .plan-image>span{
+  z-index:2;
+  background:rgba(245,242,255,.94);
+  box-shadow:0 6px 16px rgba(74,53,180,.12);
+}
+.home-page .plan-image>button{
+  z-index:2;
+  box-shadow:0 8px 18px rgba(12,28,53,.12);
+  backdrop-filter:blur(10px);
+}
+
+/* Cierre visual premium al final del Inicio. No sustituye ninguna tarjeta ni acción. */
+.home-page::after{
+  content:"CONECTA PREMIUM  ·  Planes verificados  ·  Gente compatible  ·  Más seguridad";
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:78px;
+  margin-top:26px;
+  padding:18px 24px;
+  border-radius:24px;
+  color:#fff;
+  text-align:center;
+  font-size:13px;
+  line-height:1.45;
+  font-weight:800;
+  letter-spacing:.02em;
+  background:
+    radial-gradient(circle at 16% 12%,rgba(255,255,255,.17),transparent 27%),
+    linear-gradient(135deg,#102f50 0%,#173f66 46%,#6b4df3 115%);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 18px 44px rgba(24,45,78,.16);
+}
+
+@media(max-width:760px){
+  body{background:#fff!important}
+  .home-page{
+    background:
+      radial-gradient(circle at 100% 18%,rgba(105,76,244,.07),transparent 26%),
+      linear-gradient(180deg,#fff 0%,#fbfcff 54%,#f5f7fb 100%);
+  }
+  .home-page::before{display:none}
+  .home-page .hero{box-shadow:0 10px 26px rgba(15,35,61,.13)}
+  .home-page .section{
+    background:transparent;
+    padding-top:20px;
+    padding-bottom:20px;
+  }
+  .home-page .section+.section{
+    border-top:1px solid #eef1f6;
+  }
+  .home-page .category-strip{
+    grid-auto-columns:78px;
+    gap:11px;
+    padding-right:18px;
+  }
+  .home-page .category-strip button{
+    height:78px;
+    border-radius:17px;
+    box-shadow:0 9px 20px rgba(20,39,66,.11);
+  }
+  .home-page .plan-grid{
+    grid-auto-columns:min(76vw,285px);
+    gap:12px;
+    padding-right:18px;
+  }
+  .home-page .plan-card{
+    border-radius:19px;
+    box-shadow:0 12px 28px rgba(20,42,74,.10);
+  }
+  .home-page .plan-image{height:142px}
+  .home-page .plan-body{padding:12px}
+  .home-page .plan-body h3{font-size:16px}
+  .home-page .plan-body p{font-size:12px}
+  .home-page::after{
+    margin:18px 16px 20px;
+    min-height:92px;
+    border-radius:22px;
+    padding:18px;
+    font-size:11px;
+    box-shadow:0 14px 32px rgba(20,40,72,.15);
+  }
+}
+
+@media(max-width:390px){
+  .home-page .plan-grid{grid-auto-columns:80vw}
+  .home-page::after{font-size:10.5px}
+}

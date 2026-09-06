@@ -9,5 +9,6 @@ import './settings-max.css';
 import './settings-polish.css';
 import './settings-enhancer';
 import './settings-polish';
+import './premium-max-v3.css';
 
 createRoot(document.getElementById('app')!).render(<StrictMode><App /></StrictMode>);

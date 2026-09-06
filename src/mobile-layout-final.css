@@ -1,0 +1,65 @@
+/* Cierre final de layout móvil: barra inferior compacta, alineada y sin hueco sobrante */
+@media (max-width:760px){
+  .content{
+    padding-bottom:calc(56px + env(safe-area-inset-bottom))!important;
+  }
+
+  .profile-page,
+  .chat-page,
+  .explore-page,
+  .settings-page,
+  .home-page{
+    margin-bottom:0!important;
+  }
+
+  .profile-main,
+  .chat-list,
+  .explore-page,
+  .settings-page{
+    padding-bottom:0!important;
+  }
+
+  .bottom-nav{
+    min-height:48px!important;
+    height:calc(48px + env(safe-area-inset-bottom))!important;
+    padding:0 12px env(safe-area-inset-bottom)!important;
+    align-items:end!important;
+  }
+
+  .bottom-nav>button{
+    height:42px!important;
+    justify-content:flex-end!important;
+    gap:1px!important;
+    padding:0 0 1px!important;
+  }
+
+  .bottom-nav>button svg{
+    width:22px!important;
+    height:22px!important;
+  }
+
+  .bottom-nav>button span{
+    font-size:10px!important;
+    line-height:1!important;
+  }
+
+  .bottom-nav .create{
+    width:56px!important;
+    min-width:56px!important;
+    height:56px!important;
+    transform:translateY(-1px)!important;
+  }
+
+  .bottom-nav .create svg{
+    width:29px!important;
+    height:29px!important;
+  }
+}
+
+@media (max-width:390px){
+  .content{padding-bottom:calc(54px + env(safe-area-inset-bottom))!important}
+  .bottom-nav{min-height:46px!important;height:calc(46px + env(safe-area-inset-bottom))!important;padding-left:9px!important;padding-right:9px!important}
+  .bottom-nav>button{height:40px!important}
+  .bottom-nav .create{width:54px!important;min-width:54px!important;height:54px!important}
+  .bottom-nav .create svg{width:28px!important;height:28px!important}
+}

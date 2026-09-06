@@ -1,15 +1,40 @@
-/* Cierre final de layout móvil: barra inferior compacta, alineada y sin hueco sobrante */
+/* Cierre final de layout móvil: más abierto, alineado y con navegación compacta */
 @media (max-width:760px){
   .content{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
     padding-bottom:calc(56px + env(safe-area-inset-bottom))!important;
   }
 
+  /* Aprovechar mejor el ancho real del teléfono */
+  .home-page,
   .profile-page,
   .chat-page,
   .explore-page,
-  .settings-page,
-  .home-page{
+  .settings-page{
+    width:100%!important;
+    max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
     margin-bottom:0!important;
+  }
+
+  .hero{
+    width:100%!important;
+    border-radius:22px!important;
+  }
+
+  .section{
+    margin-left:0!important;
+    margin-right:0!important;
+    border-radius:20px!important;
+  }
+
+  .profile-page{
+    border-radius:20px!important;
   }
 
   .profile-main,
@@ -17,6 +42,12 @@
   .explore-page,
   .settings-page{
     padding-bottom:0!important;
+  }
+
+  /* Carruseles y galerías llegan más cerca del borde sin quedar cortados */
+  .category-strip,
+  .people-strip{
+    padding-right:2px!important;
   }
 
   .bottom-nav{
@@ -57,7 +88,12 @@
 }
 
 @media (max-width:390px){
-  .content{padding-bottom:calc(54px + env(safe-area-inset-bottom))!important}
+  .content{
+    padding-left:7px!important;
+    padding-right:7px!important;
+    padding-bottom:calc(54px + env(safe-area-inset-bottom))!important;
+  }
+  .hero{border-radius:20px!important}
   .bottom-nav{min-height:46px!important;height:calc(46px + env(safe-area-inset-bottom))!important;padding-left:9px!important;padding-right:9px!important}
   .bottom-nav>button{height:40px!important}
   .bottom-nav .create{width:54px!important;min-width:54px!important;height:54px!important}

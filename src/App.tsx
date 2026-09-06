@@ -33,14 +33,11 @@ import {
   MailCheck,
   Map,
   MapPin,
-  MessageCircle,
-  MoreHorizontal,
   Navigation,
   Plus,
   Settings,
   Share2,
   Shield,
-  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Star,
@@ -56,7 +53,7 @@ import { QRCodeSVG } from "qrcode.react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader,
   DialogTitle, Sheet, SheetContent,
-  SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Tabs, TabsContent,
+  SheetDescription, SheetHeader, SheetTitle, Tabs, TabsContent,
   TabsList, TabsTrigger, Toaster,
 } from "./ui";
 import { toast } from "./toast";
@@ -73,6 +70,8 @@ import { AuthScreen, EmailVerificationScreen, LoadingScreen, OnboardingScreen } 
 import { ChatView } from "./views/ChatView";
 import { CalendarView } from "./views/CalendarView";
 import { ReputationReviews } from "./components/ReputationReviews";
+import { PersonCard, PersonRow } from "./components/PersonCards";
+import { avatarFallback } from "./constants/media";
 import type {
   Community,
   CommunityMember,
@@ -95,7 +94,6 @@ import {
   formatMoney,
   formatPlanDate,
   mapEmbedUrl,
-  personCompatibility,
   planCompatibility,
   yearsOld,
 } from "./utils";
@@ -117,9 +115,6 @@ const initialFilters: Filters = {
   price: "all",
   verified: false,
 };
-
-const avatarFallback =
-  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=84";
 
 const SecurityView = lazy(() => import("./views/SecurityView").then((m) => ({ default: m.SecurityView })));
 const ProductHub = lazy(() => import("./views/ProductHub").then((m) => ({ default: m.ProductHub })));
@@ -1144,30 +1139,6 @@ function PlanCard({
     <button className="plan-image" onClick={() => onOpen(plan)}><img src={plan.image_url || categoryImage(plan.category)} alt={plan.title} width={1280} height={853} loading="lazy" decoding="async" /><span className="type-pill" style={{ background: categoryColor(plan.category) }}>{plan.category || "Plan"}</span>{(urgent || plan.is_spontaneous) && <span className="urgent-pill"><Zap /> AHORA</span>}{plan.newcomer_friendly && <span className="newcomer-pill"><Sparkles /> PRIMER PLAN</span>}<div className="compatibility-ring"><strong>{planCompatibility(plan, profile)}%</strong><small>compatible</small></div></button>
     <div className="plan-body"><div className="plan-topline"><span><CalendarDays /> {formatPlanDate(plan.starts_at)}</span><button className={saved ? "saved" : ""} onClick={() => void onSave(plan)} aria-label="Guardar plan"><Heart fill={saved ? "currentColor" : "none"} /></button></div><button className="plan-title" onClick={() => onOpen(plan)}><h3>{plan.title}</h3></button><p className="plan-location"><MapPin /> {plan.location_name || "Punto por confirmar"}{distance != null && <b>· {distance.toFixed(1)} km</b>}</p><div className="plan-tags"><span>{formatLevel(plan.level)}</span><span>{formatAtmosphere(plan.atmosphere)}</span><span>{formatMoney(plan.cost_cents, plan.currency)}</span></div><div className="attendance-row"><div className="avatar-stack">{Array.from({ length: Math.min(attending, 3) }, (_, index) => <span key={index}>{String.fromCharCode(65 + index)}</span>)}</div><div><strong>{attending} personas</strong><small>{available == null ? "Sin límite" : `${available} plazas disponibles`}</small></div>{available === 1 && <em>¡Última plaza!</em>}</div><button className={`join-plan ${membership ? "joined" : ""}`} onClick={() => void onJoin(plan)}>{membership ? <Check /> : <UserRoundPlus />}{statusLabel}</button></div>
   </article>;
-}
-
-function PersonCard({
-  person,
-  current,
-  connection,
-  onConnect,
-  onChat,
-  onReport,
-  onBlock,
-}: {
-  person: Profile;
-  current: Profile | null;
-  connection?: Connection;
-  onConnect: (person: Profile) => Promise<void>;
-  onChat: (person: Profile) => Promise<void>;
-  onReport: (person: Profile) => Promise<void>;
-  onBlock: (person: Profile) => Promise<void>;
-}) {
-  return <article className="person-card"><img src={person.avatar_url || avatarFallback} alt={person.display_name || "Usuario"} width={480} height={640} loading="lazy" decoding="async" /><div className="person-shade" /><span className="match"><Sparkles /> {personCompatibility(person, current)}%</span><Sheet><SheetTrigger asChild><button className="person-menu" aria-label="Seguridad"><MoreHorizontal /></button></SheetTrigger><SheetContent><SheetHeader><SheetTitle>Seguridad y control</SheetTitle><SheetDescription>Gestiona esta interacción de forma privada.</SheetDescription></SheetHeader><div className="safety-actions"><button onClick={() => void onReport(person)}><Flag /> Reportar perfil</button><button onClick={() => void onBlock(person)}><ShieldAlert /> Bloquear usuario</button></div></SheetContent></Sheet><div className="person-info"><div><h3>{person.display_name || "Usuario"}{person.show_online && person.online && <i />}</h3><span><BadgeCheck /> Perfil de la comunidad</span></div><p><MapPin /> {person.show_location ? person.city || "Ubicación privada" : "Ubicación privada"}</p><small>{person.interests.slice(0, 3).join(" · ") || "Buscando nuevos planes"}</small><div><button className={connection ? "connected" : ""} onClick={() => void onConnect(person)}>{connection ? <><Check /> {connection.status === "accepted" ? "Conectados" : "Pendiente"}</> : "Conectar"}</button><button onClick={() => void onChat(person)} aria-label="Enviar mensaje"><MessageCircle /></button></div></div></article>;
-}
-
-function PersonRow({ person, current, connection, onConnect, onChat }: { person: Profile; current: Profile | null; connection?: Connection; onConnect: (person: Profile) => Promise<void>; onChat: (person: Profile) => Promise<void> }) {
-  return <article><img src={person.avatar_url || avatarFallback} alt="" /><span><strong>{person.display_name || "Usuario"}</strong><small>{person.interests.slice(0, 2).join(" · ") || person.city || "Nuevos planes"}</small></span><b>{personCompatibility(person, current)}%</b><button onClick={() => void onConnect(person)}>{connection ? <Check /> : <Plus />}</button><button onClick={() => void onChat(person)}><MessageCircle /></button></article>;
 }
 
 function PlanDetailDialog({

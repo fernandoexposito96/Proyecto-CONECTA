@@ -4,6 +4,12 @@ import { supabase } from "../supabase";
 
 type Props = { children: ReactNode };
 
+export function validateRecoveryPasswords(password: string, confirmPassword: string) {
+  if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+  if (password !== confirmPassword) return "Las contraseñas no coinciden.";
+  return "";
+}
+
 export function PasswordRecoveryGate({ children }: Props) {
   const [recovering, setRecovering] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -22,15 +28,9 @@ export function PasswordRecoveryGate({ children }: Props) {
     const password = String(data.get("password") ?? "");
     const confirmPassword = String(data.get("confirm_password") ?? "");
 
-    setMessage("");
-    if (password.length < 8) {
-      setMessage("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setMessage("Las contraseñas no coinciden.");
-      return;
-    }
+    const validationMessage = validateRecoveryPasswords(password, confirmPassword);
+    setMessage(validationMessage);
+    if (validationMessage) return;
 
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });

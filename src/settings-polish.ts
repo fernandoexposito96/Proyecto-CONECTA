@@ -34,7 +34,7 @@ function wrapCardBody(card:HTMLElement){
     if(label)label.textContent=open?'Ocultar':'Ver opciones';
   };
   toggle.addEventListener('click',()=>setOpen(!card.classList.contains('open')));
-  (card as any).__setOpen=setOpen;
+  (card as HTMLElement & {__setOpen?:(value:boolean)=>void}).__setOpen=setOpen;
 }
 
 function buildIndex(sheet:HTMLElement){
@@ -52,7 +52,7 @@ function buildIndex(sheet:HTMLElement){
     btn.type='button';
     btn.textContent=title;
     btn.addEventListener('click',()=>{
-      const setOpen=(card as any).__setOpen as ((v:boolean)=>void)|undefined;
+      const setOpen=(card as HTMLElement & {__setOpen?:(value:boolean)=>void}).__setOpen;
       setOpen?.(true);
       card.scrollIntoView({behavior:'smooth',block:'start'});
     });
@@ -69,7 +69,9 @@ function wireFeedback(sheet:HTMLElement){
     if(target.matches('input[type="checkbox"]')) toast(target.checked?'Activado':'Desactivado');
   });
   sheet.addEventListener('click',e=>{
-    const btn=(e.target as Element).closest<HTMLButtonElement>('[data-preset]');
+    const target=e.target;
+    if(!(target instanceof Element))return;
+    const btn=target.closest<HTMLButtonElement>('[data-preset]');
     if(!btn)return;
     sheet.querySelectorAll('[data-preset]').forEach(x=>x.classList.remove('selected'));
     btn.classList.add('selected');
@@ -79,13 +81,13 @@ function wireFeedback(sheet:HTMLElement){
 
 function polishSheet(sheet:HTMLElement){
   if(sheet.dataset.uiPolished)return;
-  sheet.dataset.uiPolished='1';
   const content=sheet.querySelector('.settings-max-content');
   if(!content)return;
+  sheet.dataset.uiPolished='1';
   const cards=[...content.querySelectorAll<HTMLElement>(':scope > .settings-max-card')];
   cards.forEach(wrapCardBody);
   cards.forEach((card,i)=>{
-    const setOpen=(card as any).__setOpen as ((v:boolean)=>void)|undefined;
+    const setOpen=(card as HTMLElement & {__setOpen?:(value:boolean)=>void}).__setOpen;
     const heading=card.querySelector(':scope > h3')?.textContent?.trim()||'';
     const keepOpen=i===0 || heading==='Apariencia';
     setOpen?.(keepOpen);
@@ -94,7 +96,38 @@ function polishSheet(sheet:HTMLElement){
   wireFeedback(sheet);
 }
 
-function run(){document.querySelectorAll<HTMLElement>('.settings-max-sheet').forEach(polishSheet)}
-const polishObserver=new MutationObserver(run);
-polishObserver.observe(document.documentElement,{subtree:true,childList:true});
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+function polishWithin(root:ParentNode){
+  if(root instanceof HTMLElement && root.matches('.settings-max-sheet'))polishSheet(root);
+  root.querySelectorAll?.<HTMLElement>('.settings-max-sheet').forEach(polishSheet);
+}
+
+function run(){polishWithin(document)}
+
+let scheduled=false;
+const pendingRoots=new Set<ParentNode>();
+const schedulePolish=()=>{
+  if(scheduled)return;
+  scheduled=true;
+  requestAnimationFrame(()=>{
+    scheduled=false;
+    const roots=[...pendingRoots];
+    pendingRoots.clear();
+    roots.forEach(polishWithin);
+  });
+};
+
+const polishObserver=new MutationObserver(mutations=>{
+  for(const mutation of mutations){
+    mutation.addedNodes.forEach(node=>{
+      if(node instanceof HTMLElement || node instanceof DocumentFragment)pendingRoots.add(node);
+    });
+  }
+  if(pendingRoots.size)schedulePolish();
+});
+
+const start=()=>{
+  run();
+  if(document.body)polishObserver.observe(document.body,{subtree:true,childList:true});
+};
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();

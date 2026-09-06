@@ -23,52 +23,16 @@ function wirePremiumCard(root:ParentNode=document){
   });
 }
 
-function markActivePresets(root:ParentNode=document){
-  const buttons:HTMLButtonElement[]=[];
-  if(root instanceof HTMLButtonElement && root.matches('[data-preset]'))buttons.push(root);
-  root.querySelectorAll?.<HTMLButtonElement>('[data-preset]').forEach(btn=>buttons.push(btn));
-  buttons.forEach(btn=>{
-    if(btn.dataset.referencePresetReady)return;
-    btn.dataset.referencePresetReady='1';
-    btn.addEventListener('click',()=>{
-      const sheet=btn.closest('.settings-max-sheet') || document;
-      sheet.querySelectorAll('[data-preset]').forEach(x=>x.classList.remove('selected'));
-      btn.classList.add('selected');
-    });
-  });
-}
-
-function enhanceWithin(root:ParentNode){
-  wirePremiumCard(root);
-  markActivePresets(root);
-}
-
-function run(){enhanceWithin(document)}
-
-let scheduled=false;
-const pendingRoots=new Set<ParentNode>();
-const schedule=()=>{
-  if(scheduled)return;
-  scheduled=true;
-  requestAnimationFrame(()=>{
-    scheduled=false;
-    const roots=[...pendingRoots];
-    pendingRoots.clear();
-    roots.forEach(enhanceWithin);
-  });
-};
-
 const referenceObserver=new MutationObserver(mutations=>{
   for(const mutation of mutations){
     mutation.addedNodes.forEach(node=>{
-      if(node instanceof HTMLElement || node instanceof DocumentFragment)pendingRoots.add(node);
+      if(node instanceof HTMLElement || node instanceof DocumentFragment)wirePremiumCard(node);
     });
   }
-  if(pendingRoots.size)schedule();
 });
 
 const start=()=>{
-  run();
+  wirePremiumCard(document);
   if(document.body)referenceObserver.observe(document.body,{subtree:true,childList:true});
 };
 

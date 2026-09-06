@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEMO_MODE_DEFAULT,
   demoCommunities,
   demoPlans,
   demoProfiles,
@@ -47,6 +48,10 @@ describe("domain presentation utilities", () => {
 });
 
 describe("demo data boundaries", () => {
+  it("keeps demo content opt-in by default", () => {
+    expect(DEMO_MODE_DEFAULT).toBe(false);
+  });
+
   it("recognizes demo ids without matching production ids", () => {
     expect(isDemoEntityId(demoPlans[0].id)).toBe(true);
     expect(isDemoEntityId("0da81f31-592d-43af-a75d-44b5469ca91e")).toBe(false);

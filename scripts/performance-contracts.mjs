@@ -48,9 +48,9 @@ assert.match(refreshes, /from\("conversations"\)[\s\S]*\.in\("id", conversationI
 assert.match(refreshes, /from\("connections"\)[\s\S]*requester_id\.eq\.\$\{userId\},receiver_id\.eq\.\$\{userId\}/);
 assert.match(refreshes, /from\("plans"\)[\s\S]*\.in\("status", \["published", "full"\]\)[\s\S]*from\("plan_members"\)[\s\S]*\.in\("plan_id", planIds\)/);
 
-// Demo remains available for product QA but is clearly namespaced and deduplicated.
+// Demo remains available for explicit product QA, but production defaults to real data.
 const demo = await read("src/demoMode.ts");
-assert.match(demo, /DEMO_MODE_DEFAULT = true/);
+assert.match(demo, /DEMO_MODE_DEFAULT = false/);
 assert.match(demo, /DEMO_ID_PREFIX = "demo-"/);
 assert.match(demo, /demoProfiles:[\s\S]*demo-profile-/);
 assert.match(demo, /demoPlans:[\s\S]*demo-plan-/);

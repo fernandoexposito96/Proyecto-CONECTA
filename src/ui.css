@@ -24,6 +24,9 @@
 /* Bloqueo de referencia visual aprobada: aplica el diseño directamente a la app real. */
 @import "./visual-reference-lock.css";
 
+/* Segunda capa de fidelidad: detalle, Explora, Mensajes y Perfil. */
+@import "./reference-detail-polish.css";
+
 /* Responsive funcional: siempre debe ser la última importación CSS. */
 @import "./universal-responsive.css";
 

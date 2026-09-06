@@ -36,11 +36,14 @@ assert.match(images, /loading = "lazy"/);
 assert.match(images, /fetchPriority = "low"/);
 assert.match(images, /fetchPriority = "high"/);
 
-// Data synchronization must stay scoped to the authenticated user's graph.
+// The initial snapshot is intentionally isolated demo data and must not perform
+// live social-database reads. Live refresh paths below remain user-scoped.
 const initialLoader = await read("src/data/loadConectaData.ts");
-assert.match(initialLoader, /from\("conversation_members"\)[\s\S]*\.eq\("user_id", currentUser\.id\)/);
-assert.match(initialLoader, /from\("conversations"\)[\s\S]*\.in\("id", conversationIds\)/);
-assert.match(initialLoader, /from\("connections"\)[\s\S]*requester_id\.eq\.\$\{currentUser\.id\},receiver_id\.eq\.\$\{currentUser\.id\}/);
+assert.match(initialLoader, /demoProfiles/);
+assert.match(initialLoader, /demoPlans/);
+assert.match(initialLoader, /demoCommunities/);
+assert.doesNotMatch(initialLoader, /\.from\s*\(/, "isolated demo loader must not read live Supabase tables");
+assert.doesNotMatch(initialLoader, /\.select\s*\(/, "isolated demo loader must not issue live select queries");
 
 const refreshes = await read("src/data/refreshConectaSlices.ts");
 assert.match(refreshes, /from\("conversation_members"\)[\s\S]*\.eq\("user_id", userId\)/);

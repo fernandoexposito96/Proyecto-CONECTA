@@ -1,3 +1,5 @@
+export {};
+
 const UX_STATE_KEY = 'conecta-ux-actions-v1';
 
 type ActionState = Record<string, 'liked' | 'favorite' | 'dismissed'>;

@@ -11,6 +11,7 @@
 /* Componentes funcionales */
 @import "./drawer-reference-premium.css";
 @import "./mobile-dialogs-safe.css";
+@import "./onboarding-registration-fix.css";
 
 /* Accesibilidad */
 @import "./accessibility.css";

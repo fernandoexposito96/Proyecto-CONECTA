@@ -19,5 +19,7 @@ import './experience-features.css';
 import './experience-features';
 import './retention-accessibility.css';
 import './retention-accessibility';
+import './map-features.css';
+import './map-features';
 
 createRoot(document.getElementById('app')!).render(<StrictMode><App /></StrictMode>);

@@ -71,6 +71,7 @@ import { ChatView } from "./views/ChatView";
 import { CalendarView } from "./views/CalendarView";
 import { ReputationReviews } from "./components/ReputationReviews";
 import { PersonCard, PersonRow } from "./components/PersonCards";
+import { PlanCard } from "./components/PlanCard";
 import { avatarFallback } from "./constants/media";
 import type {
   Community,
@@ -1108,37 +1109,6 @@ function ProfileView({
     <div className="profile-layout"><section><div className="profile-stats"><div><strong>{connections.filter((item) => item.status === "accepted").length}</strong><span>Conexiones</span></div><div><strong>{attended}</strong><span>Quedadas</span></div><div><strong>{organized}</strong><span>Organizados</span></div><div><strong>{Math.round(Number(trust?.attendance_rate ?? 100))}%</strong><span>Asistencia</span></div></div><article className="profile-card"><span>SOBRE MÍ</span><h2>{profile?.bio || "Cuéntale a tu comunidad qué te gusta hacer."}</h2><div className="interest-pills">{profile?.interests.map((interest) => <b key={interest}>{interest}</b>)}</div></article><article className="profile-card reputation-card"><span>CONFIANZA Y REPUTACIÓN</span><div><article><UserCheck /><strong>{trust?.meetups_attended ?? 0}</strong><small>Planes asistidos</small></article><article><Clock3 /><strong>{Math.round(Number(trust?.punctuality_rate ?? 100))}%</strong><small>Puntualidad</small></article><article><Star /><strong>{trust?.organizer_tier || "Nuevo"}</strong><small>Nivel organizador</small></article></div></article><ReputationReviews userId={user.id} /></section><aside className="profile-menu"><button onClick={() => go("Calendario")}><CalendarDays /> Mi calendario <ChevronRight /></button><button onClick={() => go("Planes")}><Heart /> Planes guardados <ChevronRight /></button><button onClick={() => go("Seguridad")}><ShieldCheck /> Privacidad y seguridad <ChevronRight /></button><button onClick={() => go("Vida")}><Activity /> CONECTA Vida <ChevronRight /></button><button onClick={() => supabase.auth.signOut()}><LogOut /> Cerrar sesión <ChevronRight /></button></aside></div>
     <Dialog open={editing} onOpenChange={setEditing}><DialogContent className="form-dialog"><DialogHeader><DialogTitle>Editar perfil</DialogTitle><DialogDescription>Controla qué compartes y quién puede escribirte.</DialogDescription></DialogHeader><form className="stack-form" onSubmit={save}><div className="form-grid"><Field label="Nombre visible"><input name="display_name" defaultValue={profile?.display_name ?? ""} required /></Field><Field label="Ciudad"><input name="city" defaultValue={profile?.city ?? ""} /></Field></div><Field label="Biografía"><textarea name="bio" rows={4} defaultValue={profile?.bio ?? ""} /></Field><Field label="Intereses (separados por comas)"><input name="interests" defaultValue={profile?.interests.join(", ") ?? ""} /></Field><div className="form-grid"><Field label="Visibilidad"><select name="visibility" defaultValue={profile?.profile_visibility ?? "public"}><option value="public">Público</option><option value="connections">Solo conexiones</option><option value="private">Privado</option></select></Field><Field label="Quién puede escribir"><select name="messages" defaultValue={profile?.allow_messages ?? "connections"}><option value="everyone">Todo el mundo</option><option value="connections">Solo conexiones</option><option value="nobody">Nadie</option></select></Field></div><button className="primary-action" type="submit"><Check /> Guardar cambios</button></form></DialogContent></Dialog>
   </div>;
-}
-
-function PlanCard({
-  plan,
-  profile,
-  members,
-  membership,
-  saved,
-  onOpen,
-  onJoin,
-  onSave,
-  urgent = false,
-}: {
-  plan: Plan;
-  profile: Profile | null;
-  members: PlanMember[];
-  membership?: PlanMember;
-  saved: boolean;
-  onOpen: (plan: Plan) => void;
-  onJoin: (plan: Plan) => Promise<void>;
-  onSave: (plan: Plan) => Promise<void>;
-  urgent?: boolean;
-}) {
-  const attending = members.filter((member) => member.plan_id === plan.id && ["attending", "attended"].includes(member.status)).length;
-  const available = plan.max_people == null ? null : Math.max(plan.max_people - attending, 0);
-  const distance = distanceKm(profile?.latitude ?? null, profile?.longitude ?? null, plan.latitude, plan.longitude);
-  const statusLabel = membership?.status === "attending" ? "Voy a asistir" : membership?.status === "waitlist" ? "Lista de espera" : membership?.status === "requested" ? "Solicitud enviada" : membership ? "Me interesa" : "Me apunto";
-  return <article className={`plan-card ${urgent ? "urgent" : ""}`} style={{ borderColor: categoryColor(plan.category) }}>
-    <button className="plan-image" onClick={() => onOpen(plan)}><img src={plan.image_url || categoryImage(plan.category)} alt={plan.title} width={1280} height={853} loading="lazy" decoding="async" /><span className="type-pill" style={{ background: categoryColor(plan.category) }}>{plan.category || "Plan"}</span>{(urgent || plan.is_spontaneous) && <span className="urgent-pill"><Zap /> AHORA</span>}{plan.newcomer_friendly && <span className="newcomer-pill"><Sparkles /> PRIMER PLAN</span>}<div className="compatibility-ring"><strong>{planCompatibility(plan, profile)}%</strong><small>compatible</small></div></button>
-    <div className="plan-body"><div className="plan-topline"><span><CalendarDays /> {formatPlanDate(plan.starts_at)}</span><button className={saved ? "saved" : ""} onClick={() => void onSave(plan)} aria-label="Guardar plan"><Heart fill={saved ? "currentColor" : "none"} /></button></div><button className="plan-title" onClick={() => onOpen(plan)}><h3>{plan.title}</h3></button><p className="plan-location"><MapPin /> {plan.location_name || "Punto por confirmar"}{distance != null && <b>· {distance.toFixed(1)} km</b>}</p><div className="plan-tags"><span>{formatLevel(plan.level)}</span><span>{formatAtmosphere(plan.atmosphere)}</span><span>{formatMoney(plan.cost_cents, plan.currency)}</span></div><div className="attendance-row"><div className="avatar-stack">{Array.from({ length: Math.min(attending, 3) }, (_, index) => <span key={index}>{String.fromCharCode(65 + index)}</span>)}</div><div><strong>{attending} personas</strong><small>{available == null ? "Sin límite" : `${available} plazas disponibles`}</small></div>{available === 1 && <em>¡Última plaza!</em>}</div><button className={`join-plan ${membership ? "joined" : ""}`} onClick={() => void onJoin(plan)}>{membership ? <Check /> : <UserRoundPlus />}{statusLabel}</button></div>
-  </article>;
 }
 
 function PlanDetailDialog({

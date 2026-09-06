@@ -6,7 +6,7 @@ const root = process.cwd();
 const reportPath = path.join(root, "public", "diagnostic", "report.json");
 const validateMarker = path.join(root, ".nora", "validate-ok.json");
 if (!fs.existsSync(reportPath)) {
-  console.error("NORA v6: falta public/diagnostic/report.json");
+  console.error("NORA v7: falta public/diagnostic/report.json");
   process.exit(1);
 }
 
@@ -67,10 +67,9 @@ for (const check of checks) {
   });
 }
 
-// Normaliza cualquier comprobación pendiente del escáner base. Una prueba no ejecutada
-// nunca debe aparecer como avería ni reducir artificialmente la salud.
+// Una prueba no ejecutada nunca es una avería. Solo reduce cobertura.
 for (const item of results) {
-  if (item.not_executed === true) {
+  if (item.not_executed === true || item.status === "unknown") {
     item.status = "unknown";
     item.severity = "unverified";
     item.verified = false;
@@ -81,14 +80,14 @@ for (const item of results) {
 
 report.results = results;
 const maxFindings = report.max_findings || 999;
-const rawErrors = results.filter((item) => item.status === "fail");
-const rawWatch = results.filter((item) => item.status === "warn" || (item.status === "ok" && item.severity === "warning"));
+const rawErrors = results.filter((item) => item.status === "fail" && item.not_executed !== true);
+const rawWatch = results.filter((item) => item.not_executed !== true && (item.status === "warn" || (item.status === "ok" && item.severity === "warning")));
 const rawUnverified = results.filter((item) => item.status === "unknown" || item.verified === false || item.not_executed === true);
 
 report.errors = rawErrors.slice(0, maxFindings);
 report.watch = rawWatch.slice(0, Math.max(0, maxFindings - report.errors.length));
 report.unverified = rawUnverified.slice(0, maxFindings);
-report.positives = results.filter((item) => item.status === "ok" && item.severity !== "warning" && item.verified !== false).slice(0, maxFindings);
+report.positives = results.filter((item) => item.status === "ok" && item.severity !== "warning" && item.verified !== false && item.not_executed !== true).slice(0, maxFindings);
 
 const verifiedResults = results.filter((item) => !rawUnverified.includes(item));
 const verifiedCount = verifiedResults.length;
@@ -109,10 +108,20 @@ report.counts = {
   detected_before_limit: rawErrors.length + rawWatch.length,
 };
 
-// Salud = calidad de lo que realmente se ejecutó. Cobertura = cuánto se pudo verificar.
-// No se mezcla una falta de evidencia con una avería real.
-const penalty = report.counts.critical * 12 + report.counts.errors * 4 + report.counts.warnings * 1.2;
+// Salud = problemas confirmados. Cobertura = evidencia disponible.
+// La deuda estática CSS es real, pero tiene un peso bajo porque no equivale a una avería funcional.
+const warningPenalty = report.watch.reduce((sum, item) => sum + (item.source === "static" ? 0.25 : 1.5), 0);
+const penalty = report.counts.critical * 15 + report.counts.errors * 5 + warningPenalty;
 report.score = verifiedCount ? Math.max(0, Math.min(100, Math.round(100 - penalty))) : 0;
+report.health_model = {
+  critical_penalty: 15,
+  error_penalty: 5,
+  static_warning_penalty: 0.25,
+  runtime_warning_penalty: 1.5,
+  warning_penalty_total: Math.round(warningPenalty * 100) / 100,
+  unverified_affects_health: false,
+  unverified_affects_coverage: true,
+};
 report.verification = {
   coverage_percent: coveragePercent,
   verified_checks: verifiedCount,
@@ -121,8 +130,8 @@ report.verification = {
   evidence_based: true,
 };
 report.overall = report.counts.critical ? "critical" : report.counts.errors ? "error" : report.counts.warnings ? "warning" : "healthy";
-report.schema = 6;
-report.engine = "evidence-diagnostic-v6";
+report.schema = 7;
+report.engine = "evidence-diagnostic-v7";
 report.coverage = {
   ...(report.coverage || {}),
   unit_tests_checked: results.some((item) => item.id === "deep-unit" && item.verified === true),
@@ -135,11 +144,11 @@ report.category_labels = {
   errors: "Fallos confirmados",
   watch: "Riesgos / Vigilar",
   unverified: "No verificado",
-  corrected: "Corregidos",
+  corrected: "Historial de corregidos",
   positives: "Comprobaciones correctas",
 };
-report.coverage_note = `NORA v6 usa evidencia real. SALUD mide solo comprobaciones ejecutadas; COBERTURA indica qué porcentaje del diagnóstico pudo verificarse. Una prueba no ejecutada no se convierte en avería ni en positivo. Cobertura actual: ${coveragePercent}% (${verifiedCount}/${totalChecks}).`;
+report.coverage_note = `NORA v7 separa salud y cobertura. SALUD penaliza fallos confirmados y riesgos verificados; la deuda CSS estática pesa poco porque no equivale a una avería funcional. COBERTURA baja cuando una prueba no se puede ejecutar. Los corregidos son historial y no alteran la salud actual. Cobertura: ${coveragePercent}% (${verifiedCount}/${totalChecks}).`;
 report.finished_at = new Date().toISOString();
 
 fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-console.log(`NORA v6: ${report.overall} · salud ${report.score}/100 · cobertura ${coveragePercent}% · fallos ${report.errors.length} · vigilar ${report.watch.length} · no verificado ${report.unverified.length} · positivos ${report.positives.length}`);
+console.log(`NORA v7: ${report.overall} · salud ${report.score}/100 · cobertura ${coveragePercent}% · fallos ${report.errors.length} · vigilar ${report.watch.length} · no verificado ${report.unverified.length} · positivos ${report.positives.length}`);

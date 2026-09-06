@@ -1,4 +1,4 @@
-/* Ajuste final de la navegación inferior móvil: más baja, compacta y pegada al safe-area */
+/* Navegación inferior móvil: compacta, centrada y casi a ras de la línea inferior */
 @media (max-width:760px){
   .bottom-nav{
     position:fixed!important;
@@ -6,16 +6,16 @@
     right:0!important;
     bottom:0!important;
     z-index:80!important;
-    min-height:58px!important;
-    height:calc(58px + env(safe-area-inset-bottom))!important;
-    padding:0 14px max(1px,env(safe-area-inset-bottom))!important;
+    min-height:52px!important;
+    height:calc(52px + env(safe-area-inset-bottom))!important;
+    padding:0 14px env(safe-area-inset-bottom)!important;
     display:grid!important;
     grid-template-columns:repeat(5,minmax(0,1fr))!important;
     align-items:end!important;
     justify-items:center!important;
-    background:rgba(252,250,255,.98)!important;
+    background:rgba(252,250,255,.985)!important;
     border-top:1px solid #e8defc!important;
-    box-shadow:0 -6px 20px rgba(74,50,140,.06)!important;
+    box-shadow:0 -5px 16px rgba(74,50,140,.055)!important;
     backdrop-filter:blur(22px)!important;
     -webkit-backdrop-filter:blur(22px)!important;
   }
@@ -23,7 +23,7 @@
   .bottom-nav>button{
     min-width:0!important;
     width:100%!important;
-    height:48px!important;
+    height:44px!important;
     border:0!important;
     background:transparent!important;
     color:#6f7690!important;
@@ -31,8 +31,8 @@
     flex-direction:column!important;
     align-items:center!important;
     justify-content:flex-end!important;
-    gap:2px!important;
-    padding:0 0 2px!important;
+    gap:1px!important;
+    padding:0 0 1px!important;
     margin:0!important;
     transform:none!important;
   }
@@ -53,9 +53,9 @@
 
   .bottom-nav .create{
     position:relative!important;
-    width:60px!important;
-    min-width:60px!important;
-    height:60px!important;
+    width:58px!important;
+    min-width:58px!important;
+    height:58px!important;
     border-radius:50%!important;
     place-self:end center!important;
     display:flex!important;
@@ -64,11 +64,11 @@
     flex-direction:row!important;
     padding:0!important;
     margin:0!important;
-    transform:translateY(-4px)!important;
+    transform:translateY(-2px)!important;
     color:#fff!important;
     background:linear-gradient(145deg,#7b4dff 0%,#6f46ff 48%,#8a62ff 100%)!important;
     border:2px solid rgba(255,255,255,.96)!important;
-    box-shadow:0 11px 26px rgba(111,70,255,.36),0 2px 8px rgba(91,55,190,.22),inset 0 1px 0 rgba(255,255,255,.34)!important;
+    box-shadow:0 10px 24px rgba(111,70,255,.34),0 2px 7px rgba(91,55,190,.20),inset 0 1px 0 rgba(255,255,255,.34)!important;
     overflow:visible!important;
     isolation:isolate!important;
   }
@@ -76,16 +76,16 @@
   .bottom-nav .create::before{
     content:"";
     position:absolute;
-    inset:-6px;
+    inset:-5px;
     z-index:-1;
     border-radius:50%;
-    background:rgba(139,99,255,.12);
-    box-shadow:0 0 0 1px rgba(128,87,255,.09);
+    background:rgba(139,99,255,.11);
+    box-shadow:0 0 0 1px rgba(128,87,255,.08);
   }
 
   .bottom-nav .create svg{
-    width:31px!important;
-    height:31px!important;
+    width:30px!important;
+    height:30px!important;
     stroke:#fff!important;
     stroke-width:2.4!important;
     opacity:1!important;
@@ -95,6 +95,6 @@
 
 @media (max-width:390px){
   .bottom-nav{padding-left:10px!important;padding-right:10px!important}
-  .bottom-nav .create{width:58px!important;min-width:58px!important;height:58px!important}
-  .bottom-nav .create svg{width:29px!important;height:29px!important}
+  .bottom-nav .create{width:56px!important;min-width:56px!important;height:56px!important}
+  .bottom-nav .create svg{width:28px!important;height:28px!important}
 }

@@ -33,6 +33,9 @@
 /* Pase de acabado: imagen, marcos, navegación y ritmo final. */
 @import "./reference-finish-pass.css";
 
+/* Ajuste de dispositivo real: Mensajes + Compatibilidad según referencia aprobada. */
+@import "./live-device-polish.css";
+
 /* Responsive funcional: siempre debe ser la última importación CSS. */
 @import "./universal-responsive.css";
 

@@ -54,12 +54,16 @@ test("stable vendor chunks remain split", async () => {
   }
 });
 
-test("initial Supabase loading scopes relationship-heavy rows", async () => {
+test("isolated demo loading avoids live social database reads", async () => {
   const loader = await read("src/data/loadConectaData.ts");
-  assert.match(loader, /\.in\(["']plan_id["'],\s*planIds\)/);
-  assert.match(loader, /\.in\(["']community_id["'],\s*communityIds\)/);
-  assert.match(loader, /requester_id\.eq\.\$\{currentUser\.id\},receiver_id\.eq\.\$\{currentUser\.id\}/);
-  assert.doesNotMatch(loader, /from\(["']plan_members["']\).*?limit\(INITIAL_LIMITS\.planMembers\).*?from\(["']profiles["']\)/s, "plan members should not be part of the broad first-phase query batch");
+  assert.match(loader, /demoProfiles/);
+  assert.match(loader, /demoPlans/);
+  assert.match(loader, /demoCommunities/);
+  assert.match(loader, /plans:\s*\[\.\.\.demoPlans\]/);
+  assert.match(loader, /profiles:\s*\[\.\.\.demoProfiles\]/);
+  assert.match(loader, /communities:\s*\[\.\.\.demoCommunities\]/);
+  assert.doesNotMatch(loader, /\.from\s*\(/, "isolated demo loader must not read social rows from Supabase");
+  assert.doesNotMatch(loader, /\.select\s*\(/, "isolated demo loader must not issue live select queries");
 });
 
 test("partial refreshes avoid wildcard payloads", async () => {

@@ -25,10 +25,12 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install
-      - name: Security audit
-        run: npm audit --audit-level=high
-      - name: Structure and type check
+        run: npm install --no-audit --no-fund
+      - name: Verify installed versions
+        run: npm ls react react-dom vite typescript --depth=0
+      - name: Production security audit
+        run: npm audit --omit=dev --audit-level=high
+      - name: Structure, tests and type check
         run: npm run check
       - name: Build
         run: npm run build

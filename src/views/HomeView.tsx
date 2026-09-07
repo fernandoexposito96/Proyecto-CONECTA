@@ -6,13 +6,6 @@ import { categories, escapes, people, plans } from '../data/demoData';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { ExploreFilter, Plan, View } from '../types';
 
-const extraPeople = [
-  ['Nuria','84% compatible','Senderismo · Café','./assets/images/photo-1524504388940-b1c1722653e1.jpg'],
-  ['Álex','82% compatible','Música · Viajes','./assets/images/photo-1507591064344-4c6ce005b128.jpg'],
-  ['Sara','80% compatible','Fotografía · Playa','./assets/images/photo-1544005313-94ddf0286df2.jpg'],
-  ['David','78% compatible','Running · Cine','./assets/images/photo-1506794778202-cad84cf45f1d.jpg']
-] as const;
-
 const escapePlaces=['Barcelona','Costa Brava','Montseny'] as const;
 const escapeDistances=['98 km','142 km','122 km'] as const;
 
@@ -30,8 +23,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     return plans.filter(p=>`${p.title} ${p.place} ${p.category}`.toLocaleLowerCase('es').includes(q)).slice(0,4);
   },[heroQuery]);
 
-  const allPeople=[...people,...extraPeople];
-  const visiblePeople=showAllPeople?allPeople:people;
+  const visiblePeople=showAllPeople?people:people.slice(0,4);
   const toggleConnection=(name:string)=>setConnected(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
   const openExplore=(filter:ExploreFilter='near',category:string|null=null)=>onExplore(filter,category);
   const openEscape=(title:string,date:string,image:string,index:number)=>onPlan({title,image,time:date,place:escapePlaces[index]||'Cataluña',distance:escapeDistances[index]||'100 km',spots:'8 plazas',category:'Viajes'});
@@ -41,9 +33,10 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     <section className="section"><div className="section-head"><h2>Descubre</h2><button onClick={()=>openExplore('all')}>Ver todo <ChevronRight/></button></div><div className="category-strip">{categories.slice(0,12).map(([name,image])=><button key={name} onClick={()=>openExplore('all',name)}><img loading="lazy" decoding="async" src={image} alt={name}/><span className="shade"/><b><CategoryIcon name={name}/>{name}</b></button>)}</div></section>
     <section className="section"><div className="section-head"><div><small>PARA TI</small><h2>Planes para ti</h2></div><button onClick={()=>openExplore('all')}>Ver todos <ChevronRight/></button></div><PlanCards items={plans.slice(0,5)} onPlan={onPlan}/></section>
     <section className="section now-section"><div className="section-head"><div><small>AHORA</small><h2>Qué hacer cerca de ti</h2></div><button onClick={()=>openExplore('near')}>Explorar <ChevronRight/></button></div><div className="quick-grid"><button onClick={()=>openExplore('today')} aria-label="Explorar planes ahora mismo"><Sparkles/><strong>Ahora mismo</strong><span>Planes de hoy</span></button><button onClick={()=>openExplore('afternoon')} aria-label="Explorar planes para esta tarde"><Coffee/><strong>Esta tarde</strong><span>Planes de tarde</span></button><button onClick={()=>openExplore('tonight')} aria-label="Explorar planes para esta noche"><Music2/><strong>Esta noche</strong><span>Planes nocturnos</span></button><button onClick={()=>openExplore('weekend')} aria-label="Explorar planes para este fin de semana"><CalendarDays/><strong>Este finde</strong><span>Planes del finde</span></button></div></section>
-    <section className="section"><div className="section-head"><div><small>COMPATIBILIDAD</small><h2>Personas para ti</h2></div><button onClick={()=>setShowAllPeople(v=>!v)}>{showAllPeople?'Ver menos':'Ver más'} <ChevronRight/></button></div><div className="people-strip">{visiblePeople.map(([name,match,tags,image])=><article key={name}><img loading="lazy" decoding="async" src={image} alt={name}/><div><strong>{name}</strong><b>{match}</b><span>{tags}</span></div><button className={connected.has(name)?'is-connected':''} aria-label={connected.has(name)?`Cancelar conexión con ${name}`:`Conectar con ${name}`} aria-pressed={connected.has(name)} onClick={()=>toggleConnection(name)}>{connected.has(name)?<Check/>:<Plus/>}</button></article>)}</div></section>
+    <section className="section"><div className="section-head"><div><small>COMPATIBILIDAD</small><h2>Personas para ti</h2></div><button onClick={()=>setShowAllPeople(v=>!v)}>{showAllPeople?'Ver menos':'Ver más'} <ChevronRight/></button></div><div className="people-strip">{visiblePeople.map(person=><article key={person.name}><img loading="lazy" decoding="async" src={person.image} alt={person.name}/><div><strong>{person.name}</strong><b>{person.match} compatible</b><span>{person.tags.slice(0,2).join(' · ')}</span></div><button className={connected.has(person.name)?'is-connected':''} aria-label={connected.has(person.name)?`Cancelar conexión con ${person.name}`:`Conectar con ${person.name}`} aria-pressed={connected.has(person.name)} onClick={()=>toggleConnection(person.name)}>{connected.has(person.name)?<Check/>:<Plus/>}</button></article>)}</div></section>
     <section className="section escape-section"><div className="section-head"><div><small>ESCAPADAS</small><h2>Sal de la rutina</h2></div><button className="escape-view-all" onClick={()=>openExplore('weekend')}>Ver más <ChevronRight/></button></div><div className="escape-grid">{escapes.map(([title,date,image],index)=><article key={title} role="button" tabIndex={0} onClick={()=>openEscape(title,date,image,index)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')openEscape(title,date,image,index)}}><img loading="lazy" decoding="async" src={image} alt={title}/><div><strong>{title}</strong><span>{date}</span></div></article>)}</div></section>
     <section className="section"><div className="section-head"><div><small>MÁS IDEAS</small><h2>Sigue descubriendo</h2></div><button onClick={()=>openExplore('all')}>Explorar <ChevronRight/></button></div><PlanCards items={plans.slice(5)} onPlan={onPlan}/></section>
     <section className="premium-banner"><div><Crown/><span>PREMIUM</span></div><h2>Haz que cada semana tenga algo que esperar</h2><p>Más visibilidad, recomendaciones avanzadas y acceso prioritario a experiencias seleccionadas.</p><button onClick={()=>setView('Ajustes')}>Ver CONECTA Premium <ChevronRight/></button></section>
+    <footer className="home-footer-note" aria-label="Ventajas de CONECTA Premium"><span>CONECTA PREMIUM</span><span>Planes verificados</span><span>Gente compatible</span><span>Más seguridad</span></footer>
   </div>
 }

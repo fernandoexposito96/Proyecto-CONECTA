@@ -1,74 +1,30 @@
 import { useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, CircleUserRound, Coffee, Crown, Dumbbell, Film, Gamepad2, Heart, MapPin, MessageCircle, Music2, Palmtree, Plane, Plus, Search, Settings, ShieldCheck, Sparkles, Star, UsersRound, Utensils, Mountain, Camera, BookOpen, GraduationCap, PawPrint, Languages, PartyPopper } from 'lucide-react';
 import { BottomNav, Header, Sidebar } from './components/AppNavigation';
+import { PlanDetail } from './components/PlanComponents';
 import type { Plan, View } from './types';
+import { ChatView } from './views/ChatView';
+import { ExploreView } from './views/ExploreView';
+import { HomeView } from './views/HomeView';
+import { ProfileView } from './views/ProfileView';
+import { SettingsView } from './views/SettingsView';
 
-const plans: Plan[] = [
-  {title:'Pádel Sunset',image:'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=900&q=88',time:'Hoy · 19:00',place:'Club Pádel Tarragona',distance:'5 km',spots:'6 plazas',category:'Deporte'},
-  {title:'Cena entre amigos',image:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=88',time:'Hoy · 21:00',place:'Tarragona centro',distance:'2 km',spots:'8 plazas',category:'Comida'},
-  {title:'Ruta al atardecer',image:'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=900&q=88',time:'Sáb · 10:30',place:'La Mussara',distance:'26 km',spots:'10 plazas',category:'Senderismo'},
-  {title:'Café y gente nueva',image:'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=900&q=88',time:'Mañana · 17:30',place:'Rambla Nova',distance:'3 km',spots:'5 plazas',category:'Café'},
-  {title:'Running por la costa',image:'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=900&q=88',time:'Dom · 09:00',place:'La Pineda',distance:'7 km',spots:'12 plazas',category:'Deporte'},
-  {title:'Noche de música',image:'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=88',time:'Vie · 22:30',place:'Sala Zero',distance:'4 km',spots:'14 plazas',category:'Música'},
-  {title:'Tarde de playa',image:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=88',time:'Sáb · 17:00',place:'Platja Llarga',distance:'9 km',spots:'9 plazas',category:'Playa'},
-  {title:'Juegos y cervezas 0,0',image:'https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=900&q=88',time:'Jue · 20:00',place:'Tarragona',distance:'2 km',spots:'7 plazas',category:'Gaming'},
-];
+export default function App(){
+  const [view,setView]=useState<View>('Inicio');
+  const [selected,setSelected]=useState<Plan|null>(null);
 
-const categories = [
-  ['Deporte',Dumbbell,'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=82'],
-  ['Comida',Utensils,'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=82'],
-  ['Café',Coffee,'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=500&q=82'],
-  ['Cine',Film,'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=500&q=82'],
-  ['Música',Music2,'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=82'],
-  ['Playa',Palmtree,'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=500&q=82'],
-  ['Viajes',Plane,'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=82'],
-  ['Senderismo',Mountain,'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=500&q=82'],
-  ['Gaming',Gamepad2,'https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=500&q=82'],
-  ['Fotografía',Camera,'https://images.unsplash.com/photo-1452780212940-6f5c0d14d848?auto=format&fit=crop&w=500&q=82'],
-  ['Idiomas',Languages,'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=500&q=82'],
-  ['Fiestas',PartyPopper,'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=500&q=82'],
-  ['Familias',UsersRound,'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=500&q=82'],
-  ['Estudiantes',GraduationCap,'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=500&q=82'],
-  ['Lectura',BookOpen,'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=500&q=82'],
-  ['Mascotas',PawPrint,'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=500&q=82'],
-] as const;
-
-const people = [
-  ['Marta','94% compatible','Running · Viajes','https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=85'],
-  ['Javi','91% compatible','Pádel · Gastronomía','https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=85'],
-  ['Laura','88% compatible','Playa · Música','https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=85'],
-  ['Carlos','86% compatible','Gaming · Cine','https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=85']
-];
-
-const escapes = [
-  ['Escapada a Barcelona','Este sábado','https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=800&q=85'],
-  ['Costa Brava en grupo','Próximo finde','https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=85'],
-  ['Montaña y desconexión','Domingo','https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=85']
-];
-
-const chats = [['Grupo Pádel','Javi: Nos vemos a las 19:00! 🎾','3'],['Marta','Genial! Nos apuntamos 😊','1'],['Viaje a Madrid','Ana: He encontrado unos hoteles...','5'],['Carlos','¿Te apuntas al plan de mañana?',''],['Running Tarragona','Laura: Ruta confirmada ✅','2'],['Sara','Nos vemos allí! 🥰',''],['Cine y palomitas','Javi: Película confirmada 🎬','']];
-
-function PlanCards({items,onPlan}:{items:Plan[],onPlan:(p:Plan)=>void}){return <div className="plan-grid">{items.map((p)=><article className="plan-card" key={p.title} onClick={()=>onPlan(p)}><div className="plan-image"><img loading="lazy" decoding="async" src={p.image}/><button><Heart/></button><span>{p.category}</span></div><div className="plan-body"><h3>{p.title}</h3><p>{p.time}</p><p>{p.distance} · {p.spots}</p><div className="avatars"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=80&q=80"/><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80"/><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"/><span>+3</span></div></div></article>)}</div>}
-
-function HomeView({setView,onPlan}:{setView:(v:View)=>void,onPlan:(p:Plan)=>void}){return <div className="page home-page">
-  <section className="hero"><img decoding="async" fetchPriority="high" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=90"/><div className="hero-overlay"/><div className="hero-copy"><span><MapPin/> Tarragona</span><h1>La vida es mejor<br/>con buenos planes</h1><div className="hero-search"><Search/><span>¿Qué te apetece hacer hoy?</span></div></div></section>
-  <section className="section"><div className="section-head"><h2>Descubre</h2><button onClick={()=>setView('Explora')}>Ver todo <ChevronRight/></button></div><div className="category-strip">{categories.slice(0,12).map(([name,Icon,image])=><button key={name} onClick={()=>setView('Explora')}><img loading="lazy" decoding="async" src={image}/><span className="shade"/><b><Icon/>{name}</b></button>)}</div></section>
-  <section className="section"><div className="section-head"><div><small>PARA TI</small><h2>Planes para ti</h2></div><button onClick={()=>setView('Explora')}>Ver todos <ChevronRight/></button></div><PlanCards items={plans.slice(0,5)} onPlan={onPlan}/></section>
-  <section className="section now-section"><div className="section-head"><div><small>AHORA</small><h2>Qué hacer cerca de ti</h2></div><button onClick={()=>setView('Explora')}>Explorar <ChevronRight/></button></div><div className="quick-grid"><button><Sparkles/><strong>Ahora mismo</strong><span>7 planes activos</span></button><button><Coffee/><strong>Esta tarde</strong><span>12 opciones</span></button><button><Music2/><strong>Esta noche</strong><span>9 planes</span></button><button><CalendarDays/><strong>Este finde</strong><span>24 propuestas</span></button></div></section>
-  <section className="section"><div className="section-head"><div><small>COMPATIBILIDAD</small><h2>Personas para ti</h2></div><button>Ver más <ChevronRight/></button></div><div className="people-strip">{people.map(([name,match,tags,image])=><article key={name}><img loading="lazy" decoding="async" src={image}/><div><strong>{name}</strong><b>{match}</b><span>{tags}</span></div><button><Plus/></button></article>)}</div></section>
-  <section className="section"><div className="section-head"><div><small>ESCAPADAS</small><h2>Sal de la rutina</h2></div><button onClick={()=>setView('Explora')}>Ver todas <ChevronRight/></button></div><div className="escape-grid">{escapes.map(([title,date,image])=><article key={title}><img loading="lazy" decoding="async" src={image}/><div><strong>{title}</strong><span>{date}</span></div></article>)}</div></section>
-  <section className="section"><div className="section-head"><div><small>MÁS IDEAS</small><h2>Sigue descubriendo</h2></div><button onClick={()=>setView('Explora')}>Explorar <ChevronRight/></button></div><PlanCards items={plans.slice(5)} onPlan={onPlan}/></section>
-  <section className="premium-banner"><div><Crown/><span>PREMIUM</span></div><h2>Haz que cada semana tenga algo que esperar</h2><p>Más visibilidad, recomendaciones avanzadas y acceso prioritario a experiencias seleccionadas.</p><button onClick={()=>setView('Ajustes')}>Ver CONECTA Premium <ChevronRight/></button></section>
-</div>}
-
-function ExploreView({onPlan}:{onPlan:(p:Plan)=>void}){return <div className="page explore-page"><div className="page-title"><div><h1>Explora</h1><p>Descubre planes cerca de ti</p></div><button><Search/></button></div><div className="filter-row"><button className="active">Cerca de mí</button><button>Hoy</button><button>Este finde</button><button>Ordenar</button></div><div className="category-grid">{categories.map(([name,Icon,image])=><button key={name}><img loading="lazy" decoding="async" src={image}/><span/><b><Icon/>{name}</b></button>)}</div><section className="section noframe"><div className="section-head"><h2>Recomendados</h2></div><PlanCards items={plans} onPlan={onPlan}/></section></div>}
-
-function PlanDetail({plan,onClose}:{plan:Plan,onClose:()=>void}){return <div className="detail-overlay"><article className="detail-card"><div className="detail-photo"><img decoding="async" src={plan.image}/><button className="back" onClick={onClose}><ChevronLeft/></button><button className="heart"><Heart/></button><span>1/5</span></div><div className="detail-body"><div className="detail-title"><h1>{plan.title}</h1><span>{plan.category}</span></div><div className="info-row"><CalendarDays/><div><strong>{plan.time}</strong><span>Duración aproximada 2 h</span></div></div><div className="info-row"><MapPin/><div><strong>{plan.place}</strong><span>Tarragona · {plan.distance}</span></div><ChevronRight/></div><div className="info-row"><UsersRound/><div><strong>{plan.spots}</strong><span>Grupo abierto y buen ambiente</span></div></div><div className="participant-row"><div className="avatars big"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=90&q=80"/><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=90&q=80"/><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=90&q=80"/></div><button>Ver todos <ChevronRight/></button></div><p className="description">Plan seleccionado para conocer gente, pasarlo bien y disfrutar de una experiencia real en grupo.</p><div className="chips"><span>{plan.category}</span><span>Social</span><span>Buen ambiente</span><span>+2</span></div><div className="organizer"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"/><div><small>Organiza</small><strong>Javi</strong><span>Valoración 4.8 ⭐</span></div><button>Seguir</button></div><button className="join"><UsersRound/>Unirme al plan</button></div></article></div>}
-
-function ChatView(){return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button><Search/></button></div><div className="tabs"><button className="active">Todos</button><button>Planes</button><button>Grupos</button></div><div className="chat-list">{chats.map(([name,msg,count],i)=><button key={name}><img loading="lazy" decoding="async" src={`https://images.unsplash.com/${['photo-1500648767791-00dcc994a43e','photo-1494790108377-be9c29b29330','photo-1500530855697-b586d89ba3ee','photo-1492562080023-ab3db95bfbce'][i%4]}?auto=format&fit=crop&w=100&q=80`}/><div><strong>{name}</strong><span>{msg}</span></div><small>{i<3?'12:'+(45-i*8):'Ayer'}</small>{count&&<b>{count}</b>}</button>)}</div></div>}
-
-function ProfileView({setView}:{setView:(v:View)=>void}){return <div className="page profile-page"><div className="profile-cover"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=88"/><button onClick={()=>setView('Ajustes')}><Settings/></button></div><div className="profile-main"><img className="profile-avatar" loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=220&q=90"/><button className="edit">Editar perfil</button><h1>Fernando <ShieldCheck/></h1><p>Tarragona</p><div className="stats"><div><strong>23</strong><span>Planes</span></div><div><strong>156</strong><span>Conexiones</span></div><div><strong>48</strong><span>Valoraciones</span></div></div><p className="bio">Deporte, viajes, buena comida y conocer gente increíble. La vida son planes! ✈️🌍☕</p><div className="profile-tags"><span><MapPin/> Tarragona</span><span><Languages/> Español, Catalán, Inglés</span><span><ShieldCheck/> Verificado</span></div><div className="profile-tabs"><button className="active">Fotos</button><button>Planes</button><button>Conexiones</button><button>Valoraciones</button></div><div className="photo-grid">{['photo-1507525428034-b723cf961d3e','photo-1500530855697-b586d89ba3ee','photo-1533105079780-92b9be482077','photo-1544551763-46a013bb70d5','photo-1519046904884-53103b34b206','photo-1500534623283-312aade485b7'].map(id=><img key={id} loading="lazy" decoding="async" src={`https://images.unsplash.com/${id}?auto=format&fit=crop&w=500&q=82`}/>)}</div></div></div>}
-
-function SettingsView(){const rows=[[Settings,'Ajustes','Personaliza tu experiencia'],[ShieldCheck,'Privacidad y seguridad','Tu seguridad es lo primero'],[Sparkles,'Guía CONECTA','Cómo funciona la app'],[Star,'Normas de la comunidad','Un mejor lugar para todos'],[MessageCircle,'Centro de ayuda','Soporte técnico'],[UsersRound,'Invitar amigos','Comparte CONECTA'],[CircleUserRound,'Sobre CONECTA','Versión Premium Max']];return <div className="page settings-page"><div className="premium-header"><div className="profile-inline"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=85"/><div><strong>CONECTA <span>Premium</span></strong><h2>Fernando</h2><p>Usuario Premium</p></div></div><Crown/></div><div className="gold-card"><Crown/><div><strong>CONECTA Premium</strong><span>Más planes. Más personas. Más vida.</span></div><ChevronRight/></div><div className="settings-list">{rows.map(([Icon,title,sub]:any)=><button key={title}><Icon/><div><strong>{title}</strong><span>{sub}</span></div><ChevronRight/></button>)}</div><button className="logout">Cerrar sesión</button></div>}
-
-export default function App(){const [view,setView]=useState<View>('Inicio');const [selected,setSelected]=useState<Plan|null>(null);return <div className="app-shell"><Sidebar view={view} setView={setView}/><main><Header view={view}/><div className="content">{view==='Inicio'&&<HomeView setView={setView} onPlan={setSelected}/>} {view==='Explora'&&<ExploreView onPlan={setSelected}/>} {view==='Chat'&&<ChatView/>} {view==='Perfil'&&<ProfileView setView={setView}/>} {view==='Ajustes'&&<SettingsView/>}</div></main><BottomNav view={view} setView={setView}/>{selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)}/>}</div>}
+  return <div className="app-shell">
+    <Sidebar view={view} setView={setView}/>
+    <main>
+      <Header view={view}/>
+      <div className="content">
+        {view==='Inicio'&&<HomeView setView={setView} onPlan={setSelected}/>} 
+        {view==='Explora'&&<ExploreView onPlan={setSelected}/>} 
+        {view==='Chat'&&<ChatView/>} 
+        {view==='Perfil'&&<ProfileView setView={setView}/>} 
+        {view==='Ajustes'&&<SettingsView/>}
+      </div>
+    </main>
+    <BottomNav view={view} setView={setView}/>
+    {selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)}/>} 
+  </div>
+}

@@ -7,6 +7,11 @@ fs.mkdirSync(assetsDir,{recursive:true});
 
 const extensions=new Set(['.ts','.tsx','.html','.css','.webmanifest']);
 const roots=[path.join(root,'src'),path.join(root,'index.html')];
+const backendPhotoIds=[
+  'photo-1457369804613-52c61a468e7d',
+  'photo-1525351484163-7529414344d8',
+  'photo-1554068865-24cecd4e34b8',
+];
 
 function walk(target){
   const stat=fs.statSync(target);
@@ -15,7 +20,7 @@ function walk(target){
 }
 
 const sourceFiles=roots.flatMap(walk).filter(file=>extensions.has(path.extname(file)));
-const photoIds=new Set();
+const photoIds=new Set(backendPhotoIds);
 for(const file of sourceFiles){
   const text=fs.readFileSync(file,'utf8');
   for(const match of text.matchAll(/photo-\d+-[A-Za-z0-9_-]+/g))photoIds.add(match[0]);

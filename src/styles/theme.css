@@ -61,7 +61,10 @@ html[data-theme='dark'] .settings-frequency-option{
 html[data-theme='dark'] .message{background:#263445;color:#edf2f7}
 html[data-theme='dark'] .story-chip{color:#edf2f7}
 html[data-theme='dark'] .story-chip small,
-html[data-theme='dark'] .person-detail-body p{color:#aeb9c6}
+html[data-theme='dark'] .person-detail-body p,
+html[data-theme='dark'] .people-browser-copy p,
+html[data-theme='dark'] .people-browser-copy span{color:#aeb9c6}
+html[data-theme='dark'] .people-browser-copy strong{color:#edf2f7}
 html[data-theme='dark'] .story-add .story-ring{background:#222f3e}
 html[data-theme='dark'] .story-create-actions button{
   background:#222f3e;

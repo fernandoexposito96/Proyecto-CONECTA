@@ -1,4 +1,4 @@
-import type { Person, Plan } from '../types';
+import type { CategoryTuple, ChatPreviewTuple, EscapeTuple, Person, Plan } from '../types';
 
 export const plans: Plan[] = [
   {title:'Pádel Sunset',image:'./assets/images/photo-1622279457486-62dcc4a431d6.jpg',time:'Hoy · 19:00',place:'Club Pádel Tarragona',distance:'5 km',spots:'6 plazas',category:'Deporte'},
@@ -28,7 +28,7 @@ export const categories = [
   ['Estudiantes','./assets/images/photo-1523240795612-9a054b0db644.jpg'],
   ['Lectura','./assets/images/photo-1512820790803-83ca734da794.jpg'],
   ['Mascotas','./assets/images/photo-1552053831-71594a27632d.jpg'],
-] as const;
+] as const satisfies readonly CategoryTuple[];
 
 export const people: Person[] = [
   {name:'Marta',age:26,distance:'4 km',match:'94%',bio:'Running, cine, música y escapadas de fin de semana.',job:'Fisioterapeuta',tags:['Running','Viajes','Cine','Música'],image:'./assets/images/photo-1494790108377-be9c29b29330.jpg',gallery:['./assets/images/photo-1494790108377-be9c29b29330.jpg','./assets/images/photo-1552674605-db6ffd4facb5.jpg','./assets/images/photo-1489599849927-2ee91cede3ba.jpg','./assets/images/photo-1501386761578-eac5c94b800a.jpg']},
@@ -46,7 +46,7 @@ export const escapes = [
   ['Escapada a Barcelona','Este sábado','./assets/images/photo-1539037116277-4db20889f2d4.jpg'],
   ['Costa Brava en grupo','Próximo finde','./assets/images/photo-1500530855697-b586d89ba3ee.jpg'],
   ['Montaña y desconexión','Domingo','./assets/images/photo-1464822759023-fed622ff2c3b.jpg']
-] as const;
+] as const satisfies readonly EscapeTuple[];
 
 export const chats = [
   ['Grupo Pádel','Javi: Nos vemos a las 19:00! 🎾','3'],
@@ -56,4 +56,4 @@ export const chats = [
   ['Running Tarragona','Laura: Ruta confirmada ✅','2'],
   ['Sara','Nos vemos allí! 🥰',''],
   ['Cine y palomitas','Javi: Película confirmada 🎬','']
-] as const;
+] as const satisfies readonly ChatPreviewTuple[];

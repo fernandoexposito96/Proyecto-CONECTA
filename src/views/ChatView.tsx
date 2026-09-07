@@ -22,7 +22,7 @@ const socialAvatar:Record<string,string>={
   'Álex':'photo-1507591064344-4c6ce005b128',
   'Sara':'photo-1544005313-94ddf0286df2',
 };
-const avatarUrl=(id:string)=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=120&q=82`;
+const avatarUrl=(id:string)=>`./assets/images/${id}.jpg`;
 
 export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [tab,setTab]=useState<ChatTab>('Todos');

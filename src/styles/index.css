@@ -1,14 +1,11 @@
 @import './base.css';
-@import './premium.css';
+@import './navigation.css';
 @import './home.css';
-@import './settings.css';
 @import './explore.css';
-@import './explore-social.css';
+@import './plans.css';
 @import './chat.css';
 @import './profile.css';
-@import './plans.css';
+@import './settings.css';
 @import './utility-views.css';
-@import './mobile.css';
-@import './navigation.css';
 @import './theme.css';
 @import './error-boundary.css';

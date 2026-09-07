@@ -36,7 +36,7 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   useEffect(()=>{if(initialContact)setActiveChat(initialContact)},[initialContact]);
 
   const items=useMemo<ChatItem[]>(()=>{
-    const base=chats.map(([name,msg,count],i)=>({name,msg,count,isGroup:groupNames.has(name),avatar:avatarUrl(socialAvatar[name]||avatars[i%avatars.length])}));
+    const base:ChatItem[]=chats.map(([name,msg,count],i)=>({name,msg,count,isGroup:groupNames.has(name),avatar:avatarUrl(socialAvatar[name]||avatars[i%avatars.length])}));
     if(initialContact&&!base.some(item=>item.name===initialContact)){
       base.unshift({name:initialContact,msg:'Nueva conversación',count:'',isGroup:false,avatar:avatarUrl(socialAvatar[initialContact]||avatars[0])});
     }

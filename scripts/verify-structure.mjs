@@ -5,6 +5,8 @@ const root = process.cwd();
 const srcDir = path.join(root, 'src');
 const stylesDir = path.join(srcDir, 'styles');
 const indexPath = path.join(stylesDir, 'index.css');
+const htmlPath = path.join(root, 'index.html');
+const imageAssetsDir = path.join(root, 'public', 'assets', 'images');
 
 const expectedStyleImports = [
   './base.css',
@@ -96,6 +98,28 @@ if (cssImports.length !== 1 || cssImports[0].file !== 'src/main.tsx' || cssImpor
   fail(`Los estilos deben entrar solo por src/main.tsx -> ./styles/index.css. Encontrado: ${JSON.stringify(cssImports)}`);
 }
 
+const runtimeFiles = [...sourceFiles, htmlPath];
+const localImageReferences = new Set();
+for (const file of runtimeFiles) {
+  const text = fs.readFileSync(file, 'utf8');
+  if (text.includes('images.unsplash.com')) {
+    fail(`Imagen remota de Unsplash detectada en ${path.relative(root, file)}; las imágenes de CONECTA deben servirse localmente`);
+  }
+  for (const match of text.matchAll(/\.\/assets\/images\/([A-Za-z0-9._-]+\.(?:jpg|jpeg|png|webp|svg))/gi)) {
+    localImageReferences.add(match[1]);
+  }
+}
+
+if (!fs.existsSync(imageAssetsDir)) {
+  fail('Falta public/assets/images');
+} else {
+  for (const image of localImageReferences) {
+    const file = path.join(imageAssetsDir, image);
+    if (!fs.existsSync(file)) fail(`Imagen local referenciada pero inexistente: public/assets/images/${image}`);
+    else if (fs.statSync(file).size < 1000) fail(`Imagen local sospechosamente pequeña: public/assets/images/${image}`);
+  }
+}
+
 if (failures.length) {
   console.error('\nCONECTA structural check: FAIL');
   for (const message of failures) console.error(`- ${message}`);
@@ -107,3 +131,5 @@ console.log(`- ${cssFiles.length} archivos CSS controlados`);
 console.log('- 0 capas CSS legacy');
 console.log('- 0 imports CSS duplicados');
 console.log('- entrada CSS única: src/main.tsx -> src/styles/index.css');
+console.log('- 0 imágenes Unsplash cargadas en tiempo de ejecución');
+console.log(`- ${localImageReferences.size} referencias de imagen local verificadas`);

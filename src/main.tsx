@@ -9,6 +9,7 @@ import './bottom-nav-polish.css';
 import './mobile-layout-final.css';
 import './mobile-edge-final.css';
 import './settings-reference-final.css';
+import './error-boundary.css';
 
 const root = document.getElementById('app');
 

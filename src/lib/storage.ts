@@ -36,5 +36,7 @@ export const storageKeys={
   settingsAccount:'conecta-settings-account-v1',
   notificationToggles:'conecta-notification-toggles-v1',
   notificationFrequency:'conecta-notification-frequency-v1',
+  theme:'conecta-theme',
+  language:'conecta-language',
   premiumRequested:'conecta-premium-requested-v1',
 } as const;

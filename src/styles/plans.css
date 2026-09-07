@@ -1,0 +1,24 @@
+/* CONECTA — estados funcionales de tarjetas y detalle de planes. */
+.plan-image>button.is-favorite,
+.detail-photo .heart.is-favorite{color:#ef476f}
+
+.organizer button.is-following{
+  background:#e8e5ff;
+  color:#5d49df;
+}
+
+.join.is-joined{background:#1f9d6a}
+
+.participant-list{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin:-3px 4px 14px;
+}
+
+.participant-list span{
+  background:#edf2f7;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:12px;
+}

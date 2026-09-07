@@ -49,11 +49,15 @@
 }
 .create-plan-card label{display:grid;gap:7px;font-weight:700}
 .create-plan-card label svg{width:18px}
-.create-plan-card input{
+.create-plan-card input,
+.create-plan-card select{
+  width:100%;
   height:46px;
   border:1px solid var(--line);
   border-radius:12px;
   padding:0 13px;
+  background:#fff;
+  color:#26384e;
 }
 .create-plan-card>button,
 .create-success button{

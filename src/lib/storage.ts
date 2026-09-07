@@ -18,7 +18,13 @@ export const storageKeys={
   chatMessages:'conecta-chat-messages-v1',
   exploreLikes:'conecta-explore-likes-v1',
   storyAdded:'conecta-story-added-v1',
+  storyLikes:'conecta-story-likes-v1',
   profileBio:'conecta-profile-bio-v1',
   planFavorites:'conecta-plan-favorites-v1',
   joinedPlans:'conecta-joined-plans-v1',
+  organizerFollows:'conecta-organizer-follows-v1',
+  settingsAccount:'conecta-settings-account-v1',
+  notificationToggles:'conecta-notification-toggles-v1',
+  notificationFrequency:'conecta-notification-frequency-v1',
+  premiumRequested:'conecta-premium-requested-v1',
 } as const;

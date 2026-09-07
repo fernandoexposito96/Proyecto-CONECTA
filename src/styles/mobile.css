@@ -1,0 +1,95 @@
+/* CONECTA — estructura móvil común, sin ajustes específicos de cada pantalla. */
+@media (max-width:760px){
+  .content{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding-left:6px!important;
+    padding-right:6px!important;
+    padding-bottom:calc(58px + env(safe-area-inset-bottom))!important;
+  }
+
+  .page,
+  .home-page,
+  .profile-page,
+  .chat-page,
+  .explore-page,
+  .settings-page{
+    width:100%!important;
+    max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    margin-bottom:0!important;
+  }
+
+  .profile-main,
+  .chat-list,
+  .explore-page,
+  .settings-page{
+    padding-bottom:0!important;
+  }
+
+  .hero{
+    width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    border-radius:20px!important;
+  }
+
+  .section{
+    margin-top:18px!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+    border-radius:18px!important;
+  }
+
+  .section-head{
+    margin-bottom:12px!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+
+  .category-strip,
+  .people-strip,
+  .escape-grid,
+  .plan-grid{
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+
+  .category-strip,
+  .people-strip{
+    padding-right:2px!important;
+  }
+
+  .category-strip{grid-auto-columns:132px!important;gap:9px!important}
+  .category-strip button{height:132px!important;border-radius:17px!important}
+  .plan-grid{gap:10px!important}
+  .plan-card{border-radius:18px!important}
+  .plan-body{padding:12px!important}
+  .quick-grid{gap:10px!important}
+  .quick-grid>button{border-radius:17px!important;padding:14px!important}
+  .profile-page{border-radius:18px!important}
+  .profile-main{padding-left:14px!important;padding-right:14px!important}
+  .chat-list{border-radius:18px!important}
+  .settings-list{border-radius:18px!important}
+  .topbar{padding-left:14px!important;padding-right:14px!important}
+  .bottom-nav{left:0!important;right:0!important;width:100%!important}
+}
+
+@media (max-width:390px){
+  .content{
+    padding-left:4px!important;
+    padding-right:4px!important;
+    padding-bottom:calc(56px + env(safe-area-inset-bottom))!important;
+  }
+  .section{padding-left:8px!important;padding-right:8px!important;margin-top:16px!important}
+  .hero{border-radius:18px!important}
+  .category-strip{grid-auto-columns:126px!important;gap:8px!important}
+  .category-strip button{height:126px!important}
+  .profile-main{padding-left:12px!important;padding-right:12px!important}
+}

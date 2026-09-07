@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Languages, MapPin, Settings, ShieldCheck } from 'lucide-react';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
-import type { Plan, View } from '../types';
-
-type ProfileTab='Fotos'|'Planes'|'Conexiones'|'Valoraciones';
+import type { Plan, ProfileTab, View } from '../types';
 
 const photos=['photo-1507525428034-b723cf961d3e','photo-1500530855697-b586d89ba3ee','photo-1533105079780-92b9be482077','photo-1544551763-46a013bb70d5','photo-1519046904884-53103b34b206','photo-1500534623283-312aade485b7'];
 const defaultBio='Deporte, viajes, buena comida y conocer gente increíble. La vida son planes! ✈️🌍☕';

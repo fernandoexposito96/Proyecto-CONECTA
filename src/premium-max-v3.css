@@ -59,8 +59,7 @@ body{color:var(--pm-ink);-webkit-font-smoothing:antialiased;text-rendering:optim
 .filter-row button{background:#fff!important;border:1px solid var(--pm-line)!important;color:#646c80!important;box-shadow:0 6px 18px rgba(59,42,112,.06)}
 .filter-row button.active{background:linear-gradient(135deg,var(--pm-violet),var(--pm-violet-2))!important;color:#fff!important;border-color:transparent!important;box-shadow:0 10px 22px rgba(113,72,255,.26)!important}
 .profile-page,.chat-page{background:transparent!important}
-.profile-page .profile-card,.chat-page .chat-list,.chat-page .chat-tabs{background:#fff!important;border:1px solid var(--pm-line)!important;box-shadow:var(--pm-shadow)!important;border-radius:24px!important}
-.chat-page .chat-tabs button.active{background:linear-gradient(135deg,var(--pm-violet),var(--pm-violet-2))!important;color:#fff!important;box-shadow:0 8px 20px rgba(113,72,255,.24)}
+.chat-page .chat-list{background:#fff!important;border:1px solid var(--pm-line)!important;box-shadow:var(--pm-shadow)!important;border-radius:24px!important}
 .chat-page .chat-list>button{transition:background .16s ease}.chat-page .chat-list>button:hover{background:#faf7ff!important}
 button{font-family:inherit}.section-head button,.page-title button{color:var(--pm-violet)!important}
 

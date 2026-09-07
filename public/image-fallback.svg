@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Imagen no disponible">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f2edff"/>
+      <stop offset="1" stop-color="#e7defd"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <circle cx="400" cy="270" r="72" fill="#ffffff" opacity=".9"/>
+  <path d="M360 288l31-34 24 25 24-20 42 47H330z" fill="#7148ff" opacity=".75"/>
+  <text x="400" y="390" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#5c4b8a">CONECTA</text>
+</svg>

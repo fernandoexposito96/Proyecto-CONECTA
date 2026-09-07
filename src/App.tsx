@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BottomNav, Header, Sidebar } from './components/AppNavigation';
 import { PlanDetail } from './components/PlanComponents';
+import { createSharedPlan, fetchSharedPlans } from './lib/cloud';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
 import type { ExploreFilter, Plan, View } from './types';
 import { ChatView } from './views/ChatView';
@@ -11,6 +12,17 @@ import { NotificationsView } from './views/NotificationsView';
 import { ProfileView } from './views/ProfileView';
 import { SettingsView } from './views/SettingsView';
 
+const planKey=(plan:Plan)=>`${plan.title}|${plan.time}|${plan.place}`;
+const mergePlans=(primary:Plan[],secondary:Plan[])=>{
+  const seen=new Set<string>();
+  return [...primary,...secondary].filter(plan=>{
+    const key=planKey(plan);
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 export default function App(){
   const [view,setView]=useState<View>('Inicio');
   const [selected,setSelected]=useState<Plan|null>(null);
@@ -20,6 +32,14 @@ export default function App(){
   const [chatTarget,setChatTarget]=useState<string|null>(null);
 
   useEffect(()=>{saveStored(storageKeys.createdPlans,createdPlans)},[createdPlans]);
+
+  useEffect(()=>{
+    let active=true;
+    void fetchSharedPlans()
+      .then(shared=>{if(active)setCreatedPlans(local=>mergePlans(shared,local))})
+      .catch(error=>console.warn('CONECTA shared plans load failed',error));
+    return ()=>{active=false};
+  },[]);
 
   useEffect(()=>{
     setSelected(null);
@@ -36,9 +56,13 @@ export default function App(){
     setView('Chat');
   };
   const addCreatedPlan=(plan:Plan)=>{
-    setCreatedPlans(prev=>[plan,...prev.filter(item=>item.title!==plan.title)]);
+    setCreatedPlans(prev=>mergePlans([plan],prev));
     setExploreFilter('all');
     setExploreCategory(null);
+    void createSharedPlan(plan)
+      .then(()=>fetchSharedPlans())
+      .then(shared=>setCreatedPlans(local=>mergePlans(shared,local)))
+      .catch(error=>console.warn('CONECTA shared plan publish failed',error));
   };
 
   return <div className="app-shell">

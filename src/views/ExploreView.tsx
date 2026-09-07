@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Heart, Info, MapPin, Plus, Search, Send, SlidersHorizontal, Star, X } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, plans } from '../data/demoData';
-import type { Plan } from '../types';
+import { loadStored, saveStored, storageKeys } from '../lib/storage';
+import type { ExploreFilter, Plan } from '../types';
 
-type TimeFilter='all'|'near'|'today'|'weekend';
 type PeopleFilter='near'|'match'|'age'|'interests';
 type Person={name:string;age:number;distance:string;match:string;bio:string;job:string;tags:string[];image:string;gallery:string[]};
 type Story={name:string;time:string;avatar:string;image:string;caption:string;location:string};
@@ -25,8 +25,13 @@ const stories:Story[]=[
   {name:'Álex',time:'8 h',avatar:socialPeople[3].image,image:'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=900&q=90',caption:'Hoy tocaba desconectar aquí 🏔️',location:'La Mussara'}
 ];
 
-export function ExploreView({onPlan}:{onPlan:(p:Plan)=>void}){
-  const [timeFilter,setTimeFilter]=useState<TimeFilter>('near');
+const hourFromTime=(time:string)=>{
+  const match=time.match(/(\d{1,2}):(\d{2})/);
+  return match?Number(match[1]):null;
+};
+
+export function ExploreView({onPlan,extraPlans=[],initialFilter='near',onChat}:{onPlan:(p:Plan)=>void,extraPlans?:Plan[],initialFilter?:ExploreFilter,onChat:(name:string)=>void}){
+  const [timeFilter,setTimeFilter]=useState<ExploreFilter>(initialFilter);
   const [category,setCategory]=useState<string|null>(null);
   const [searchOpen,setSearchOpen]=useState(false);
   const [query,setQuery]=useState('');
@@ -35,27 +40,34 @@ export function ExploreView({onPlan}:{onPlan:(p:Plan)=>void}){
   const [peopleMode,setPeopleMode]=useState(false);
   const [peopleFilter,setPeopleFilter]=useState<PeopleFilter>('near');
   const [personIndex,setPersonIndex]=useState(0);
-  const [liked,setLiked]=useState<Set<string>>(()=>new Set());
+  const [liked,setLiked]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.exploreLikes,[])));
   const [personDetail,setPersonDetail]=useState<Person|null>(null);
-  const [contactNotice,setContactNotice]=useState('');
   const [storyIndex,setStoryIndex]=useState<number|null>(null);
   const [storyCreateOpen,setStoryCreateOpen]=useState(false);
-  const [storyAdded,setStoryAdded]=useState(false);
+  const [storyAdded,setStoryAdded]=useState(()=>loadStored<boolean>(storageKeys.storyAdded,false));
   const [storyReply,setStoryReply]=useState('');
 
+  useEffect(()=>{setTimeFilter(initialFilter)},[initialFilter]);
+  useEffect(()=>{saveStored(storageKeys.exploreLikes,[...liked])},[liked]);
+  useEffect(()=>{saveStored(storageKeys.storyAdded,storyAdded)},[storyAdded]);
+
+  const allPlans=useMemo(()=>[...extraPlans,...plans],[extraPlans]);
   const visible=useMemo(()=>{
-    let list=plans.filter(p=>{
+    let list=allPlans.filter(p=>{
       if(category&&p.category!==category)return false;
       const q=query.trim().toLocaleLowerCase('es');
       if(q&&!`${p.title} ${p.place} ${p.category}`.toLocaleLowerCase('es').includes(q))return false;
+      const hour=hourFromTime(p.time);
       if(timeFilter==='today')return p.time.startsWith('Hoy');
+      if(timeFilter==='afternoon')return p.time.startsWith('Hoy')&&hour!==null&&hour>=12&&hour<20;
+      if(timeFilter==='tonight')return p.time.startsWith('Hoy')&&hour!==null&&hour>=20;
       if(timeFilter==='weekend')return /Vie|Sáb|Dom/.test(p.time);
       return true;
     });
-    if(timeFilter==='near'||sortAsc)list=[...list].sort((a,b)=>parseFloat(a.distance)-parseFloat(b.distance));
-    else list=[...list].sort((a,b)=>parseFloat(b.distance)-parseFloat(a.distance));
+    const descending=timeFilter==='all'&&!sortAsc;
+    list=[...list].sort((a,b)=>descending?parseFloat(b.distance)-parseFloat(a.distance):parseFloat(a.distance)-parseFloat(b.distance));
     return list;
-  },[category,query,timeFilter,sortAsc]);
+  },[allPlans,category,query,timeFilter,sortAsc]);
 
   const gridPeople=useMemo(()=>{
     const list=[...socialPeople];
@@ -66,12 +78,11 @@ export function ExploreView({onPlan}:{onPlan:(p:Plan)=>void}){
   },[peopleFilter]);
 
   const toggleLike=(name:string)=>setLiked(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
-  const openPerson=(index:number)=>{setPersonIndex(index);setPeopleMode(true);setContactNotice('')};
+  const openPerson=(index:number)=>{setPersonIndex(index);setPeopleMode(true)};
   const advancePerson=(like=false)=>{
     const person=socialPeople[personIndex];
     if(like)setLiked(prev=>{const next=new Set(prev);next.add(person.name);return next});
     setPersonIndex(i=>i+1);
-    setContactNotice('');
   };
 
   if(peopleMode){
@@ -79,8 +90,8 @@ export function ExploreView({onPlan}:{onPlan:(p:Plan)=>void}){
     return <div className="page explore-page people-swipe-page">
       <div className="people-swipe-head"><button aria-label="Volver a Personas para ti" onClick={()=>{setPeopleMode(false);setPersonIndex(0);setPersonDetail(null)}}><ChevronLeft/></button><div className="people-swipe-title"><h1>Personas para ti</h1><p>Desliza para conocer gente afín</p></div><button aria-label="Filtros" onClick={()=>setPeopleMode(false)}><SlidersHorizontal/></button></div>
       <div className="swipe-filter-row"><button className={peopleFilter==='near'?'active':''} onClick={()=>setPeopleFilter('near')}>Cerca de mí</button><button className={peopleFilter==='age'?'active':''} onClick={()=>setPeopleFilter('age')}>Edad</button><button className={peopleFilter==='interests'?'active':''} onClick={()=>setPeopleFilter('interests')}>Intereses</button><button className={peopleFilter==='match'?'active':''} onClick={()=>setPeopleFilter('match')}>Afinidad</button></div>
-      {person?<><div className="swipe-card"><img src={person.image} alt={`${person.name}, ${person.age} años`}/><div className="swipe-progress">{socialPeople.map((p,i)=><span key={p.name} className={i===personIndex?'active':''}/>)}</div><div className="swipe-card-info"><div className="swipe-card-info-top"><h2>{person.name}, {person.age}<i/></h2><button className="swipe-info-button" aria-label={`Ver perfil de ${person.name}`} onClick={()=>setPersonDetail(person)}><Info/></button></div><div className="swipe-meta"><MapPin/> A {person.distance} de ti · {person.match} afinidad</div><p className="swipe-bio">{person.bio}</p><div className="swipe-tags">{person.tags.map(tag=><span key={tag}>{tag}</span>)}</div></div></div><div className="swipe-actions"><button className="swipe-action nope" onClick={()=>advancePerson(false)}><span><X/></span>No me gusta</button><button className="swipe-action skip" onClick={()=>advancePerson(false)}><span><Star/></span>Pasa</button><button className="swipe-action like" onClick={()=>advancePerson(true)}><span><Heart fill="currentColor"/></span>Me gusta</button></div></>:<div className="swipe-empty"><strong>Ya has visto las personas de esta demo</strong><span>Vuelve a empezar para seguir probando el flujo.</span><button onClick={()=>setPersonIndex(0)}>Volver a empezar</button></div>}
-      {personDetail&&<div className="person-detail-overlay" onClick={()=>setPersonDetail(null)}><article className="person-detail-card" onClick={e=>e.stopPropagation()}><div className="person-detail-hero"><img src={personDetail.image} alt={personDetail.name}/><button className="person-detail-back" aria-label="Cerrar perfil" onClick={()=>setPersonDetail(null)}><ChevronLeft/></button><div className="person-detail-title"><h2>{personDetail.name}, {personDetail.age}</h2><span>A {personDetail.distance} de ti · {personDetail.match} afinidad</span></div></div><div className="person-detail-body"><strong>{personDetail.job}</strong><p>{personDetail.bio}</p><div className="person-detail-tags">{personDetail.tags.map(tag=><span key={tag}>{tag}</span>)}</div><div className="person-mini-gallery">{personDetail.gallery.map((image,i)=><img key={image} src={image} alt={`Foto ${i+1} de ${personDetail.name}`}/>)}</div><button className="person-chat-cta" onClick={()=>setContactNotice(`Conversación demo iniciada con ${personDetail.name}`)}>¡Habla con {personDetail.name}!</button>{contactNotice&&<div className="person-contact-notice">{contactNotice}</div>}</div></article></div>}
+      {person?<><div className="swipe-card"><img src={person.image} alt={`${person.name}, ${person.age} años`}/><div className="swipe-progress">{socialPeople.map((p,i)=><span key={p.name} className={i===personIndex?'active':''}/>)}</div><div className="swipe-card-info"><div className="swipe-card-info-top"><h2>{person.name}, {person.age}<i/></h2><button className="swipe-info-button" aria-label={`Ver perfil de ${person.name}`} onClick={()=>setPersonDetail(person)}><Info/></button></div><div className="swipe-meta"><MapPin/> A {person.distance} de ti · {person.match} afinidad</div><p className="swipe-bio">{person.bio}</p><div className="swipe-tags">{person.tags.map(tag=><span key={tag}>{tag}</span>)}</div></div></div><div className="swipe-actions"><button className="swipe-action nope" onClick={()=>advancePerson(false)}><span><X/></span>No me gusta</button><button className="swipe-action skip" onClick={()=>advancePerson(false)}><span><Star/></span>Pasa</button><button className="swipe-action like" onClick={()=>advancePerson(true)}><span><Heart fill="currentColor"/></span>Me gusta</button></div></>:<div className="swipe-empty"><strong>Ya has visto las personas disponibles</strong><span>Vuelve a empezar para seguir probando el flujo.</span><button onClick={()=>setPersonIndex(0)}>Volver a empezar</button></div>}
+      {personDetail&&<div className="person-detail-overlay" onClick={()=>setPersonDetail(null)}><article className="person-detail-card" onClick={e=>e.stopPropagation()}><div className="person-detail-hero"><img src={personDetail.image} alt={personDetail.name}/><button className="person-detail-back" aria-label="Cerrar perfil" onClick={()=>setPersonDetail(null)}><ChevronLeft/></button><div className="person-detail-title"><h2>{personDetail.name}, {personDetail.age}</h2><span>A {personDetail.distance} de ti · {personDetail.match} afinidad</span></div></div><div className="person-detail-body"><strong>{personDetail.job}</strong><p>{personDetail.bio}</p><div className="person-detail-tags">{personDetail.tags.map(tag=><span key={tag}>{tag}</span>)}</div><div className="person-mini-gallery">{personDetail.gallery.map((image,i)=><img key={image} src={image} alt={`Foto ${i+1} de ${personDetail.name}`}/>)}</div><button className="person-chat-cta" onClick={()=>onChat(personDetail.name)}>Hablar con {personDetail.name}</button></div></article></div>}
     </div>;
   }
 
@@ -95,7 +106,7 @@ export function ExploreView({onPlan}:{onPlan:(p:Plan)=>void}){
   return <div className="page explore-page">
     <div className="page-title"><div><h1>Explora</h1><p>Descubre planes cerca de ti</p></div><button aria-label="Buscar planes" onClick={()=>setSearchOpen(v=>!v)}>{searchOpen?<X/>:<Search/>}</button></div>
     {searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar plan, lugar o categoría" aria-label="Buscar plan, lugar o categoría"/></div>}
-    <div className="filter-row"><button className={timeFilter==='near'?'active':''} onClick={()=>setTimeFilter('near')}>Cerca de mí</button><button className={timeFilter==='today'?'active':''} onClick={()=>setTimeFilter('today')}>Hoy</button><button className={timeFilter==='weekend'?'active':''} onClick={()=>setTimeFilter('weekend')}>Este finde</button><button className={timeFilter==='all'?'active':''} onClick={()=>{setTimeFilter('all');setSortAsc(v=>!v)}}>Ordenar · {sortAsc?'cerca':'lejos'}</button></div>
+    <div className="filter-row"><button className={timeFilter==='near'?'active':''} onClick={()=>setTimeFilter('near')}>Cerca de mí</button><button className={timeFilter==='today'?'active':''} onClick={()=>setTimeFilter('today')}>Hoy</button><button className={timeFilter==='afternoon'?'active':''} onClick={()=>setTimeFilter('afternoon')}>Esta tarde</button><button className={timeFilter==='tonight'?'active':''} onClick={()=>setTimeFilter('tonight')}>Esta noche</button><button className={timeFilter==='weekend'?'active':''} onClick={()=>setTimeFilter('weekend')}>Este finde</button><button className={timeFilter==='all'?'active':''} onClick={()=>{setTimeFilter('all');setSortAsc(v=>!v)}}>Ordenar · {sortAsc?'cerca':'lejos'}</button></div>
 
     <section className="explore-social-block"><div className="explore-social-head"><h2>Estados</h2><button onClick={()=>setStoryIndex(0)}>Ver todos</button></div><div className="story-strip"><button className={`story-chip story-add ${storyAdded?'is-added':''}`} onClick={()=>setStoryCreateOpen(true)}><span className="story-ring"><Plus/></span><strong>Tu estado</strong><small>{storyAdded?'Ahora':'Añadir'}</small></button>{stories.map((story,i)=><button key={story.name} className="story-chip" onClick={()=>setStoryIndex(i)}><span className="story-ring"><img src={story.avatar} alt={story.name}/></span><strong>{story.name}</strong><small>{story.time}</small></button>)}</div></section>
 
@@ -105,6 +116,6 @@ export function ExploreView({onPlan}:{onPlan:(p:Plan)=>void}){
     <section className="section noframe"><div className="section-head"><h2>{category||'Recomendados'}</h2>{category&&<button onClick={()=>setCategory(null)}>Ver todos</button>}</div>{visible.length?<PlanCards items={visible} onPlan={onPlan}/>:<div className="empty-state">No hay planes que coincidan con estos filtros.</div>}</section>
 
     {storyIndex!==null&&<div className="story-viewer"><div className="story-stage"><img src={stories[storyIndex].image} alt={`Estado de ${stories[storyIndex].name}`}/><div className="story-progress">{stories.map((story,i)=><span key={story.name} className={i===storyIndex?'active':''}/>)}</div><div className="story-top"><img src={stories[storyIndex].avatar} alt={stories[storyIndex].name}/><div><strong>{stories[storyIndex].name}</strong><small>hace {stories[storyIndex].time}</small></div><button aria-label="Cerrar estado" onClick={()=>setStoryIndex(null)}><X/></button></div><button className="story-nav-zone prev" aria-label="Estado anterior" onClick={()=>setStoryIndex(i=>i===null?null:Math.max(0,i-1))}/><button className="story-nav-zone next" aria-label="Estado siguiente" onClick={()=>setStoryIndex(i=>i===null?null:(i+1<stories.length?i+1:null))}/><div className="story-caption">{stories[storyIndex].caption}<div className="story-location"><MapPin/>{stories[storyIndex].location}</div></div><div className="story-reply"><input value={storyReply} onChange={e=>setStoryReply(e.target.value)} placeholder="Responder..." aria-label="Responder al estado"/><button aria-label="Enviar respuesta" onClick={()=>setStoryReply('')}><Send/></button><button aria-label="Me gusta"><Heart/></button></div></div></div>}
-    {storyCreateOpen&&<div className="story-create-sheet" onClick={()=>setStoryCreateOpen(false)}><div className="story-create-card" onClick={e=>e.stopPropagation()}><h3>Tu estado</h3><p>Comparte un momento con la gente de CONECTA. En esta fase mantenemos el flujo en modo demo.</p><div className="story-create-actions"><button onClick={()=>setStoryCreateOpen(false)}>Cancelar</button><button className="primary" onClick={()=>{setStoryAdded(true);setStoryCreateOpen(false)}}>Añadir estado demo</button></div></div></div>}
+    {storyCreateOpen&&<div className="story-create-sheet" onClick={()=>setStoryCreateOpen(false)}><div className="story-create-card" onClick={e=>e.stopPropagation()}><h3>Tu estado</h3><p>Comparte un momento con la gente de CONECTA. El estado se conserva en este dispositivo.</p><div className="story-create-actions"><button onClick={()=>setStoryCreateOpen(false)}>Cancelar</button><button className="primary" onClick={()=>{setStoryAdded(true);setStoryCreateOpen(false)}}>Añadir estado</button></div></div></div>}
   </div>
 }

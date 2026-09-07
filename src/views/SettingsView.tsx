@@ -1,0 +1,6 @@
+import { ChevronRight, CircleUserRound, Crown, MessageCircle, Settings, ShieldCheck, Sparkles, Star, UsersRound } from 'lucide-react';
+
+export function SettingsView(){
+  const rows=[[Settings,'Ajustes','Personaliza tu experiencia'],[ShieldCheck,'Privacidad y seguridad','Tu seguridad es lo primero'],[Sparkles,'Guía CONECTA','Cómo funciona la app'],[Star,'Normas de la comunidad','Un mejor lugar para todos'],[MessageCircle,'Centro de ayuda','Soporte técnico'],[UsersRound,'Invitar amigos','Comparte CONECTA'],[CircleUserRound,'Sobre CONECTA','Versión Premium Max']];
+  return <div className="page settings-page"><div className="premium-header"><div className="profile-inline"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=85"/><div><strong>CONECTA <span>Premium</span></strong><h2>Fernando</h2><p>Usuario Premium</p></div></div><Crown/></div><div className="gold-card"><Crown/><div><strong>CONECTA Premium</strong><span>Más planes. Más personas. Más vida.</span></div><ChevronRight/></div><div className="settings-list">{rows.map(([Icon,title,sub]:any)=><button key={title}><Icon/><div><strong>{title}</strong><span>{sub}</span></div><ChevronRight/></button>)}</div><button className="logout">Cerrar sesión</button></div>
+}

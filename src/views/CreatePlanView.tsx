@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CalendarDays, MapPin, UsersRound } from 'lucide-react';
 import { categories } from '../data/demoData';
+import { createPlanFromDraft } from '../lib/planLogic';
 import type { Plan, View } from '../types';
 
 export function CreatePlanView({setView,onCreate}:{setView:(v:View)=>void,onCreate:(plan:Plan)=>void}){
@@ -13,17 +14,10 @@ export function CreatePlanView({setView,onCreate}:{setView:(v:View)=>void,onCrea
 
   const submit=(e:React.FormEvent)=>{
     e.preventDefault();
-    if(!title.trim()||!place.trim()||!when.trim())return;
     const categoryImage=categories.find(([name])=>name===category)?.[1]||categories[0][1];
-    onCreate({
-      title:title.trim(),
-      place:place.trim(),
-      time:when.trim(),
-      spots:`${Math.max(2,Number(spots)||2)} plazas`,
-      distance:'0 km',
-      category,
-      image:categoryImage,
-    });
+    const plan=createPlanFromDraft({title,place,when,spots,category,image:categoryImage});
+    if(!plan)return;
+    onCreate(plan);
     setCreated(true);
   };
 

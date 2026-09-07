@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "verify": "node scripts/verify-structure.mjs",
-    "check": "npm run verify && tsc --noEmit",
+    "test:frontend": "node scripts/test-frontend.mjs",
+    "check": "npm run verify && npm run test:frontend && tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview"
   },

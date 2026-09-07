@@ -18,10 +18,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify installed versions
-        run: npm ls react@19.2.6 react-dom@19.2.6 vite@8.2.2 typescript@5.9.3 @vitejs/plugin-react@6.0.2 --depth=0
+        run: npm ls @supabase/supabase-js@2.115.0 react@19.2.6 react-dom@19.2.6 vite@8.2.2 typescript@5.9.3 @vitejs/plugin-react@6.0.2 --depth=0
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
       - name: Audit all dependencies

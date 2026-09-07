@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Bell, CircleUserRound, Compass, Crown, Home, MessageCircle, Plus, Search, Settings } from 'lucide-react';
+import { accountFromUser, avatarFromUser, demoAccount, demoAvatar } from '../lib/identity';
+import { supabase } from '../lib/supabase';
 import type { View } from '../types';
 
 export function BottomNav({view,setView}:{view:View,setView:(v:View)=>void}){
@@ -22,9 +25,23 @@ export function Sidebar({view,setView}:{view:View,setView:(v:View)=>void}){
 
 export function Header({view,setView}:{view:View,setView:(v:View)=>void}){
   const isHome=view==='Inicio';
+  const [profileName,setProfileName]=useState(demoAccount.name);
+  const [profileAvatar,setProfileAvatar]=useState(demoAvatar);
+
+  useEffect(()=>{
+    let active=true;
+    void supabase.auth.getUser().then(({data})=>{
+      if(!active)return;
+      const account=accountFromUser(data.user);
+      setProfileName(account.name);
+      setProfileAvatar(avatarFromUser(data.user,account.name));
+    });
+    return ()=>{active=false};
+  },[]);
+
   return <header className={`topbar ${isHome?'topbar-home':'topbar-compact'}`}>
     {isHome&&<div className="mobile-brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div>}
     <div className="desktop-search"><Search/><input placeholder="¿Qué te apetece hacer hoy?" aria-label="Buscar planes" onFocus={()=>setView('Explora')} onKeyDown={e=>{if(e.key==='Enter')setView('Explora')}}/></div>
-    <div className="top-actions"><button aria-label="Abrir notificaciones" onClick={()=>setView('Notificaciones')}><Bell/><i/></button><button className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src="./assets/images/photo-1500648767791-00dcc994a43e.jpg" alt="Fernando"/></button></div>
+    <div className="top-actions"><button aria-label="Abrir notificaciones" onClick={()=>setView('Notificaciones')}><Bell/><i/></button><button className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src={profileAvatar} alt={profileName}/></button></div>
   </header>
 }

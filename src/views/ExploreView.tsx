@@ -2,28 +2,18 @@ import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Heart, Info, MapPin, Plus, Search, Send, SlidersHorizontal, Star, X } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
-import { categories, plans } from '../data/demoData';
+import { categories, people, plans } from '../data/demoData';
 import { filterExplorePlans } from '../lib/planLogic';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
-import type { ExploreFilter, Plan } from '../types';
+import type { ExploreFilter, PeopleFilter, Person, Plan, Story } from '../types';
 
-type PeopleFilter='near'|'match'|'age'|'interests';
-type Person={name:string;age:number;distance:string;match:string;bio:string;job:string;tags:string[];image:string;gallery:string[]};
-type Story={name:string;time:string;avatar:string;image:string;caption:string;location:string};
-
-const socialPeople:Person[]=[
-  {name:'Lucía',age:24,distance:'2 km',match:'92%',bio:'Le gusta el deporte, los planes al aire libre y la buena comida.',job:'Estudiante de Marketing',tags:['Deporte','Viajes','Música','Playa'],image:'./assets/images/photo-1524504388940-b1c1722653e1.jpg',gallery:['./assets/images/photo-1524504388940-b1c1722653e1.jpg','./assets/images/photo-1507525428034-b723cf961d3e.jpg','./assets/images/photo-1500530855697-b586d89ba3ee.jpg','./assets/images/photo-1519046904884-53103b34b206.jpg']},
-  {name:'Carlos',age:27,distance:'3 km',match:'89%',bio:'Viajes, fotografía, café y descubrir sitios nuevos con buena compañía.',job:'Diseñador',tags:['Viajes','Fotografía','Café','Arte'],image:'./assets/images/photo-1507003211169-0a1dd7228f2d.jpg',gallery:['./assets/images/photo-1507003211169-0a1dd7228f2d.jpg','./assets/images/photo-1452780212940-6f5c0d14d848.jpg','./assets/images/photo-1495474472287-4d71bcdd2085.jpg','./assets/images/photo-1500530855697-b586d89ba3ee.jpg']},
-  {name:'Marta',age:26,distance:'4 km',match:'94%',bio:'Running, cine, música y escapadas de fin de semana.',job:'Fisioterapeuta',tags:['Running','Cine','Música','Viajes'],image:'./assets/images/photo-1494790108377-be9c29b29330.jpg',gallery:['./assets/images/photo-1494790108377-be9c29b29330.jpg','./assets/images/photo-1552674605-db6ffd4facb5.jpg','./assets/images/photo-1489599849927-2ee91cede3ba.jpg','./assets/images/photo-1501386761578-eac5c94b800a.jpg']},
-  {name:'Álex',age:25,distance:'5 km',match:'87%',bio:'Senderismo, playa, buena comida y planes espontáneos.',job:'Ingeniero',tags:['Senderismo','Playa','Comida','Deporte'],image:'./assets/images/photo-1507591064344-4c6ce005b128.jpg',gallery:['./assets/images/photo-1507591064344-4c6ce005b128.jpg','./assets/images/photo-1551632811-561732d1e306.jpg','./assets/images/photo-1507525428034-b723cf961d3e.jpg','./assets/images/photo-1504674900247-0877df9cc836.jpg']},
-  {name:'Sara',age:23,distance:'6 km',match:'84%',bio:'Fotografía, conciertos, viajes y tardes de café.',job:'Estudiante',tags:['Fotografía','Música','Viajes','Café'],image:'./assets/images/photo-1544005313-94ddf0286df2.jpg',gallery:['./assets/images/photo-1544005313-94ddf0286df2.jpg','./assets/images/photo-1452780212940-6f5c0d14d848.jpg','./assets/images/photo-1501386761578-eac5c94b800a.jpg','./assets/images/photo-1495474472287-4d71bcdd2085.jpg']}
-];
+const socialPeople=people.filter(person=>['Lucía','Carlos','Marta','Álex','Sara'].includes(person.name));
 
 const stories:Story[]=[
-  {name:'Lucía',time:'2 h',avatar:socialPeople[0].image,image:'./assets/images/photo-1507525428034-b723cf961d3e.jpg',caption:'Atardeceres que curan 🌅',location:'Tarragona'},
-  {name:'Carlos',time:'4 h',avatar:socialPeople[1].image,image:'./assets/images/photo-1517248135467-4c7edcad34c4.jpg',caption:'Cena improvisada con buena gente ✨',location:'Tarragona centro'},
-  {name:'Marta',time:'6 h',avatar:socialPeople[2].image,image:'./assets/images/photo-1552674605-db6ffd4facb5.jpg',caption:'Un poco de running y a empezar el día 💪',location:'La Pineda'},
-  {name:'Álex',time:'8 h',avatar:socialPeople[3].image,image:'./assets/images/photo-1551632811-561732d1e306.jpg',caption:'Hoy tocaba desconectar aquí 🏔️',location:'La Mussara'}
+  {name:'Lucía',time:'2 h',avatar:socialPeople.find(person=>person.name==='Lucía')?.image||'',image:'./assets/images/photo-1507525428034-b723cf961d3e.jpg',caption:'Atardeceres que curan 🌅',location:'Tarragona'},
+  {name:'Carlos',time:'4 h',avatar:socialPeople.find(person=>person.name==='Carlos')?.image||'',image:'./assets/images/photo-1517248135467-4c7edcad34c4.jpg',caption:'Cena improvisada con buena gente ✨',location:'Tarragona centro'},
+  {name:'Marta',time:'6 h',avatar:socialPeople.find(person=>person.name==='Marta')?.image||'',image:'./assets/images/photo-1552674605-db6ffd4facb5.jpg',caption:'Un poco de running y a empezar el día 💪',location:'La Pineda'},
+  {name:'Álex',time:'8 h',avatar:socialPeople.find(person=>person.name==='Álex')?.image||'',image:'./assets/images/photo-1551632811-561732d1e306.jpg',caption:'Hoy tocaba desconectar aquí 🏔️',location:'La Mussara'}
 ];
 
 export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCategory=null,onChat}:{onPlan:(p:Plan)=>void,extraPlans?:Plan[],initialFilter?:ExploreFilter,initialCategory?:string|null,onChat:(name:string)=>void}){
@@ -67,13 +57,16 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
   const openPerson=(index:number)=>{setPersonIndex(index);setPeopleMode(true)};
   const advancePerson=(like=false)=>{
     const person=socialPeople[personIndex];
+    if(!person)return;
     if(like)setLiked(prev=>{const next=new Set(prev);next.add(person.name);return next});
     setPersonIndex(i=>i+1);
   };
   const sendStoryReply=()=>{
     const text=storyReply.trim();
     if(!text||storyIndex===null)return;
-    const name=stories[storyIndex].name;
+    const story=stories[storyIndex];
+    if(!story)return;
+    const name=story.name;
     const current=loadStored<Record<string,string[]>>(storageKeys.chatMessages,{});
     saveStored(storageKeys.chatMessages,{...current,[name]:[...(current[name]||[]),text]});
     setStoryReply('');
@@ -98,6 +91,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
     </div>;
   }
 
+  const activeStory=storyIndex===null?null:stories[storyIndex];
   return <div className="page explore-page">
     <div className="page-title"><div><h1>Explora</h1><p>Descubre planes cerca de ti</p></div><button aria-label="Buscar planes" onClick={()=>setSearchOpen(v=>!v)}>{searchOpen?<X/>:<Search/>}</button></div>
     {searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar plan, lugar o categoría" aria-label="Buscar plan, lugar o categoría"/></div>}
@@ -110,7 +104,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
     <div className="explore-category-title"><h2>Categorías</h2><span>Elige lo que te apetece</span></div><div className="category-grid">{categories.map(([name,image])=><button key={name} className={category===name?'active':''} onClick={()=>setCategory(v=>v===name?null:name)} aria-pressed={category===name}><img loading="lazy" decoding="async" src={image} alt={name}/><span/><b><CategoryIcon name={name}/>{name}</b></button>)}</div>
     <section className="section noframe"><div className="section-head"><h2>{category||'Recomendados'}</h2>{category&&<button onClick={()=>setCategory(null)}>Ver todos</button>}</div>{visible.length?<PlanCards items={visible} onPlan={onPlan}/>:<div className="empty-state">No hay planes que coincidan con estos filtros.</div>}</section>
 
-    {storyIndex!==null&&<div className="story-viewer"><div className="story-stage"><img src={stories[storyIndex].image} alt={`Estado de ${stories[storyIndex].name}`}/><div className="story-progress">{stories.map((story,i)=><span key={story.name} className={i===storyIndex?'active':''}/>)}</div><div className="story-top"><img src={stories[storyIndex].avatar} alt={stories[storyIndex].name}/><div><strong>{stories[storyIndex].name}</strong><small>hace {stories[storyIndex].time}</small></div><button aria-label="Cerrar estado" onClick={()=>setStoryIndex(null)}><X/></button></div><button className="story-nav-zone prev" aria-label="Estado anterior" onClick={()=>setStoryIndex(i=>i===null?null:Math.max(0,i-1))}/><button className="story-nav-zone next" aria-label="Estado siguiente" onClick={()=>setStoryIndex(i=>i===null?null:(i+1<stories.length?i+1:null))}/><div className="story-caption">{stories[storyIndex].caption}<div className="story-location"><MapPin/>{stories[storyIndex].location}</div></div><div className="story-reply"><input value={storyReply} onChange={e=>setStoryReply(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')sendStoryReply()}} placeholder="Responder..." aria-label="Responder al estado"/><button aria-label="Enviar respuesta" onClick={sendStoryReply}><Send/></button><button aria-label={storyLikes.has(stories[storyIndex].name)?'Quitar me gusta':'Me gusta'} aria-pressed={storyLikes.has(stories[storyIndex].name)} onClick={()=>toggleStoryLike(stories[storyIndex].name)}><Heart fill={storyLikes.has(stories[storyIndex].name)?'currentColor':'none'}/></button></div></div></div>}
+    {activeStory&&storyIndex!==null&&<div className="story-viewer"><div className="story-stage"><img src={activeStory.image} alt={`Estado de ${activeStory.name}`}/><div className="story-progress">{stories.map((story,i)=><span key={story.name} className={i===storyIndex?'active':''}/>)}</div><div className="story-top"><img src={activeStory.avatar} alt={activeStory.name}/><div><strong>{activeStory.name}</strong><small>hace {activeStory.time}</small></div><button aria-label="Cerrar estado" onClick={()=>setStoryIndex(null)}><X/></button></div><button className="story-nav-zone prev" aria-label="Estado anterior" onClick={()=>setStoryIndex(i=>i===null?null:Math.max(0,i-1))}/><button className="story-nav-zone next" aria-label="Estado siguiente" onClick={()=>setStoryIndex(i=>i===null?null:(i+1<stories.length?i+1:null))}/><div className="story-caption">{activeStory.caption}<div className="story-location"><MapPin/>{activeStory.location}</div></div><div className="story-reply"><input value={storyReply} onChange={e=>setStoryReply(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')sendStoryReply()}} placeholder="Responder..." aria-label="Responder al estado"/><button aria-label="Enviar respuesta" onClick={sendStoryReply}><Send/></button><button aria-label={storyLikes.has(activeStory.name)?'Quitar me gusta':'Me gusta'} aria-pressed={storyLikes.has(activeStory.name)} onClick={()=>toggleStoryLike(activeStory.name)}><Heart fill={storyLikes.has(activeStory.name)?'currentColor':'none'}/></button></div></div></div>}
     {storyCreateOpen&&<div className="story-create-sheet" onClick={()=>setStoryCreateOpen(false)}><div className="story-create-card" onClick={e=>e.stopPropagation()}><h3>Tu estado</h3><p>Comparte un momento con la gente de CONECTA. El estado se conserva en este dispositivo.</p><div className="story-create-actions"><button onClick={()=>setStoryCreateOpen(false)}>Cancelar</button><button className="primary" onClick={()=>{setStoryAdded(true);setStoryCreateOpen(false)}}>Añadir estado</button></div></div></div>}
   </div>
 }

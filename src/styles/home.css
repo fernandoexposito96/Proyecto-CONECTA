@@ -16,10 +16,6 @@
 .people-strip article>div{display:grid;gap:2px}.people-strip strong{font-size:14px}.people-strip b{font-size:11px}.people-strip span{font-size:10px;color:#7b8499!important}
 .people-strip button{border:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
 
-.escape-head-actions{display:flex;align-items:center;gap:10px}
-.escape-arrows{display:flex;gap:6px}
-.escape-arrows button{width:36px;height:36px;border:1px solid #e7e1f5!important;border-radius:50%!important;background:#fff!important;display:grid!important;place-items:center!important;padding:0!important;color:#6b4df3!important;box-shadow:0 6px 16px rgba(91,66,166,.08)}
-.escape-arrows button svg{width:18px!important}
 .escape-grid{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 12px)/2);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain;padding:2px 1px 4px}
 .escape-grid::-webkit-scrollbar{display:none}
 .escape-grid article{position:relative;height:190px;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always}
@@ -45,9 +41,6 @@
   .quick-grid>button{padding:14px!important}
   .people-strip{grid-auto-columns:minmax(205px,82vw);gap:10px}
   .escape-section .section-head{align-items:center}
-  .escape-head-actions{gap:6px}
-  .escape-view-all{display:none!important}
-  .escape-arrows button{width:34px;height:34px}
   .escape-grid{grid-auto-columns:calc((100% - 10px)/2);gap:10px}
   .escape-grid article{height:160px}
   .premium-banner{margin-top:20px;padding:20px;border-radius:22px!important}

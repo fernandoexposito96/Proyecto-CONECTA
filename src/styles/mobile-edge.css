@@ -69,6 +69,100 @@
 
   .topbar{padding-left:14px!important;padding-right:14px!important}
 
+  /* Explora — ajuste final de posiciones sobre iPhone */
+  .explore-page>.page-title{
+    margin:14px 4px 16px!important;
+    padding:0 2px!important;
+  }
+  .explore-page>.page-title h1{line-height:1!important}
+  .explore-page>.filter-row{
+    margin:0 4px 18px!important;
+    padding:0 2px 4px!important;
+    gap:7px!important;
+    scrollbar-width:none!important;
+    -webkit-overflow-scrolling:touch;
+  }
+  .explore-page>.filter-row::-webkit-scrollbar{display:none}
+  .explore-page>.filter-row button{
+    padding:9px 12px!important;
+    font-size:13px!important;
+    line-height:1.1!important;
+  }
+
+  .explore-social-block{margin:16px 6px 18px!important}
+  .explore-social-head{margin-bottom:10px!important}
+  .explore-social-head h2{font-size:20px!important;line-height:1.1!important}
+  .explore-social-head button{font-size:13px!important}
+
+  .story-strip{
+    gap:8px!important;
+    padding:2px 1px 6px!important;
+    scroll-snap-type:x proximity;
+  }
+  .story-chip{
+    flex:0 0 60px!important;
+    gap:4px!important;
+    scroll-snap-align:start;
+  }
+  .story-ring{width:50px!important;height:50px!important;padding:2px!important}
+  .story-add .story-ring{padding:0!important}
+  .story-chip strong{
+    max-width:60px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    font-size:11px!important;
+    line-height:1!important;
+  }
+  .story-chip small{font-size:10px!important;line-height:1!important}
+
+  .people-discovery-strip{
+    grid-auto-columns:calc((100% - 16px)/3)!important;
+    gap:8px!important;
+    padding:2px 0 6px!important;
+    scroll-snap-type:x mandatory;
+    scroll-padding-left:0;
+  }
+  .discover-person-card{
+    height:160px!important;
+    border-radius:16px!important;
+    scroll-snap-align:start;
+  }
+  .discover-person-copy{
+    left:9px!important;
+    right:9px!important;
+    bottom:9px!important;
+    gap:2px!important;
+  }
+  .discover-person-copy strong{
+    font-size:13px!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .discover-person-copy span,
+  .discover-person-copy small{
+    font-size:10px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .discover-person-heart{
+    width:31px!important;
+    height:31px!important;
+    right:7px!important;
+    top:7px!important;
+  }
+  .discover-person-heart svg{width:16px!important;height:16px!important}
+
+  .explore-category-title{margin:20px 4px 12px!important}
+  .explore-category-title h2{font-size:20px!important;line-height:1.1!important}
+  .explore-category-title span{font-size:11px!important}
+  .explore-page>.category-grid{padding:0 4px!important;gap:8px!important}
+  .explore-page>.section.noframe{padding-left:6px!important;padding-right:6px!important}
+
   .bottom-nav{left:0!important;right:0!important;width:100%!important}
 }
 
@@ -79,4 +173,14 @@
   .category-strip{grid-auto-columns:126px!important;gap:8px!important}
   .category-strip button{height:126px!important}
   .profile-main{padding-left:12px!important;padding-right:12px!important}
+
+  .explore-page>.filter-row button{padding:8px 10px!important;font-size:12.5px!important}
+  .story-chip{flex-basis:57px!important}
+  .story-ring{width:48px!important;height:48px!important}
+  .story-chip strong{max-width:57px!important;font-size:10.5px!important}
+  .people-discovery-strip{grid-auto-columns:calc((100% - 14px)/3)!important;gap:7px!important}
+  .discover-person-card{height:154px!important}
+  .discover-person-copy{left:8px!important;right:8px!important;bottom:8px!important}
+  .discover-person-copy strong{font-size:12.5px!important}
+  .discover-person-copy span,.discover-person-copy small{font-size:9.5px!important}
 }

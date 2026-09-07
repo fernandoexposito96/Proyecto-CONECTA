@@ -1,25 +1,17 @@
-import { useRef } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Coffee, Crown, MapPin, Music2, Plus, Search, Sparkles } from 'lucide-react';
+import { CalendarDays, ChevronRight, Coffee, Crown, MapPin, Music2, Plus, Search, Sparkles } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, escapes, people, plans } from '../data/demoData';
 import type { Plan, View } from '../types';
 
 export function HomeView({setView,onPlan}:{setView:(v:View)=>void,onPlan:(p:Plan)=>void}){
-  const escapeCarouselRef=useRef<HTMLDivElement>(null);
-  const moveEscapes=(direction:-1|1)=>{
-    const node=escapeCarouselRef.current;
-    if(!node)return;
-    node.scrollBy({left:direction*node.clientWidth*.82,behavior:'smooth'});
-  };
-
   return <div className="page home-page">
     <section className="hero"><img decoding="async" fetchPriority="high" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=90"/><div className="hero-overlay"/><div className="hero-copy"><span><MapPin/> Tarragona</span><h1>La vida es mejor<br/>con buenos planes</h1><div className="hero-search"><Search/><span>¿Qué te apetece hacer hoy?</span></div></div></section>
     <section className="section"><div className="section-head"><h2>Descubre</h2><button onClick={()=>setView('Explora')}>Ver todo <ChevronRight/></button></div><div className="category-strip">{categories.slice(0,12).map(([name,image])=><button key={name} onClick={()=>setView('Explora')}><img loading="lazy" decoding="async" src={image}/><span className="shade"/><b><CategoryIcon name={name}/>{name}</b></button>)}</div></section>
     <section className="section"><div className="section-head"><div><small>PARA TI</small><h2>Planes para ti</h2></div><button onClick={()=>setView('Explora')}>Ver todos <ChevronRight/></button></div><PlanCards items={plans.slice(0,5)} onPlan={onPlan}/></section>
     <section className="section now-section"><div className="section-head"><div><small>AHORA</small><h2>Qué hacer cerca de ti</h2></div><button onClick={()=>setView('Explora')}>Explorar <ChevronRight/></button></div><div className="quick-grid"><button><Sparkles/><strong>Ahora mismo</strong><span>7 planes activos</span></button><button><Coffee/><strong>Esta tarde</strong><span>12 opciones</span></button><button><Music2/><strong>Esta noche</strong><span>9 planes</span></button><button><CalendarDays/><strong>Este finde</strong><span>24 propuestas</span></button></div></section>
     <section className="section"><div className="section-head"><div><small>COMPATIBILIDAD</small><h2>Personas para ti</h2></div><button>Ver más <ChevronRight/></button></div><div className="people-strip">{people.map(([name,match,tags,image])=><article key={name}><img loading="lazy" decoding="async" src={image}/><div><strong>{name}</strong><b>{match}</b><span>{tags}</span></div><button><Plus/></button></article>)}</div></section>
-    <section className="section escape-section"><div className="section-head"><div><small>ESCAPADAS</small><h2>Sal de la rutina</h2></div><div className="escape-head-actions"><div className="escape-arrows"><button type="button" aria-label="Escapadas anteriores" onClick={()=>moveEscapes(-1)}><ChevronLeft/></button><button type="button" aria-label="Siguientes escapadas" onClick={()=>moveEscapes(1)}><ChevronRight/></button></div><button className="escape-view-all" onClick={()=>setView('Explora')}>Ver todas <ChevronRight/></button></div></div><div className="escape-grid" ref={escapeCarouselRef}>{escapes.map(([title,date,image])=><article key={title}><img loading="lazy" decoding="async" src={image}/><div><strong>{title}</strong><span>{date}</span></div></article>)}</div></section>
+    <section className="section escape-section"><div className="section-head"><div><small>ESCAPADAS</small><h2>Sal de la rutina</h2></div><button className="escape-view-all" onClick={()=>setView('Explora')}>Ver más <ChevronRight/></button></div><div className="escape-grid">{escapes.map(([title,date,image])=><article key={title}><img loading="lazy" decoding="async" src={image}/><div><strong>{title}</strong><span>{date}</span></div></article>)}</div></section>
     <section className="section"><div className="section-head"><div><small>MÁS IDEAS</small><h2>Sigue descubriendo</h2></div><button onClick={()=>setView('Explora')}>Explorar <ChevronRight/></button></div><PlanCards items={plans.slice(5)} onPlan={onPlan}/></section>
     <section className="premium-banner"><div><Crown/><span>PREMIUM</span></div><h2>Haz que cada semana tenga algo que esperar</h2><p>Más visibilidad, recomendaciones avanzadas y acceso prioritario a experiencias seleccionadas.</p><button onClick={()=>setView('Ajustes')}>Ver CONECTA Premium <ChevronRight/></button></section>
   </div>

@@ -6,10 +6,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   lockfile:
+    if: ${{ hashFiles('package-lock.json') == '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,9 +19,10 @@ jobs:
           node-version: 22
       - name: Generate deterministic lockfile
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-      - name: Upload package-lock
-        uses: actions/upload-artifact@v4
-        with:
-          name: conecta-package-lock
-          path: package-lock.json
-          if-no-files-found: error
+      - name: Commit package-lock
+        run: |
+          git config user.name "CONECTA CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "build: lock verified npm dependency graph"
+          git push

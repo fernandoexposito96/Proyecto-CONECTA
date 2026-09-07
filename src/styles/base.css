@@ -18,17 +18,17 @@
 
 *{box-sizing:border-box}
 html,body,#app{margin:0;min-height:100%;background:var(--page-bg)}
-html{color-scheme:light}
-body{color:#17213e;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{color-scheme:light;overflow-x:hidden}
+body{color:#17213e;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 button,input,textarea{font:inherit}
-button{cursor:pointer}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 img{display:block;max-width:100%}
 
 .app-shell{
   min-height:100vh;
   background:linear-gradient(180deg,#faf8ff 0%,#f7f4ff 42%,#f5f1ff 100%);
 }
-main{margin-left:245px;min-height:100vh}
+main{min-width:0;margin-left:245px;min-height:100vh}
 .content{width:min(1280px,100%);margin:0 auto;padding:28px 30px 60px}
 .page{min-width:0;background:transparent}
 
@@ -63,7 +63,6 @@ main{margin-left:245px;min-height:100vh}
 .filter-row button,.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;color:#646c80;white-space:nowrap;box-shadow:0 6px 18px rgba(59,42,112,.06)}
 .filter-row button.active,.tabs button.active{background:linear-gradient(135deg,var(--purple),var(--purple-2));color:#fff;border-color:transparent;box-shadow:0 10px 22px rgba(113,72,255,.22)}
 
-/* Buscador compacto compartido por Explora y Chat. */
 .explore-search{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:0 14px;margin:-4px 0 16px;box-shadow:0 8px 24px rgba(72,50,135,.06)}
 .explore-search input{width:100%;height:46px;border:0;outline:0;background:transparent;color:#26384e;min-width:0}
 .explore-search svg{width:19px;color:#7d8498;flex:0 0 auto}
@@ -78,20 +77,21 @@ main{margin-left:245px;min-height:100vh}
 @media(max-width:760px){
   html,body,#app{background:var(--page-bg)}
   main{margin-left:0}
-  .content{width:100%;max-width:none;margin:0;padding:18px 6px calc(78px + env(safe-area-inset-bottom))}
+  .app-shell,main{min-height:100dvh}
+  .content{width:100%;max-width:none;margin:0;padding:10px 10px calc(82px + env(safe-area-inset-bottom))}
   .page{width:100%;max-width:none;margin:0;padding:0}
-  .section{margin-top:18px;padding:16px 10px;border-radius:20px}
+  .section{margin-top:18px;padding:16px 12px;border-radius:20px}
   .section-head{margin-bottom:12px}
   .section-head h2{font-size:23px}
-  .page-title{margin:8px 0 16px}
-  .page-title h1{font-size:34px}
-  .page-title p{font-size:13px;letter-spacing:.06em}
+  .page-title{margin:2px 0 14px}
+  .page-title h1{font-size:32px}
+  .page-title p{font-size:13px;letter-spacing:.03em}
 }
 
 @media(max-width:390px){
-  .content{padding-left:4px;padding-right:4px}
-  .section{padding:14px 8px}
-  .page-title h1{font-size:32px}
+  .content{padding-left:8px;padding-right:8px}
+  .section{padding:14px 10px}
+  .page-title h1{font-size:30px}
 }
 
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

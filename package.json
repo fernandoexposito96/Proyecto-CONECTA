@@ -8,20 +8,24 @@
     "verify": "node scripts/verify-structure.mjs",
     "test:frontend": "node scripts/test-frontend.mjs",
     "test:react": "node scripts/test-react.mjs",
-    "check": "npm run verify && npm run test:frontend && npm run test:react && tsc --noEmit",
+    "test:logic": "node scripts/test-logic.mjs",
+    "check": "npm run verify && npm run test:frontend && npm run test:react && npm run test:logic && tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "6.0.2",
-    "vite": "8.2.2",
-    "typescript": "5.9.3",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "lucide-react": "1.31.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "6.0.2",
+    "vite": "8.2.2",
+    "typescript": "5.9.3",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3"
+  },
+  "engines": {
+    "node": ">=22 <23"
   }
 }

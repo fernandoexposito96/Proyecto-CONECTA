@@ -16,6 +16,7 @@ export default function App(){
   const [selected,setSelected]=useState<Plan|null>(null);
   const [createdPlans,setCreatedPlans]=useState<Plan[]>(()=>loadStored(storageKeys.createdPlans,[]));
   const [exploreFilter,setExploreFilter]=useState<ExploreFilter>('near');
+  const [exploreCategory,setExploreCategory]=useState<string|null>(null);
   const [chatTarget,setChatTarget]=useState<string|null>(null);
 
   useEffect(()=>{saveStored(storageKeys.createdPlans,createdPlans)},[createdPlans]);
@@ -25,8 +26,9 @@ export default function App(){
     window.scrollTo({top:0,left:0,behavior:'auto'});
   },[view]);
 
-  const openExplore=(filter:ExploreFilter='near')=>{
+  const openExplore=(filter:ExploreFilter='near',category:string|null=null)=>{
     setExploreFilter(filter);
+    setExploreCategory(category);
     setView('Explora');
   };
   const openChat=(name?:string)=>{
@@ -36,6 +38,7 @@ export default function App(){
   const addCreatedPlan=(plan:Plan)=>{
     setCreatedPlans(prev=>[plan,...prev.filter(item=>item.title!==plan.title)]);
     setExploreFilter('all');
+    setExploreCategory(null);
   };
 
   return <div className="app-shell">
@@ -44,7 +47,7 @@ export default function App(){
       <Header view={view} setView={setView}/>
       <div className="content">
         {view==='Inicio'&&<HomeView setView={setView} onPlan={setSelected} onExplore={openExplore}/>} 
-        {view==='Explora'&&<ExploreView onPlan={setSelected} extraPlans={createdPlans} initialFilter={exploreFilter} onChat={openChat}/>} 
+        {view==='Explora'&&<ExploreView onPlan={setSelected} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} 
         {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
         {view==='Ajustes'&&<SettingsView/>}

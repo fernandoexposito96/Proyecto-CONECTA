@@ -1,1 +1,1 @@
-{"name":"CONECTA Premium Max","short_name":"CONECTA","start_url":"./","display":"standalone","background_color":"#ffffff","theme_color":"#0b3150","lang":"es","orientation":"portrait-primary"}
+{"id":"./","name":"CONECTA Premium Max","short_name":"CONECTA","description":"CONECTA — Planes reales, gente compatible","start_url":"./","scope":"./","display":"standalone","background_color":"#ffffff","theme_color":"#0b3150","lang":"es","orientation":"portrait-primary","categories":["social","lifestyle","travel"]}

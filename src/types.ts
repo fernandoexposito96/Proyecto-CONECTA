@@ -1,4 +1,4 @@
-export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes';
+export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes' | 'Notificaciones' | 'Crear';
 
 export type Plan = {
   title: string;

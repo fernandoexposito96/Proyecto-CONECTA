@@ -1,5 +1,5 @@
 import type { Plan } from '../types';
-import { accountFromUser } from './identity';
+import { accountFromUser, demoAccount } from './identity';
 import { supabase } from './supabase';
 
 const storagePrefix='conecta-';
@@ -38,6 +38,13 @@ function writePrototypeState(state:Record<string,unknown>){
   }
 }
 
+function localStateBelongsToUser(state:Record<string,unknown>,userEmail:string){
+  const account=state[accountKey];
+  if(!account||typeof account!=='object'||Array.isArray(account))return false;
+  const email=(account as Record<string,unknown>).email;
+  return typeof email==='string'&&email.trim().toLocaleLowerCase('es')===userEmail.trim().toLocaleLowerCase('es');
+}
+
 export async function hydrateCloudState(){
   const {data:{session}}=await supabase.auth.getSession();
   if(!session)return false;
@@ -60,7 +67,8 @@ export async function hydrateCloudState(){
     return true;
   }
 
-  const canMigrateLocal=!previousUserId||previousUserId===session.user.id;
+  const sessionEmail=session.user.email||demoAccount.email;
+  const canMigrateLocal=previousUserId===session.user.id||(!previousUserId&&localStateBelongsToUser(previousLocalState,sessionEmail));
   const state:Record<string,unknown>=canMigrateLocal?{...previousLocalState}:{};
   if(!canMigrateLocal){
     if(themeKey in previousLocalState)state[themeKey]=previousLocalState[themeKey];

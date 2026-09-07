@@ -5,7 +5,7 @@ export function BottomNav({view,setView}:{view:View,setView:(v:View)=>void}){
   return <nav className="bottom-nav">
     <button className={view==='Inicio'?'active':''} onClick={()=>setView('Inicio')}><Home/><span>Inicio</span></button>
     <button className={view==='Explora'?'active':''} onClick={()=>setView('Explora')}><Search/><span>Explora</span></button>
-    <button className="create"><Plus/></button>
+    <button className={`create ${view==='Crear'?'active':''}`} aria-label="Crear plan" onClick={()=>setView('Crear')}><Plus/></button>
     <button className={view==='Chat'?'active':''} onClick={()=>setView('Chat')}><MessageCircle/><span>Chat</span></button>
     <button className={view==='Perfil'||view==='Ajustes'?'active':''} onClick={()=>setView('Perfil')}><CircleUserRound/><span>Perfil</span></button>
   </nav>
@@ -20,10 +20,10 @@ export function Sidebar({view,setView}:{view:View,setView:(v:View)=>void}){
   </aside>
 }
 
-export function Header({view}:{view:View}){
+export function Header({view,setView}:{view:View,setView:(v:View)=>void}){
   return <header className="topbar">
     <div className="mobile-brand"><strong>{view==='Inicio'?'CONECTA':view}</strong><span>{view==='Inicio'?'Planes reales, gente compatible':'Tu mundo CONECTA'}</span></div>
-    <div className="desktop-search"><Search/><input placeholder="¿Qué te apetece hacer hoy?"/></div>
-    <div className="top-actions"><button><Bell/><i/></button><img decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=85" alt="Fernando"/></div>
+    <div className="desktop-search"><Search/><input placeholder="¿Qué te apetece hacer hoy?" aria-label="Buscar planes" onFocus={()=>setView('Explora')} onKeyDown={e=>{if(e.key==='Enter')setView('Explora')}}/></div>
+    <div className="top-actions"><button aria-label="Abrir notificaciones" onClick={()=>setView('Notificaciones')}><Bell/><i/></button><button className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=85" alt="Fernando"/></button></div>
   </header>
 }

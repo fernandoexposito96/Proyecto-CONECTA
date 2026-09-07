@@ -1,4 +1,4 @@
-import type { Plan } from '../types';
+import type { Person, Plan } from '../types';
 
 export const plans: Plan[] = [
   {title:'Pádel Sunset',image:'./assets/images/photo-1622279457486-62dcc4a431d6.jpg',time:'Hoy · 19:00',place:'Club Pádel Tarragona',distance:'5 km',spots:'6 plazas',category:'Deporte'},
@@ -30,12 +30,17 @@ export const categories = [
   ['Mascotas','./assets/images/photo-1552053831-71594a27632d.jpg'],
 ] as const;
 
-export const people = [
-  ['Marta','94% compatible','Running · Viajes','./assets/images/photo-1494790108377-be9c29b29330.jpg'],
-  ['Javi','91% compatible','Pádel · Gastronomía','./assets/images/photo-1500648767791-00dcc994a43e.jpg'],
-  ['Laura','88% compatible','Playa · Música','./assets/images/photo-1534528741775-53994a69daeb.jpg'],
-  ['Carlos','86% compatible','Gaming · Cine','./assets/images/photo-1507003211169-0a1dd7228f2d.jpg']
-] as const;
+export const people: Person[] = [
+  {name:'Marta',age:26,distance:'4 km',match:'94%',bio:'Running, cine, música y escapadas de fin de semana.',job:'Fisioterapeuta',tags:['Running','Viajes','Cine','Música'],image:'./assets/images/photo-1494790108377-be9c29b29330.jpg',gallery:['./assets/images/photo-1494790108377-be9c29b29330.jpg','./assets/images/photo-1552674605-db6ffd4facb5.jpg','./assets/images/photo-1489599849927-2ee91cede3ba.jpg','./assets/images/photo-1501386761578-eac5c94b800a.jpg']},
+  {name:'Javi',age:28,distance:'5 km',match:'91%',bio:'Pádel, gastronomía y planes tranquilos con gente nueva.',job:'Comercial',tags:['Pádel','Gastronomía','Deporte'],image:'./assets/images/photo-1500648767791-00dcc994a43e.jpg',gallery:['./assets/images/photo-1500648767791-00dcc994a43e.jpg','./assets/images/photo-1622279457486-62dcc4a431d6.jpg']},
+  {name:'Laura',age:25,distance:'6 km',match:'88%',bio:'Playa, música y escapadas de fin de semana.',job:'Diseñadora',tags:['Playa','Música','Viajes'],image:'./assets/images/photo-1534528741775-53994a69daeb.jpg',gallery:['./assets/images/photo-1534528741775-53994a69daeb.jpg','./assets/images/photo-1507525428034-b723cf961d3e.jpg']},
+  {name:'Carlos',age:27,distance:'3 km',match:'89%',bio:'Viajes, fotografía, café y descubrir sitios nuevos con buena compañía.',job:'Diseñador',tags:['Viajes','Fotografía','Café','Arte'],image:'./assets/images/photo-1507003211169-0a1dd7228f2d.jpg',gallery:['./assets/images/photo-1507003211169-0a1dd7228f2d.jpg','./assets/images/photo-1452780212940-6f5c0d14d848.jpg','./assets/images/photo-1500530855697-b586d89ba3ee.jpg']},
+  {name:'Lucía',age:24,distance:'2 km',match:'92%',bio:'Le gusta el deporte, los planes al aire libre y la buena comida.',job:'Estudiante de Marketing',tags:['Deporte','Viajes','Música','Playa'],image:'./assets/images/photo-1524504388940-b1c1722653e1.jpg',gallery:['./assets/images/photo-1524504388940-b1c1722653e1.jpg','./assets/images/photo-1507525428034-b723cf961d3e.jpg','./assets/images/photo-1500530855697-b586d89ba3ee.jpg','./assets/images/photo-1519046904884-53103b34b206.jpg']},
+  {name:'Álex',age:25,distance:'5 km',match:'87%',bio:'Senderismo, playa, buena comida y planes espontáneos.',job:'Ingeniero',tags:['Senderismo','Playa','Comida','Deporte'],image:'./assets/images/photo-1507591064344-4c6ce005b128.jpg',gallery:['./assets/images/photo-1507591064344-4c6ce005b128.jpg','./assets/images/photo-1551632811-561732d1e306.jpg','./assets/images/photo-1507525428034-b723cf961d3e.jpg']},
+  {name:'Sara',age:23,distance:'6 km',match:'84%',bio:'Fotografía, conciertos, viajes y tardes de café.',job:'Estudiante',tags:['Fotografía','Música','Viajes','Café'],image:'./assets/images/photo-1544005313-94ddf0286df2.jpg',gallery:['./assets/images/photo-1544005313-94ddf0286df2.jpg','./assets/images/photo-1452780212940-6f5c0d14d848.jpg','./assets/images/photo-1501386761578-eac5c94b800a.jpg']},
+  {name:'Nuria',age:29,distance:'7 km',match:'84%',bio:'Senderismo, café y planes de mañana.',job:'Administrativa',tags:['Senderismo','Café','Viajes'],image:'./assets/images/photo-1524504388940-b1c1722653e1.jpg',gallery:['./assets/images/photo-1524504388940-b1c1722653e1.jpg','./assets/images/photo-1551632811-561732d1e306.jpg']},
+  {name:'David',age:30,distance:'8 km',match:'78%',bio:'Running, cine y planes deportivos.',job:'Técnico',tags:['Running','Cine','Deporte'],image:'./assets/images/photo-1506794778202-cad84cf45f1d.jpg',gallery:['./assets/images/photo-1506794778202-cad84cf45f1d.jpg','./assets/images/photo-1552674605-db6ffd4facb5.jpg']},
+];
 
 export const escapes = [
   ['Escapada a Barcelona','Este sábado','./assets/images/photo-1539037116277-4db20889f2d4.jpg'],

@@ -1,7 +1,12 @@
 import type { Plan } from '../types';
+import { accountFromUser } from './identity';
 import { supabase } from './supabase';
 
 const storagePrefix='conecta-';
+const authUserMarker='conecta-auth-user-v1';
+const accountKey='conecta-settings-account-v1';
+const themeKey='conecta-theme';
+const languageKey='conecta-language';
 let pendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
 
@@ -9,7 +14,7 @@ function localPrototypeState(){
   const state:Record<string,unknown>={};
   for(let index=0;index<window.localStorage.length;index+=1){
     const key=window.localStorage.key(index);
-    if(!key?.startsWith(storagePrefix))continue;
+    if(!key?.startsWith(storagePrefix)||key===authUserMarker)continue;
     const raw=window.localStorage.getItem(key);
     if(raw===null)continue;
     try{state[key]=JSON.parse(raw) as unknown}catch{state[key]=raw}
@@ -17,10 +22,28 @@ function localPrototypeState(){
   return state;
 }
 
+function clearPrototypeState(){
+  const keys:string[]=[];
+  for(let index=0;index<window.localStorage.length;index+=1){
+    const key=window.localStorage.key(index);
+    if(key?.startsWith(storagePrefix)&&key!==authUserMarker)keys.push(key);
+  }
+  keys.forEach(key=>window.localStorage.removeItem(key));
+}
+
+function writePrototypeState(state:Record<string,unknown>){
+  for(const [key,value] of Object.entries(state)){
+    if(!key.startsWith(storagePrefix)||key===authUserMarker)continue;
+    window.localStorage.setItem(key,JSON.stringify(value));
+  }
+}
+
 export async function hydrateCloudState(){
   const {data:{session}}=await supabase.auth.getSession();
   if(!session)return false;
 
+  const previousUserId=window.localStorage.getItem(authUserMarker);
+  const previousLocalState=localPrototypeState();
   const {data,error}=await supabase
     .from('prototype_state')
     .select('state')
@@ -29,15 +52,25 @@ export async function hydrateCloudState(){
 
   if(error)throw error;
 
+  clearPrototypeState();
+
   if(data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)){
-    for(const [key,value] of Object.entries(data.state as Record<string,unknown>)){
-      if(!key.startsWith(storagePrefix))continue;
-      window.localStorage.setItem(key,JSON.stringify(value));
-    }
+    writePrototypeState(data.state as Record<string,unknown>);
+    window.localStorage.setItem(authUserMarker,session.user.id);
     return true;
   }
 
-  const state=localPrototypeState();
+  const canMigrateLocal=!previousUserId||previousUserId===session.user.id;
+  const state:Record<string,unknown>=canMigrateLocal?{...previousLocalState}:{};
+  if(!canMigrateLocal){
+    if(themeKey in previousLocalState)state[themeKey]=previousLocalState[themeKey];
+    if(languageKey in previousLocalState)state[languageKey]=previousLocalState[languageKey];
+  }
+  state[accountKey]=accountFromUser(session.user,canMigrateLocal?(previousLocalState[accountKey] as {name:string;email:string}|undefined):undefined);
+
+  writePrototypeState(state);
+  window.localStorage.setItem(authUserMarker,session.user.id);
+
   const {error:upsertError}=await supabase
     .from('prototype_state')
     .upsert({user_id:session.user.id,state,updated_at:new Date().toISOString()},{onConflict:'user_id'});
@@ -76,7 +109,7 @@ async function flushCloudState(){
 }
 
 export function queueCloudStateSave(key:string,value:unknown){
-  if(!key.startsWith(storagePrefix))return;
+  if(!key.startsWith(storagePrefix)||key===authUserMarker)return;
   pendingState[key]=value;
   if(flushTimer!==null)window.clearTimeout(flushTimer);
   flushTimer=window.setTimeout(()=>{void flushCloudState()},300);

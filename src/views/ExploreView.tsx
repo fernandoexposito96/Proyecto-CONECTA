@@ -3,6 +3,7 @@ import { ChevronLeft, Heart, Info, MapPin, Plus, Search, Send, SlidersHorizontal
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, plans } from '../data/demoData';
+import { filterExplorePlans } from '../lib/planLogic';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { ExploreFilter, Plan } from '../types';
 
@@ -24,11 +25,6 @@ const stories:Story[]=[
   {name:'Marta',time:'6 h',avatar:socialPeople[2].image,image:'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=900&q=90',caption:'Un poco de running y a empezar el día 💪',location:'La Pineda'},
   {name:'Álex',time:'8 h',avatar:socialPeople[3].image,image:'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=900&q=90',caption:'Hoy tocaba desconectar aquí 🏔️',location:'La Mussara'}
 ];
-
-const hourFromTime=(time:string)=>{
-  const match=time.match(/(\d{1,2}):(\d{2})/);
-  return match?Number(match[1]):null;
-};
 
 export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCategory=null,onChat}:{onPlan:(p:Plan)=>void,extraPlans?:Plan[],initialFilter?:ExploreFilter,initialCategory?:string|null,onChat:(name:string)=>void}){
   const [timeFilter,setTimeFilter]=useState<ExploreFilter>(initialFilter);
@@ -55,22 +51,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
   useEffect(()=>{saveStored(storageKeys.storyLikes,[...storyLikes])},[storyLikes]);
 
   const allPlans=useMemo(()=>[...extraPlans,...plans],[extraPlans]);
-  const visible=useMemo(()=>{
-    let list=allPlans.filter(p=>{
-      if(category&&p.category!==category)return false;
-      const q=query.trim().toLocaleLowerCase('es');
-      if(q&&!`${p.title} ${p.place} ${p.category}`.toLocaleLowerCase('es').includes(q))return false;
-      const hour=hourFromTime(p.time);
-      if(timeFilter==='today')return p.time.startsWith('Hoy');
-      if(timeFilter==='afternoon')return p.time.startsWith('Hoy')&&hour!==null&&hour>=12&&hour<20;
-      if(timeFilter==='tonight')return p.time.startsWith('Hoy')&&hour!==null&&hour>=20;
-      if(timeFilter==='weekend')return /Vie|Sáb|Dom/.test(p.time);
-      return true;
-    });
-    const descending=timeFilter==='all'&&!sortAsc;
-    list=[...list].sort((a,b)=>descending?parseFloat(b.distance)-parseFloat(a.distance):parseFloat(a.distance)-parseFloat(b.distance));
-    return list;
-  },[allPlans,category,query,timeFilter,sortAsc]);
+  const visible=useMemo(()=>filterExplorePlans(allPlans,{timeFilter,category,query,sortAsc}),[allPlans,category,query,timeFilter,sortAsc]);
 
   const gridPeople=useMemo(()=>{
     const list=[...socialPeople];

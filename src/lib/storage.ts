@@ -1,3 +1,10 @@
+type CloudWriter=(key:string,value:unknown)=>void;
+let cloudWriter:CloudWriter|null=null;
+
+export function setCloudStorageWriter(writer:CloudWriter|null){
+  cloudWriter=writer;
+}
+
 export function loadStored<T>(key:string,fallback:T):T{
   try{
     const raw=window.localStorage.getItem(key);
@@ -9,7 +16,10 @@ export function loadStored<T>(key:string,fallback:T):T{
 }
 
 export function saveStored<T>(key:string,value:T){
-  try{window.localStorage.setItem(key,JSON.stringify(value));}catch{}
+  try{
+    window.localStorage.setItem(key,JSON.stringify(value));
+    cloudWriter?.(key,value);
+  }catch{}
 }
 
 export const storageKeys={

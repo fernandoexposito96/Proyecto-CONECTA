@@ -46,9 +46,9 @@
 @media(max-width:1000px){.plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 @media(max-width:760px){
-  .plan-grid{display:grid;grid-auto-flow:column;grid-auto-columns:calc(50vw - 25px);grid-template-columns:none;overflow-x:auto;gap:10px;scrollbar-width:none}
+  .plan-grid{display:grid;grid-auto-flow:column;grid-auto-columns:calc(50vw - 25px);grid-template-columns:none;overflow-x:auto;gap:10px;scrollbar-width:none;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain}
   .plan-grid::-webkit-scrollbar{display:none}
-  .plan-card{border-radius:18px}
+  .plan-card{border-radius:18px;scroll-snap-align:start;scroll-snap-stop:always}
   .plan-image{height:112px}
   .plan-body{padding:12px}
   .plan-body h3{font-size:14px}.plan-body p{font-size:11px}.avatars img{width:25px;height:25px}

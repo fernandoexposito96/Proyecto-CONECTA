@@ -1,9 +1,25 @@
 /* CONECTA — capa exclusiva de Inicio. La paleta global, navegación, ajustes y layout móvil viven en sus módulos dedicados. */
 .home-page{position:relative;isolation:isolate}
 .home-page::before{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;border-radius:38px;background:radial-gradient(circle at 100% 6%,rgba(153,122,255,.11),transparent 24%),linear-gradient(180deg,rgba(255,255,255,.48),rgba(250,247,255,.16));pointer-events:none}
-.home-page .hero{border:1px solid rgba(220,208,255,.78)!important;box-shadow:0 22px 60px rgba(91,66,166,.15)!important}
-.home-page .hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.11),transparent 38%)}
-.home-page .hero-search svg{color:#5e3de0!important}
+.home-page .hero{border:1px solid rgba(220,208,255,.78)!important;box-shadow:0 22px 60px rgba(91,66,166,.15)!important;overflow:visible!important}
+.home-page .hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.11),transparent 38%);border-radius:inherit}
+.hero-search-wrap{position:relative;width:min(470px,70vw)}
+.home-page .hero-search{width:100%!important}
+.home-page .hero-search svg{color:#5e3de0!important;flex:0 0 auto}
+.home-page .hero-search input{width:100%;border:0;outline:0;background:transparent;color:#26364c;font:inherit;min-width:0}
+.home-page .hero-search input::placeholder{color:#7b8496}
+.home-page .hero-search>button{width:28px;height:28px;border:0;border-radius:50%;background:#f0ecff;color:#6045dc;display:grid;place-items:center;flex:0 0 auto;padding:0}
+.home-page .hero-search>button svg{width:15px}
+.hero-search-results{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:30;background:#fff;border:1px solid #e4e7ee;border-radius:16px;overflow:hidden;box-shadow:0 18px 45px rgba(20,39,67,.22);color:#23354b}
+.hero-search-results>button{width:100%;border:0;border-bottom:1px solid #edf0f4;background:#fff;padding:10px 12px;display:grid;grid-template-columns:44px minmax(0,1fr) 20px;align-items:center;gap:10px;text-align:left;color:inherit}
+.hero-search-results>button:hover{background:#f8f7ff}
+.hero-search-results img{width:44px;height:44px;border-radius:10px;object-fit:cover}
+.hero-search-results span{display:grid;gap:2px;min-width:0}
+.hero-search-results strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero-search-results small{font-size:11px;color:#7b8496;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero-search-results svg{width:17px;color:#7257e8!important}
+.hero-search-empty{padding:14px;color:#7b8496;font-size:12px}
+.hero-search-results .hero-search-all{grid-template-columns:1fr auto;border-bottom:0;background:#faf9ff;color:#6045dc;font-weight:800;font-size:12px}
 
 .quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .quick-grid>button{padding:16px!important;text-align:left;display:grid;gap:5px;color:#24314b!important}
@@ -14,7 +30,9 @@
 .people-strip article{display:grid;grid-template-columns:58px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:12px}
 .people-strip article>img{width:58px;height:58px;border-radius:18px;object-fit:cover}
 .people-strip article>div{display:grid;gap:2px}.people-strip strong{font-size:14px}.people-strip b{font-size:11px}.people-strip span{font-size:10px;color:#7b8499!important}
-.people-strip button{border:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
+.people-strip button{border:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;transition:.2s ease}
+.people-strip button.is-connected{background:#e8fff2;color:#169553;box-shadow:inset 0 0 0 1px #bdebd0}
+.people-strip button svg{width:17px}
 
 .escape-grid{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 12px)/2);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain;padding:2px 1px 4px}
 .escape-grid::-webkit-scrollbar{display:none}
@@ -36,7 +54,9 @@
   .home-page .hero{height:300px!important}
   .hero-copy{left:20px!important;right:20px!important;bottom:18px!important}
   .hero-copy h1{font-size:30px!important;line-height:1.03!important}
+  .hero-search-wrap{width:100%}
   .home-page .hero-search{border-radius:18px!important;padding:13px 15px!important}
+  .hero-search-results{top:calc(100% + 6px);border-radius:14px}
   .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .quick-grid>button{padding:14px!important}
   .people-strip{grid-auto-columns:minmax(205px,82vw);gap:10px}

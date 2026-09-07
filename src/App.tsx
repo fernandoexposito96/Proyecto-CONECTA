@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Bell, CalendarDays, ChevronLeft, ChevronRight, CircleUserRound, Coffee, Compass, Crown, Dumbbell, Film, Gamepad2, Heart, Home, MapPin, MessageCircle, Music2, Palmtree, Plane, Plus, Search, Settings, ShieldCheck, Sparkles, Star, UsersRound, Utensils, Mountain, Camera, BookOpen, GraduationCap, PawPrint, Languages, PartyPopper } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, CircleUserRound, Coffee, Crown, Dumbbell, Film, Gamepad2, Heart, MapPin, MessageCircle, Music2, Palmtree, Plane, Plus, Search, Settings, ShieldCheck, Sparkles, Star, UsersRound, Utensils, Mountain, Camera, BookOpen, GraduationCap, PawPrint, Languages, PartyPopper } from 'lucide-react';
+import { BottomNav, Header, Sidebar } from './components/AppNavigation';
 import type { Plan, View } from './types';
 
 const plans: Plan[] = [
@@ -46,12 +47,6 @@ const escapes = [
 ];
 
 const chats = [['Grupo Pádel','Javi: Nos vemos a las 19:00! 🎾','3'],['Marta','Genial! Nos apuntamos 😊','1'],['Viaje a Madrid','Ana: He encontrado unos hoteles...','5'],['Carlos','¿Te apuntas al plan de mañana?',''],['Running Tarragona','Laura: Ruta confirmada ✅','2'],['Sara','Nos vemos allí! 🥰',''],['Cine y palomitas','Javi: Película confirmada 🎬','']];
-
-function BottomNav({view,setView}:{view:View,setView:(v:View)=>void}){return <nav className="bottom-nav"><button className={view==='Inicio'?'active':''} onClick={()=>setView('Inicio')}><Home/><span>Inicio</span></button><button className={view==='Explora'?'active':''} onClick={()=>setView('Explora')}><Search/><span>Explora</span></button><button className="create"><Plus/></button><button className={view==='Chat'?'active':''} onClick={()=>setView('Chat')}><MessageCircle/><span>Chat</span></button><button className={view==='Perfil'||view==='Ajustes'?'active':''} onClick={()=>setView('Perfil')}><CircleUserRound/><span>Perfil</span></button></nav>}
-
-function Sidebar({view,setView}:{view:View,setView:(v:View)=>void}){const items:[View,any][]=[['Inicio',Home],['Explora',Compass],['Chat',MessageCircle],['Perfil',CircleUserRound],['Ajustes',Settings]];return <aside className="sidebar"><div className="brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div><nav>{items.map(([label,Icon])=><button key={label} className={view===label?'active':''} onClick={()=>setView(label)}><Icon/><span>{label}</span></button>)}</nav><div className="premium-box"><Crown/><strong>CONECTA Premium</strong><span>Más planes. Más personas. Más vida.</span><button onClick={()=>setView('Ajustes')}>Ver Premium</button></div></aside>}
-
-function Header({view}:{view:View}){return <header className="topbar"><div className="mobile-brand"><strong>{view==='Inicio'?'CONECTA':view}</strong><span>{view==='Inicio'?'Planes reales, gente compatible':'Tu mundo CONECTA'}</span></div><div className="desktop-search"><Search/><input placeholder="¿Qué te apetece hacer hoy?"/></div><div className="top-actions"><button><Bell/><i/></button><img decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=85" alt="Fernando"/></div></header>}
 
 function PlanCards({items,onPlan}:{items:Plan[],onPlan:(p:Plan)=>void}){return <div className="plan-grid">{items.map((p)=><article className="plan-card" key={p.title} onClick={()=>onPlan(p)}><div className="plan-image"><img loading="lazy" decoding="async" src={p.image}/><button><Heart/></button><span>{p.category}</span></div><div className="plan-body"><h3>{p.title}</h3><p>{p.time}</p><p>{p.distance} · {p.spots}</p><div className="avatars"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=80&q=80"/><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80"/><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"/><span>+3</span></div></div></article>)}</div>}
 

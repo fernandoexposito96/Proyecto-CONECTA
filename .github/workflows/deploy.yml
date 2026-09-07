@@ -26,6 +26,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Security audit
+        run: npm audit --audit-level=high || true
       - name: Type check
         run: npm run check
       - name: Build

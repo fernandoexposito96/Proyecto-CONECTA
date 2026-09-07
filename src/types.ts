@@ -35,6 +35,10 @@ export type Story = {
   location: string;
 };
 
+export type CategoryTuple = readonly [name: string, image: string];
+export type EscapeTuple = readonly [title: string, date: string, image: string];
+export type ChatPreviewTuple = readonly [name: string, message: string, count: string];
+
 export type ChatTab = 'Todos' | 'Planes' | 'Grupos';
 
 export type ChatItem = {

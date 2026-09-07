@@ -1,0 +1,36 @@
+name: Localize app images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/localize-images.mjs
+      - .github/workflows/localize-images.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  localize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Download and rewrite images
+        run: node scripts/localize-images.mjs
+      - name: Commit local image bundle
+        run: |
+          git config user.name "CONECTA CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/assets/images src index.html
+          if git diff --cached --quiet; then
+            echo "No image changes"
+            exit 0
+          fi
+          git commit -m "assets: bundle remote images locally"
+          git push

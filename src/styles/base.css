@@ -78,9 +78,9 @@ main{margin-left:245px;min-height:100vh}
 @media(max-width:760px){
   html,body,#app{background:var(--page-bg)}
   main{margin-left:0}
-  .content{width:100%;max-width:none;margin:0;padding:18px 14px calc(78px + env(safe-area-inset-bottom))}
+  .content{width:100%;max-width:none;margin:0;padding:18px 6px calc(78px + env(safe-area-inset-bottom))}
   .page{width:100%;max-width:none;margin:0;padding:0}
-  .section{margin-top:18px;padding:16px;border-radius:20px}
+  .section{margin-top:18px;padding:16px 10px;border-radius:20px}
   .section-head{margin-bottom:12px}
   .section-head h2{font-size:23px}
   .page-title{margin:8px 0 16px}
@@ -89,8 +89,8 @@ main{margin-left:245px;min-height:100vh}
 }
 
 @media(max-width:390px){
-  .content{padding-left:12px;padding-right:12px}
-  .section{padding:14px}
+  .content{padding-left:4px;padding-right:4px}
+  .section{padding:14px 8px}
   .page-title h1{font-size:32px}
 }
 

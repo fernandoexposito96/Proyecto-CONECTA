@@ -11,3 +11,47 @@ export type Plan = {
   spots: string;
   category: string;
 };
+
+export type PeopleFilter = 'near' | 'match' | 'age' | 'interests';
+
+export type Person = {
+  name: string;
+  age: number;
+  distance: string;
+  match: string;
+  bio: string;
+  job: string;
+  tags: string[];
+  image: string;
+  gallery: string[];
+};
+
+export type Story = {
+  name: string;
+  time: string;
+  avatar: string;
+  image: string;
+  caption: string;
+  location: string;
+};
+
+export type ChatTab = 'Todos' | 'Planes' | 'Grupos';
+
+export type ChatItem = {
+  name: string;
+  msg: string;
+  count: string;
+  isGroup: boolean;
+  avatar: string;
+};
+
+export type ProfileTab = 'Fotos' | 'Planes' | 'Conexiones' | 'Valoraciones';
+
+export type SettingsScreen = 'root' | 'security' | 'privacy' | 'notifications' | 'help' | 'premium' | 'account' | 'appearance' | 'language' | 'about' | 'helpDetail' | 'actionDetail';
+export type ToggleKey = 'messages' | 'requests' | 'planUpdates' | 'reminders' | 'news' | 'offers';
+export type Theme = 'Claro' | 'Oscuro' | 'Sistema';
+export type Language = 'Español' | 'Català' | 'English';
+export type NotificationFrequency = 'daily' | 'weekly' | 'important';
+export type HelpItem = { title: string; body: string };
+export type ActionItem = { title: string; body: string };
+export type AccountSettings = { name: string; email: string };

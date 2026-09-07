@@ -21,8 +21,9 @@ export function Sidebar({view,setView}:{view:View,setView:(v:View)=>void}){
 }
 
 export function Header({view,setView}:{view:View,setView:(v:View)=>void}){
-  return <header className="topbar">
-    {view==='Inicio'&&<div className="mobile-brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div>}
+  const isHome=view==='Inicio';
+  return <header className={`topbar ${isHome?'topbar-home':'topbar-compact'}`}>
+    {isHome&&<div className="mobile-brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div>}
     <div className="desktop-search"><Search/><input placeholder="¿Qué te apetece hacer hoy?" aria-label="Buscar planes" onFocus={()=>setView('Explora')} onKeyDown={e=>{if(e.key==='Enter')setView('Explora')}}/></div>
     <div className="top-actions"><button aria-label="Abrir notificaciones" onClick={()=>setView('Notificaciones')}><Bell/><i/></button><button className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=85" alt="Fernando"/></button></div>
   </header>

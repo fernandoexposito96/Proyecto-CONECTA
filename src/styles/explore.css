@@ -1,0 +1,30 @@
+/* CONECTA — Explora: búsqueda, filtros y estados base. */
+.explore-search{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:0 14px;
+  margin:-4px 0 16px;
+}
+.explore-search input{
+  width:100%;
+  height:46px;
+  border:0;
+  outline:0;
+  background:transparent;
+}
+.category-grid button.active{
+  outline:3px solid #6c4cf5;
+  outline-offset:2px;
+}
+.empty-state{
+  padding:26px;
+  border:1px dashed #ccd6e0;
+  border-radius:18px;
+  text-align:center;
+  color:var(--muted);
+  background:#fff;
+}

@@ -73,65 +73,121 @@
   .profile-main{padding-left:14px!important;padding-right:14px!important}
   .chat-list{border-radius:18px!important}
   .settings-list{border-radius:18px!important}
-  .topbar{padding-left:14px!important;padding-right:14px!important}
   .bottom-nav{left:0!important;right:0!important;width:100%!important}
 
-  /* Explora: posiciones finales de la pantalla móvil. */
+  /* Explora: una sola geometría móvil, sin correcciones superpuestas. */
+  .explore-page{padding-top:10px!important}
   .explore-page>.page-title{
-    margin:14px 4px 16px!important;
-    padding:0 2px!important;
+    margin:0 8px 14px!important;
+    padding:0!important;
+    min-height:62px!important;
+    align-items:center!important;
   }
-  .explore-page>.page-title h1{line-height:1!important}
+  .explore-page>.page-title h1{
+    margin:0!important;
+    font-size:32px!important;
+    line-height:1!important;
+    letter-spacing:-.045em!important;
+  }
+  .explore-page>.page-title p{
+    margin:7px 0 0!important;
+    font-size:14px!important;
+    line-height:1.2!important;
+    letter-spacing:.07em!important;
+  }
+  .explore-page>.page-title>button{
+    width:44px!important;
+    height:44px!important;
+    flex:0 0 44px!important;
+  }
+
   .explore-page>.filter-row{
-    margin:0 4px 18px!important;
-    padding:0 2px 4px!important;
-    gap:7px!important;
+    margin:0 8px 20px!important;
+    padding:0 0 3px!important;
+    gap:8px!important;
+    overflow-x:auto!important;
     scrollbar-width:none!important;
     -webkit-overflow-scrolling:touch;
   }
   .explore-page>.filter-row::-webkit-scrollbar{display:none}
   .explore-page>.filter-row button{
-    padding:9px 12px!important;
+    padding:9px 13px!important;
     font-size:13px!important;
     line-height:1.1!important;
+    flex:0 0 auto!important;
   }
 
-  .explore-social-block{margin:16px 6px 18px!important}
-  .explore-social-head{margin-bottom:10px!important}
-  .explore-social-head h2{font-size:20px!important;line-height:1.1!important}
-  .explore-social-head button{font-size:13px!important}
+  .explore-social-block{
+    margin:0 8px 22px!important;
+    padding:0!important;
+  }
+  .explore-social-head{
+    margin:0 0 12px!important;
+    align-items:center!important;
+  }
+  .explore-social-head h2{
+    margin:0!important;
+    font-size:20px!important;
+    line-height:1.1!important;
+  }
+  .explore-social-head button{
+    font-size:13px!important;
+    line-height:1!important;
+  }
 
   .story-strip{
     gap:8px!important;
-    padding:2px 1px 6px!important;
+    padding:0 0 4px!important;
+    align-items:start!important;
     scroll-snap-type:x proximity;
   }
   .story-chip{
     flex:0 0 60px!important;
-    gap:4px!important;
+    display:grid!important;
+    grid-template-rows:52px 14px 13px!important;
+    row-gap:5px!important;
+    align-items:start!important;
+    justify-items:center!important;
     scroll-snap-align:start;
+    line-height:1!important;
   }
-  .story-ring{width:50px!important;height:50px!important;padding:2px!important}
+  .story-ring{
+    width:52px!important;
+    height:52px!important;
+    padding:2px!important;
+    align-self:start!important;
+  }
   .story-add .story-ring{padding:0!important}
   .story-chip strong{
+    display:block!important;
+    width:60px!important;
     max-width:60px!important;
+    margin:0!important;
+    padding:0!important;
     overflow:hidden!important;
     text-overflow:ellipsis!important;
     white-space:nowrap!important;
+    text-align:center!important;
     font-size:11px!important;
-    line-height:1!important;
+    line-height:14px!important;
   }
-  .story-chip small{font-size:10px!important;line-height:1!important}
+  .story-chip small{
+    display:block!important;
+    margin:0!important;
+    padding:0!important;
+    font-size:10px!important;
+    line-height:13px!important;
+  }
 
   .people-discovery-strip{
     grid-auto-columns:calc((100% - 16px)/3)!important;
     gap:8px!important;
-    padding:2px 0 6px!important;
+    padding:0 0 4px!important;
     scroll-snap-type:x mandatory;
     scroll-padding-left:0;
   }
   .discover-person-card{
-    height:160px!important;
+    height:154px!important;
     border-radius:16px!important;
     scroll-snap-align:start;
   }
@@ -164,11 +220,30 @@
   }
   .discover-person-heart svg{width:16px!important;height:16px!important}
 
-  .explore-category-title{margin:20px 4px 12px!important}
-  .explore-category-title h2{font-size:20px!important;line-height:1.1!important}
+  .explore-category-title{
+    margin:4px 8px 12px!important;
+    align-items:end!important;
+  }
+  .explore-category-title h2{
+    margin:0!important;
+    font-size:20px!important;
+    line-height:1.1!important;
+  }
   .explore-category-title span{font-size:11px!important}
-  .explore-page>.category-grid{padding:0 4px!important;gap:8px!important}
-  .explore-page>.section.noframe{padding-left:6px!important;padding-right:6px!important}
+  .explore-page>.category-grid{
+    padding:0 8px!important;
+    gap:8px!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  .explore-page>.category-grid button{
+    height:auto!important;
+    aspect-ratio:1!important;
+    border-radius:14px!important;
+  }
+  .explore-page>.section.noframe{
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
 }
 
 @media (max-width:390px){
@@ -183,14 +258,22 @@
   .category-strip button{height:126px!important}
   .profile-main{padding-left:12px!important;padding-right:12px!important}
 
-  .explore-page>.filter-row button{padding:8px 10px!important;font-size:12.5px!important}
-  .story-chip{flex-basis:57px!important}
-  .story-ring{width:48px!important;height:48px!important}
-  .story-chip strong{max-width:57px!important;font-size:10.5px!important}
+  .explore-page{padding-top:8px!important}
+  .explore-page>.page-title{margin-left:6px!important;margin-right:6px!important}
+  .explore-page>.page-title h1{font-size:30px!important}
+  .explore-page>.page-title p{font-size:13px!important}
+  .explore-page>.filter-row{margin-left:6px!important;margin-right:6px!important}
+  .explore-page>.filter-row button{padding:8px 11px!important;font-size:12.5px!important}
+  .explore-social-block{margin-left:6px!important;margin-right:6px!important}
+  .story-chip{flex-basis:57px!important;grid-template-rows:50px 14px 13px!important}
+  .story-ring{width:50px!important;height:50px!important}
+  .story-chip strong{width:57px!important;max-width:57px!important;font-size:10.5px!important}
   .people-discovery-strip{grid-auto-columns:calc((100% - 14px)/3)!important;gap:7px!important}
-  .discover-person-card{height:154px!important}
+  .discover-person-card{height:148px!important}
   .discover-person-copy{left:8px!important;right:8px!important;bottom:8px!important}
   .discover-person-copy strong{font-size:12.5px!important}
   .discover-person-copy span,
   .discover-person-copy small{font-size:9.5px!important}
+  .explore-category-title{margin-left:6px!important;margin-right:6px!important}
+  .explore-page>.category-grid{padding-left:6px!important;padding-right:6px!important;gap:7px!important}
 }

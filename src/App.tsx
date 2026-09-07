@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Bell, CalendarDays, ChevronLeft, ChevronRight, CircleUserRound, Coffee, Compass, Crown, Dumbbell, Film, Gamepad2, Heart, Home, MapPin, MessageCircle, Music2, Palmtree, Plane, Plus, Search, Settings, ShieldCheck, Sparkles, Star, UsersRound, Utensils, Mountain, Camera, BookOpen, GraduationCap, PawPrint, Languages, PartyPopper } from 'lucide-react';
-
-type View = 'Inicio'|'Explora'|'Chat'|'Perfil'|'Ajustes';
-type Plan = {title:string; image:string; time:string; place:string; distance:string; spots:string; category:string};
+import type { Plan, View } from './types';
 
 const plans: Plan[] = [
   {title:'Pádel Sunset',image:'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=900&q=88',time:'Hoy · 19:00',place:'Club Pádel Tarragona',distance:'5 km',spots:'6 plazas',category:'Deporte'},

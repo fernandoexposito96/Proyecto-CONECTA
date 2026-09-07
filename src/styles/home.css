@@ -16,8 +16,13 @@
 .people-strip article>div{display:grid;gap:2px}.people-strip strong{font-size:14px}.people-strip b{font-size:11px}.people-strip span{font-size:10px;color:#7b8499!important}
 .people-strip button{border:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
 
-.escape-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.escape-grid article{position:relative;height:190px;overflow:hidden}
+.escape-head-actions{display:flex;align-items:center;gap:10px}
+.escape-arrows{display:flex;gap:6px}
+.escape-arrows button{width:36px;height:36px;border:1px solid #e7e1f5!important;border-radius:50%!important;background:#fff!important;display:grid!important;place-items:center!important;padding:0!important;color:#6b4df3!important;box-shadow:0 6px 16px rgba(91,66,166,.08)}
+.escape-arrows button svg{width:18px!important}
+.escape-grid{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 12px)/2);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain;padding:2px 1px 4px}
+.escape-grid::-webkit-scrollbar{display:none}
+.escape-grid article{position:relative;height:190px;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always}
 .escape-grid img{width:100%;height:100%;object-fit:cover}
 .escape-grid article::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(26,18,57,.66))}
 .escape-grid article>div{position:absolute;z-index:2;left:14px;right:14px;bottom:14px;color:#fff;display:grid;gap:3px}
@@ -28,7 +33,7 @@
 
 .home-page::after{content:"CONECTA PREMIUM  ·  Planes verificados  ·  Gente compatible  ·  Más seguridad";display:flex;align-items:center;justify-content:center;min-height:78px;margin-top:26px;padding:18px 24px;border-radius:24px;color:#6644dd;text-align:center;font-size:13px;line-height:1.45;font-weight:800;letter-spacing:.02em;background:linear-gradient(135deg,#f5f0ff,#e9dfff);border:1px solid #dacbff;box-shadow:0 14px 34px rgba(86,60,164,.10)}
 
-@media(max-width:1000px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.escape-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1000px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 @media(max-width:760px){
   .home-page::before{display:none}
@@ -39,11 +44,15 @@
   .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .quick-grid>button{padding:14px!important}
   .people-strip{grid-auto-columns:minmax(205px,82vw);gap:10px}
-  .escape-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .escape-section .section-head{align-items:center}
+  .escape-head-actions{gap:6px}
+  .escape-view-all{display:none!important}
+  .escape-arrows button{width:34px;height:34px}
+  .escape-grid{grid-auto-columns:calc((100% - 10px)/2);gap:10px}
   .escape-grid article{height:160px}
   .premium-banner{margin-top:20px;padding:20px;border-radius:22px!important}
   .premium-banner h2{font-size:24px}
   .home-page::after{margin-top:20px;min-height:64px;padding:14px 16px;border-radius:20px;font-size:11px}
 }
 
-@media(max-width:390px){.home-page .hero{height:270px!important}.quick-grid{gap:8px}.escape-grid{grid-template-columns:1fr}.escape-grid article{height:170px}}
+@media(max-width:390px){.home-page .hero{height:270px!important}.quick-grid{gap:8px}.escape-grid{grid-auto-columns:calc((100% - 8px)/2);gap:8px}.escape-grid article{height:150px}}

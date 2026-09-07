@@ -1,62 +1,35 @@
-/* CONECTA — conversación y compositor de Chat. */
-.chat-thread-head{
-  display:flex;
-  align-items:center;
-  gap:11px;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:12px 14px;
-  margin-bottom:12px;
-}
-.chat-thread-head>button{
-  border:0;
-  background:#f1f5f9;
-  width:38px;
-  height:38px;
-  border-radius:50%;
-}
-.chat-thread-head img{
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  object-fit:cover;
-}
+/* Chat: lista, pestañas, conversación y compositor. */
+.chat-page{max-width:900px;margin:0 auto}
+.tabs{margin-bottom:16px;padding:4px;background:#eaf0f6;border-radius:16px}
+.tabs button{flex:1}
+
+.chat-list{background:#fff;border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+.chat-list>button{position:relative;width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 16px;border:0;border-bottom:1px solid #eef1f4;background:#fff;text-align:left;transition:background .16s ease}
+.chat-list>button:hover{background:#faf7ff}
+.chat-list>button:last-child{border-bottom:0}
+.chat-list img{width:52px;height:52px;border-radius:50%;object-fit:cover}
+.chat-list div{min-width:0;display:grid}
+.chat-list strong{color:#152a43}
+.chat-list span{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-list small{color:#8b96a3;align-self:start}
+.chat-list b{position:absolute;right:15px;bottom:14px;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;background:#684cf4;color:#fff;font-size:11px}
+
+.chat-thread-head{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:12px 14px;margin-bottom:12px;box-shadow:0 8px 24px rgba(72,50,135,.06)}
+.chat-thread-head>button{border:0;background:#f1f5f9;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#24384f}
+.chat-thread-head img{width:46px;height:46px;border-radius:50%;object-fit:cover}
 .chat-thread-head div{display:grid}
 .chat-thread-head span{font-size:12px;color:var(--muted)}
-
-.chat-thread{
-  min-height:360px;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.message{
-  max-width:78%;
-  padding:10px 13px;
-  border-radius:16px;
-  background:#eef2f6;
-}
-.message.sent{
-  margin-left:auto;
-  background:#6b4df3;
-  color:#fff;
-}
+.chat-thread{min-height:360px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.message{max-width:78%;padding:10px 13px;border-radius:16px;background:#eef2f6;color:#26384e}
+.message.sent{margin-left:auto;background:#6b4df3;color:#fff}
 .chat-composer{display:flex;gap:8px;margin-top:10px}
-.chat-composer input{
-  flex:1;
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:12px 14px;
-}
-.chat-composer button{
-  width:46px;
-  border:0;
-  border-radius:15px;
-  background:#6b4df3;
-  color:#fff;
+.chat-composer input{flex:1;min-width:0;border:1px solid var(--line);border-radius:15px;padding:12px 14px;background:#fff;color:#26384e;outline:0}
+.chat-composer button{width:46px;flex:0 0 46px;border:0;border-radius:15px;background:#6b4df3;color:#fff;display:grid;place-items:center}
+
+@media(max-width:760px){
+  .chat-page{max-width:none}
+  .chat-list{border-radius:18px}
+  .chat-list>button{padding:13px 12px}
+  .chat-thread{min-height:calc(100svh - 260px);border-radius:18px;padding:14px}
+  .chat-thread-head{border-radius:18px}
 }

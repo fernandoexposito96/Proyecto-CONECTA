@@ -30,9 +30,9 @@ const hourFromTime=(time:string)=>{
   return match?Number(match[1]):null;
 };
 
-export function ExploreView({onPlan,extraPlans=[],initialFilter='near',onChat}:{onPlan:(p:Plan)=>void,extraPlans?:Plan[],initialFilter?:ExploreFilter,onChat:(name:string)=>void}){
+export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCategory=null,onChat}:{onPlan:(p:Plan)=>void,extraPlans?:Plan[],initialFilter?:ExploreFilter,initialCategory?:string|null,onChat:(name:string)=>void}){
   const [timeFilter,setTimeFilter]=useState<ExploreFilter>(initialFilter);
-  const [category,setCategory]=useState<string|null>(null);
+  const [category,setCategory]=useState<string|null>(initialCategory);
   const [searchOpen,setSearchOpen]=useState(false);
   const [query,setQuery]=useState('');
   const [sortAsc,setSortAsc]=useState(true);
@@ -45,11 +45,14 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',onChat}:{
   const [storyIndex,setStoryIndex]=useState<number|null>(null);
   const [storyCreateOpen,setStoryCreateOpen]=useState(false);
   const [storyAdded,setStoryAdded]=useState(()=>loadStored<boolean>(storageKeys.storyAdded,false));
+  const [storyLikes,setStoryLikes]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.storyLikes,[])));
   const [storyReply,setStoryReply]=useState('');
 
   useEffect(()=>{setTimeFilter(initialFilter)},[initialFilter]);
+  useEffect(()=>{setCategory(initialCategory)},[initialCategory]);
   useEffect(()=>{saveStored(storageKeys.exploreLikes,[...liked])},[liked]);
   useEffect(()=>{saveStored(storageKeys.storyAdded,storyAdded)},[storyAdded]);
+  useEffect(()=>{saveStored(storageKeys.storyLikes,[...storyLikes])},[storyLikes]);
 
   const allPlans=useMemo(()=>[...extraPlans,...plans],[extraPlans]);
   const visible=useMemo(()=>{
@@ -78,17 +81,28 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',onChat}:{
   },[peopleFilter]);
 
   const toggleLike=(name:string)=>setLiked(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
+  const toggleStoryLike=(name:string)=>setStoryLikes(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
+  const cyclePeopleFilter=()=>setPeopleFilter(current=>current==='near'?'age':current==='age'?'interests':current==='interests'?'match':'near');
   const openPerson=(index:number)=>{setPersonIndex(index);setPeopleMode(true)};
   const advancePerson=(like=false)=>{
     const person=socialPeople[personIndex];
     if(like)setLiked(prev=>{const next=new Set(prev);next.add(person.name);return next});
     setPersonIndex(i=>i+1);
   };
+  const sendStoryReply=()=>{
+    const text=storyReply.trim();
+    if(!text||storyIndex===null)return;
+    const name=stories[storyIndex].name;
+    const current=loadStored<Record<string,string[]>>(storageKeys.chatMessages,{});
+    saveStored(storageKeys.chatMessages,{...current,[name]:[...(current[name]||[]),text]});
+    setStoryReply('');
+    onChat(name);
+  };
 
   if(peopleMode){
     const person=socialPeople[personIndex];
     return <div className="page explore-page people-swipe-page">
-      <div className="people-swipe-head"><button aria-label="Volver a Personas para ti" onClick={()=>{setPeopleMode(false);setPersonIndex(0);setPersonDetail(null)}}><ChevronLeft/></button><div className="people-swipe-title"><h1>Personas para ti</h1><p>Desliza para conocer gente afín</p></div><button aria-label="Filtros" onClick={()=>setPeopleMode(false)}><SlidersHorizontal/></button></div>
+      <div className="people-swipe-head"><button aria-label="Volver a Personas para ti" onClick={()=>{setPeopleMode(false);setPersonIndex(0);setPersonDetail(null)}}><ChevronLeft/></button><div className="people-swipe-title"><h1>Personas para ti</h1><p>Desliza para conocer gente afín</p></div><button aria-label="Cambiar filtro de personas" onClick={cyclePeopleFilter}><SlidersHorizontal/></button></div>
       <div className="swipe-filter-row"><button className={peopleFilter==='near'?'active':''} onClick={()=>setPeopleFilter('near')}>Cerca de mí</button><button className={peopleFilter==='age'?'active':''} onClick={()=>setPeopleFilter('age')}>Edad</button><button className={peopleFilter==='interests'?'active':''} onClick={()=>setPeopleFilter('interests')}>Intereses</button><button className={peopleFilter==='match'?'active':''} onClick={()=>setPeopleFilter('match')}>Afinidad</button></div>
       {person?<><div className="swipe-card"><img src={person.image} alt={`${person.name}, ${person.age} años`}/><div className="swipe-progress">{socialPeople.map((p,i)=><span key={p.name} className={i===personIndex?'active':''}/>)}</div><div className="swipe-card-info"><div className="swipe-card-info-top"><h2>{person.name}, {person.age}<i/></h2><button className="swipe-info-button" aria-label={`Ver perfil de ${person.name}`} onClick={()=>setPersonDetail(person)}><Info/></button></div><div className="swipe-meta"><MapPin/> A {person.distance} de ti · {person.match} afinidad</div><p className="swipe-bio">{person.bio}</p><div className="swipe-tags">{person.tags.map(tag=><span key={tag}>{tag}</span>)}</div></div></div><div className="swipe-actions"><button className="swipe-action nope" onClick={()=>advancePerson(false)}><span><X/></span>No me gusta</button><button className="swipe-action skip" onClick={()=>advancePerson(false)}><span><Star/></span>Pasa</button><button className="swipe-action like" onClick={()=>advancePerson(true)}><span><Heart fill="currentColor"/></span>Me gusta</button></div></>:<div className="swipe-empty"><strong>Ya has visto las personas disponibles</strong><span>Vuelve a empezar para seguir probando el flujo.</span><button onClick={()=>setPersonIndex(0)}>Volver a empezar</button></div>}
       {personDetail&&<div className="person-detail-overlay" onClick={()=>setPersonDetail(null)}><article className="person-detail-card" onClick={e=>e.stopPropagation()}><div className="person-detail-hero"><img src={personDetail.image} alt={personDetail.name}/><button className="person-detail-back" aria-label="Cerrar perfil" onClick={()=>setPersonDetail(null)}><ChevronLeft/></button><div className="person-detail-title"><h2>{personDetail.name}, {personDetail.age}</h2><span>A {personDetail.distance} de ti · {personDetail.match} afinidad</span></div></div><div className="person-detail-body"><strong>{personDetail.job}</strong><p>{personDetail.bio}</p><div className="person-detail-tags">{personDetail.tags.map(tag=><span key={tag}>{tag}</span>)}</div><div className="person-mini-gallery">{personDetail.gallery.map((image,i)=><img key={image} src={image} alt={`Foto ${i+1} de ${personDetail.name}`}/>)}</div><button className="person-chat-cta" onClick={()=>onChat(personDetail.name)}>Hablar con {personDetail.name}</button></div></article></div>}
@@ -97,7 +111,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',onChat}:{
 
   if(peopleGridOpen){
     return <div className="page explore-page people-grid-page">
-      <div className="people-swipe-head"><button aria-label="Volver a Explora" onClick={()=>setPeopleGridOpen(false)}><ChevronLeft/></button><div className="people-swipe-title"><h1>Personas para ti</h1><p>Conoce gente afín a tus gustos</p></div><button aria-label="Filtros"><SlidersHorizontal/></button></div>
+      <div className="people-swipe-head"><button aria-label="Volver a Explora" onClick={()=>setPeopleGridOpen(false)}><ChevronLeft/></button><div className="people-swipe-title"><h1>Personas para ti</h1><p>Conoce gente afín a tus gustos</p></div><button aria-label="Cambiar filtro de personas" onClick={cyclePeopleFilter}><SlidersHorizontal/></button></div>
       <div className="swipe-filter-row people-grid-filters"><button className={peopleFilter==='near'?'active':''} onClick={()=>setPeopleFilter('near')}>Cerca de mí</button><button className={peopleFilter==='age'?'active':''} onClick={()=>setPeopleFilter('age')}>Edad</button><button className={peopleFilter==='interests'?'active':''} onClick={()=>setPeopleFilter('interests')}>Intereses</button><button className={peopleFilter==='match'?'active':''} onClick={()=>setPeopleFilter('match')}>Afinidad</button></div>
       <div className="people-browser-grid">{gridPeople.map(person=>{const index=socialPeople.findIndex(p=>p.name===person.name);return <article key={person.name} className="people-browser-card" role="button" tabIndex={0} onClick={()=>openPerson(index)} onKeyDown={e=>{if(e.key==='Enter')openPerson(index)}}><div className="people-browser-photo"><img src={person.image} alt={`${person.name}, ${person.age} años`}/><button className={liked.has(person.name)?'is-liked':''} aria-label={liked.has(person.name)?`Quitar me gusta a ${person.name}`:`Dar me gusta a ${person.name}`} onClick={e=>{e.stopPropagation();toggleLike(person.name)}}><Heart fill={liked.has(person.name)?'currentColor':'none'}/></button></div><div className="people-browser-copy"><strong>{person.name}, {person.age}</strong><span><MapPin/> A {person.distance} de ti</span><p>{person.tags.slice(0,3).join(', ')}</p><small>{person.match} afinidad</small></div></article>})}</div>
     </div>;
@@ -115,7 +129,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',onChat}:{
     <div className="explore-category-title"><h2>Categorías</h2><span>Elige lo que te apetece</span></div><div className="category-grid">{categories.map(([name,image])=><button key={name} className={category===name?'active':''} onClick={()=>setCategory(v=>v===name?null:name)} aria-pressed={category===name}><img loading="lazy" decoding="async" src={image} alt={name}/><span/><b><CategoryIcon name={name}/>{name}</b></button>)}</div>
     <section className="section noframe"><div className="section-head"><h2>{category||'Recomendados'}</h2>{category&&<button onClick={()=>setCategory(null)}>Ver todos</button>}</div>{visible.length?<PlanCards items={visible} onPlan={onPlan}/>:<div className="empty-state">No hay planes que coincidan con estos filtros.</div>}</section>
 
-    {storyIndex!==null&&<div className="story-viewer"><div className="story-stage"><img src={stories[storyIndex].image} alt={`Estado de ${stories[storyIndex].name}`}/><div className="story-progress">{stories.map((story,i)=><span key={story.name} className={i===storyIndex?'active':''}/>)}</div><div className="story-top"><img src={stories[storyIndex].avatar} alt={stories[storyIndex].name}/><div><strong>{stories[storyIndex].name}</strong><small>hace {stories[storyIndex].time}</small></div><button aria-label="Cerrar estado" onClick={()=>setStoryIndex(null)}><X/></button></div><button className="story-nav-zone prev" aria-label="Estado anterior" onClick={()=>setStoryIndex(i=>i===null?null:Math.max(0,i-1))}/><button className="story-nav-zone next" aria-label="Estado siguiente" onClick={()=>setStoryIndex(i=>i===null?null:(i+1<stories.length?i+1:null))}/><div className="story-caption">{stories[storyIndex].caption}<div className="story-location"><MapPin/>{stories[storyIndex].location}</div></div><div className="story-reply"><input value={storyReply} onChange={e=>setStoryReply(e.target.value)} placeholder="Responder..." aria-label="Responder al estado"/><button aria-label="Enviar respuesta" onClick={()=>setStoryReply('')}><Send/></button><button aria-label="Me gusta"><Heart/></button></div></div></div>}
+    {storyIndex!==null&&<div className="story-viewer"><div className="story-stage"><img src={stories[storyIndex].image} alt={`Estado de ${stories[storyIndex].name}`}/><div className="story-progress">{stories.map((story,i)=><span key={story.name} className={i===storyIndex?'active':''}/>)}</div><div className="story-top"><img src={stories[storyIndex].avatar} alt={stories[storyIndex].name}/><div><strong>{stories[storyIndex].name}</strong><small>hace {stories[storyIndex].time}</small></div><button aria-label="Cerrar estado" onClick={()=>setStoryIndex(null)}><X/></button></div><button className="story-nav-zone prev" aria-label="Estado anterior" onClick={()=>setStoryIndex(i=>i===null?null:Math.max(0,i-1))}/><button className="story-nav-zone next" aria-label="Estado siguiente" onClick={()=>setStoryIndex(i=>i===null?null:(i+1<stories.length?i+1:null))}/><div className="story-caption">{stories[storyIndex].caption}<div className="story-location"><MapPin/>{stories[storyIndex].location}</div></div><div className="story-reply"><input value={storyReply} onChange={e=>setStoryReply(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')sendStoryReply()}} placeholder="Responder..." aria-label="Responder al estado"/><button aria-label="Enviar respuesta" onClick={sendStoryReply}><Send/></button><button aria-label={storyLikes.has(stories[storyIndex].name)?'Quitar me gusta':'Me gusta'} aria-pressed={storyLikes.has(stories[storyIndex].name)} onClick={()=>toggleStoryLike(stories[storyIndex].name)}><Heart fill={storyLikes.has(stories[storyIndex].name)?'currentColor':'none'}/></button></div></div></div>}
     {storyCreateOpen&&<div className="story-create-sheet" onClick={()=>setStoryCreateOpen(false)}><div className="story-create-card" onClick={e=>e.stopPropagation()}><h3>Tu estado</h3><p>Comparte un momento con la gente de CONECTA. El estado se conserva en este dispositivo.</p><div className="story-create-actions"><button onClick={()=>setStoryCreateOpen(false)}>Cancelar</button><button className="primary" onClick={()=>{setStoryAdded(true);setStoryCreateOpen(false)}}>Añadir estado</button></div></div></div>}
   </div>
 }

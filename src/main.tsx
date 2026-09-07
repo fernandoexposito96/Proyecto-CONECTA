@@ -2,14 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import ErrorBoundary from './ErrorBoundary';
-import './styles.css';
-import './premium-max-v3.css';
-import './home-premium-tune.css';
-import './bottom-nav-polish.css';
-import './mobile-layout-final.css';
-import './mobile-edge-final.css';
-import './settings-reference-final.css';
-import './error-boundary.css';
+import './styles/index.css';
 
 const root = document.getElementById('app');
 

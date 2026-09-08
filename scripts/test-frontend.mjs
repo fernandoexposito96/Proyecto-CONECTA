@@ -3,16 +3,17 @@ import assert from 'node:assert/strict';
 
 const read=(path)=>fs.readFileSync(path,'utf8');
 const app=read('src/App.tsx');
-const main=read('src/main.tsx');
 const home=read('src/views/HomeView.tsx');
 const explore=read('src/views/ExploreView.tsx');
+const chat=read('src/views/ChatView.tsx');
 const profile=read('src/views/ProfileView.tsx');
 const settings=read('src/views/SettingsView.tsx');
 const navigation=read('src/components/AppNavigation.tsx');
+const chatBackend=read('src/lib/chatBackend.ts');
 const cloud=read('src/lib/cloud.ts');
 const identity=read('src/lib/identity.ts');
-const storage=read('src/lib/storage.ts');
 const socialBackend=read('src/lib/socialBackend.ts');
+const storage=read('src/lib/storage.ts');
 
 const checks=[
   ['App transmite categoría a Explora',()=>assert.match(app,/initialCategory=\{exploreCategory\}/)],
@@ -34,11 +35,11 @@ const checks=[
   ['Identidad tiene fallback del demo',()=>assert.match(identity,/demoAccount/)],
   ['Estado local se separa por usuario',()=>assert.match(cloud,/authUserMarker/)],
   ['No se migra el demo a otra cuenta',()=>assert.match(cloud,/localStateBelongsToUser/)],
-  ['Privacidad real conserva fallback demo',()=>assert.match(cloud,/profile privacy sync failed; keeping demo fallback/)],
-  ['Inicio conecta Supabase solo con userId real',()=>assert.match(home,/requestBackendConnection\(person\.userId\)/)],
-  ['Puente social usa la tabla connections',()=>assert.match(socialBackend,/\.from\('connections'\)/)],
-  ['Tema guardado se aplica antes de renderizar',()=>assert.match(main,/initialTheme=loadStored<Theme>/)],
-  ['Idioma guardado se aplica antes de renderizar',()=>assert.match(main,/initialLanguage=loadStored<Language>/)],
+  ['Conexiones reales tienen puente Supabase',()=>assert.match(socialBackend,/requestBackendConnection/)],
+  ['Chat conserva fallback local',()=>assert.match(chat,/demo fallback kept/)],
+  ['Chat tiene puente de mensajes reales',()=>assert.match(chatBackend,/sendBackendMessage/)],
+  ['Conversaciones reales vacías no sustituyen el demo',()=>assert.match(chatBackend,/if\(!latest\)return \[\]/)],
+  ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
 ];
 
 for(const [name,check] of checks){

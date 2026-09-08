@@ -36,6 +36,15 @@ export async function fetchBackendNotifications(limit=100):Promise<BackendNotifi
   }));
 }
 
+export async function fetchUnreadNotificationCount(){
+  const {count,error}=await supabase
+    .from('notifications')
+    .select('id',{count:'exact',head:true})
+    .eq('read',false);
+  if(error)throw error;
+  return count||0;
+}
+
 export async function markBackendNotificationRead(id:string){
   const {error}=await supabase
     .from('notifications')

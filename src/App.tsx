@@ -3,6 +3,7 @@ import { BottomNav, Header, Sidebar } from './components/AppNavigation';
 import { PlanDetail } from './components/PlanComponents';
 import { createSharedPlan, fetchSharedPlans } from './lib/cloud';
 import { fetchUnreadNotificationCount } from './lib/notificationsBackend';
+import { fetchRealPlans } from './lib/realPlansBackend';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
 import type { ExploreFilter, Plan, View } from './types';
 import { ChatView } from './views/ChatView';
@@ -13,7 +14,7 @@ import { NotificationsView } from './views/NotificationsView';
 import { ProfileView } from './views/ProfileView';
 import { SettingsView } from './views/SettingsView';
 
-const planKey=(plan:Plan)=>`${plan.title}|${plan.time}|${plan.place}`;
+const planKey=(plan:Plan)=>plan.backendId?`backend:${plan.backendId}`:`${plan.title}|${plan.time}|${plan.place}`;
 const mergePlans=(primary:Plan[],secondary:Plan[])=>{
   const seen=new Set<string>();
   return [...primary,...secondary].filter(plan=>{
@@ -37,9 +38,14 @@ export default function App(){
 
   useEffect(()=>{
     let active=true;
-    void fetchSharedPlans()
-      .then(shared=>{if(active)setCreatedPlans(local=>mergePlans(shared,local))})
-      .catch(error=>console.warn('CONECTA shared plans load failed; local demo remains available',error));
+    void Promise.allSettled([fetchRealPlans(),fetchSharedPlans()]).then(results=>{
+      if(!active)return;
+      const real=results[0].status==='fulfilled'?results[0].value:[];
+      const shared=results[1].status==='fulfilled'?results[1].value:[];
+      if(results[0].status==='rejected')console.warn('CONECTA real plans load failed; demo/shared plans kept',results[0].reason);
+      if(results[1].status==='rejected')console.warn('CONECTA shared plans load failed; local demo remains available',results[1].reason);
+      setCreatedPlans(local=>mergePlans(real,mergePlans(shared,local)));
+    });
     return ()=>{active=false};
   },[]);
 

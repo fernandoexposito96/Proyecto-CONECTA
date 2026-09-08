@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { hydrateCloudState, queueCloudStateSave } from '../lib/cloud';
+import { hydrateCloudState, queueCloudStateSave, resetCloudStateQueue } from '../lib/cloud';
 import { setCloudStorageWriter } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 
@@ -15,21 +15,45 @@ export function AuthGate({children}:{children:ReactNode}){
 
   useEffect(()=>{
     let active=true;
+    let prepareVersion=0;
+    let initializedUserId:string|null|undefined;
+    let preparingUserId:string|null|undefined;
 
     const prepare=async(nextSession:Session|null)=>{
+      const nextUserId=nextSession?.user.id??null;
       if(!active)return;
+      if(preparingUserId===nextUserId)return;
+      if(initializedUserId!==undefined&&initializedUserId===nextUserId){
+        setSession(nextSession);
+        return;
+      }
+
+      const version=++prepareVersion;
+      preparingUserId=nextUserId;
       setReady(false);
       setSession(nextSession);
       setCloudStorageWriter(null);
-      if(nextSession){
-        try{
-          await hydrateCloudState();
+      resetCloudStateQueue();
+
+      try{
+        if(nextSession){
+          const hydrated=await hydrateCloudState(nextUserId);
+          if(!hydrated||!active||version!==prepareVersion)return;
           setCloudStorageWriter(queueCloudStateSave);
-        }catch(error){
-          console.warn('CONECTA cloud hydration failed; local state kept available',error);
         }
+        if(active&&version===prepareVersion){
+          initializedUserId=nextUserId;
+          setReady(true);
+        }
+      }catch(error){
+        console.warn('CONECTA cloud hydration failed; local state kept available',error);
+        if(active&&version===prepareVersion){
+          initializedUserId=nextUserId;
+          setReady(true);
+        }
+      }finally{
+        if(version===prepareVersion)preparingUserId=undefined;
       }
-      if(active)setReady(true);
     };
 
     void supabase.auth.getSession()
@@ -40,8 +64,10 @@ export function AuthGate({children}:{children:ReactNode}){
       .catch(error=>{
         console.warn('CONECTA auth initialization failed',error);
         if(!active)return;
+        initializedUserId=null;
         setSession(null);
         setCloudStorageWriter(null);
+        resetCloudStateQueue();
         setMessage('No se ha podido conectar con el servicio de acceso. Comprueba tu conexión y vuelve a intentarlo.');
         setReady(true);
       });
@@ -52,7 +78,9 @@ export function AuthGate({children}:{children:ReactNode}){
 
     return ()=>{
       active=false;
+      prepareVersion+=1;
       setCloudStorageWriter(null);
+      resetCloudStateQueue();
       subscription.unsubscribe();
     };
   },[]);
@@ -60,8 +88,8 @@ export function AuthGate({children}:{children:ReactNode}){
   const submit=async(event:FormEvent)=>{
     event.preventDefault();
     const cleanEmail=email.trim();
-    if(!cleanEmail||password.length<6){
-      setMessage('Escribe un correo válido y una contraseña de al menos 6 caracteres.');
+    if(!cleanEmail||password.length<8){
+      setMessage('Escribe un correo válido y una contraseña de al menos 8 caracteres.');
       return;
     }
     setBusy(true);
@@ -91,7 +119,7 @@ export function AuthGate({children}:{children:ReactNode}){
       <div className="auth-copy"><h1>{mode==='login'?'Bienvenido de nuevo':'Crea tu cuenta'}</h1><p>Tu cuenta sincroniza planes y preferencias entre dispositivos mediante el backend de CONECTA.</p></div>
       <form onSubmit={submit} className="auth-form">
         <label>Correo electrónico<input type="email" autoComplete="email" value={email} onChange={event=>setEmail(event.target.value)} placeholder="tu@email.com" required/></label>
-        <label>Contraseña<input type="password" autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={event=>setPassword(event.target.value)} minLength={6} placeholder="Mínimo 6 caracteres" required/></label>
+        <label>Contraseña<input type="password" autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={event=>setPassword(event.target.value)} minLength={8} placeholder="Mínimo 8 caracteres" required/></label>
         {message&&<div className="auth-message" role="status">{message}</div>}
         <button type="submit" disabled={busy}>{busy?'Procesando…':mode==='login'?'Entrar':'Crear cuenta'}</button>
       </form>

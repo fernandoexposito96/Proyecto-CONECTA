@@ -42,9 +42,11 @@ export function Header({view,setView}:{view:View,setView:(v:View)=>void}){
     return ()=>{active=false};
   },[]);
 
+  const openSearch=()=>setView('Explora');
+
   return <header className={`topbar ${isHome?'topbar-home':'topbar-compact'}`}>
     {isHome&&<div className="mobile-brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div>}
-    <div className="desktop-search"><Search/><input placeholder="¿Qué te apetece hacer hoy?" aria-label="Buscar planes" onFocus={()=>setView('Explora')} onKeyDown={e=>{if(e.key==='Enter')setView('Explora')}}/></div>
+    <div className="desktop-search"><Search/><input readOnly value="" placeholder="¿Qué te apetece hacer hoy?" aria-label="Abrir búsqueda de planes" onFocus={openSearch} onClick={openSearch} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openSearch()}}}/></div>
     <div className="top-actions"><button type="button" aria-label="Abrir notificaciones" onClick={()=>setView('Notificaciones')}><Bell/><i/></button><button type="button" className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src={profileAvatar} alt={profileName}/></button></div>
   </header>
 }

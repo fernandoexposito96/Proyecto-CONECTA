@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, CalendarRange, Check, ChevronRight, Coffee, Crown, Flame, MapPin, Music2, Plus, Search, Sparkles, Trophy, X } from 'lucide-react';
+import { CalendarDays, CalendarRange, Check, ChevronRight, Coffee, Crown, Flame, MapPin, Music2, Plus, Sparkles, Trophy } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, escapes, people, plans } from '../data/demoData';
@@ -22,8 +22,6 @@ function nextPlanDate(value:string){
 export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPlan:(p:Plan)=>void,onExplore:(filter?:ExploreFilter,category?:string|null)=>void}){
   const [privacy]=useState(loadPrivacySettings);
   const [blocked]=useState<Set<string>>(()=>blockedNames());
-  const [heroQuery,setHeroQuery]=useState('');
-  const [searchOpen,setSearchOpen]=useState(false);
   const [showAllPeople,setShowAllPeople]=useState(false);
   const [connected,setConnected]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.connections,[])));
   const [summary,setSummary]=useState<SocialSummary>(emptySummary);
@@ -39,12 +37,6 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
       .finally(()=>{if(active)setSummaryReady(true)});
     return ()=>{active=false};
   },[]);
-
-  const searchResults=useMemo(()=>{
-    const q=heroQuery.trim().toLocaleLowerCase('es');
-    if(!q)return [];
-    return plans.filter(p=>`${p.title} ${p.place} ${p.category}`.toLocaleLowerCase('es').includes(q)).slice(0,4);
-  },[heroQuery]);
 
   const allowedPeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)),[blocked]);
   const visiblePeople=showAllPeople?allowedPeople:allowedPeople.slice(0,4);
@@ -71,7 +63,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
   const openEscape=(title:string,date:string,image:string,index:number)=>onPlan({title,image,time:date,place:escapePlaces[index]||'Cataluña',distance:escapeDistances[index]||'100 km',spots:'8 plazas',category:'Viajes'});
 
   return <div className="page home-page">
-    <section className="hero"><img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/><div className="hero-overlay"/><div className="hero-copy"><span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span><h1>La vida es mejor<br/>con buenos planes</h1><div className="hero-search-wrap"><div className="hero-search"><Search/><input value={heroQuery} onFocus={()=>setSearchOpen(true)} onChange={e=>{setHeroQuery(e.target.value);setSearchOpen(true)}} onKeyDown={e=>{if(e.key==='Enter'&&searchResults[0])onPlan(searchResults[0])}} placeholder="¿Qué te apetece hacer hoy?" aria-label="Buscar planes desde Inicio"/>{heroQuery&&<button type="button" aria-label="Limpiar búsqueda" onClick={()=>{setHeroQuery('');setSearchOpen(false)}}><X/></button>}</div>{searchOpen&&heroQuery.trim()&&<div className="hero-search-results">{searchResults.length?searchResults.map(p=><button key={p.title} onClick={()=>onPlan(p)}><img src={p.image} alt=""/><span><strong>{p.title}</strong><small>{p.place}{locationAllowed?` · ${p.distance}`:''}</small></span><ChevronRight/></button>):<div className="hero-search-empty">No hay planes que coincidan.</div>}<button className="hero-search-all" onClick={()=>openExplore('all')}>Ver todos los planes <ChevronRight/></button></div>}</div></div></section>
+    <section className="hero"><img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/><div className="hero-overlay"/><div className="hero-copy"><span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span><h1>La vida es mejor<br/>con buenos planes</h1></div></section>
 
     <section className="section home-social-summary"><div className="section-head"><div><small>TU SEMANA</small><h2>Tu CONECTA Wrapped</h2></div><button onClick={()=>setView('Calendario')}>Calendario <ChevronRight/></button></div><div className="wrapped-grid"><article><Flame/><strong>{summaryReady?summary.streakWeeks:'—'}</strong><span>semanas de racha</span></article><article><Trophy/><strong>{summaryReady?summary.attendedThisWeek:'—'}</strong><span>planes esta semana</span></article><article><Sparkles/><strong>{summaryReady?(summary.topCategory||'—'):'—'}</strong><span>categoría favorita</span></article></div>{summaryReady&&summary.nextPlan?<button className="next-plan-widget" type="button" onClick={()=>setView('Calendario')}><CalendarRange/><span><small>TU PRÓXIMO PLAN</small><strong>{summary.nextPlan.title}</strong><em>{nextPlanDate(summary.nextPlan.startsAt)} · {summary.nextPlan.location}</em></span><ChevronRight/></button>:summaryReady?<div className="next-plan-widget is-empty"><CalendarRange/><span><small>TU PRÓXIMO PLAN</small><strong>Aún no tienes uno confirmado</strong><em>Apúntate a un plan real y aparecerá aquí.</em></span></div>:null}</section>
 

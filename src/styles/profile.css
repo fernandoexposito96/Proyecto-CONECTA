@@ -43,14 +43,7 @@
 .profile-stats small{font-size:11px;color:#727b91;font-weight:650}
 .profile-stats button>svg{width:17px;color:#6a7187}
 
-.profile-about-card{display:grid;grid-template-columns:34px minmax(0,1fr);gap:13px;align-items:start;margin:16px 0;padding:19px;border:1px solid #e7e0fa;border-radius:21px;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(250,247,255,.96));box-shadow:0 10px 28px rgba(74,52,135,.07)}
-.profile-about-card>svg{width:24px;color:#8060ef;background:#f0eaff;border-radius:10px;padding:7px;box-sizing:content-box}
-.profile-about-card p{margin:1px 0 0;color:#33425a;line-height:1.55;font-size:14px}
 .profile-error{margin:12px 0;background:#fff1f2;color:#b4232c;border:1px solid #ffd3d7;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45}
-
-.profile-tags{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 22px}
-.profile-tags span{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid rgba(110,77,225,.10);border-radius:999px;background:linear-gradient(145deg,#f4efff,#edf4ff);color:#4e5780;font-size:12px;font-weight:700}
-.profile-tags svg{width:16px;color:#6847e7}
 
 .profile-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid #e8e3f3;margin-top:4px;overflow-x:auto;scrollbar-width:none}
 .profile-tabs::-webkit-scrollbar{display:none}
@@ -91,11 +84,6 @@
   .profile-stat-icon svg{width:20px}
   .profile-stats strong{font-size:20px}
   .profile-stats small{font-size:9px}
-  .profile-about-card{grid-template-columns:30px minmax(0,1fr);gap:10px;padding:15px;border-radius:17px}
-  .profile-about-card>svg{width:19px;padding:6px;border-radius:9px}
-  .profile-about-card p{font-size:13px}
-  .profile-tags{gap:7px;margin-bottom:18px}
-  .profile-tags span{padding:7px 9px;font-size:10px}
   .profile-tabs button{padding:12px 7px;font-size:12px}
   .photo-grid{gap:7px;margin-top:13px}
   .photo-grid img{border-radius:14px}
@@ -115,7 +103,6 @@
   .profile-stat-icon{width:38px;height:38px}
   .profile-stats button>span:nth-child(2){justify-items:center}
   .profile-stats strong{font-size:19px}
-  .profile-tags span{flex:1 1 auto;justify-content:center}
   .profile-tabs{grid-template-columns:repeat(4,max-content);justify-content:space-between}
   .profile-tabs button{padding-inline:6px;font-size:11px}
 }

@@ -1,4 +1,4 @@
-type CloudWriter=(key:string,value:unknown)=>void;
+type CloudWriter=(key:string,value:unknown)=>void|Promise<void>;
 let cloudWriter:CloudWriter|null=null;
 
 export function setCloudStorageWriter(writer:CloudWriter|null){
@@ -18,7 +18,11 @@ export function loadStored<T>(key:string,fallback:T):T{
 export function saveStored<T>(key:string,value:T){
   try{
     window.localStorage.setItem(key,JSON.stringify(value));
-    cloudWriter?.(key,value);
+  }catch{}
+
+  if(!cloudWriter)return;
+  try{
+    void Promise.resolve(cloudWriter(key,value)).catch(()=>{});
   }catch{}
 }
 
@@ -39,4 +43,6 @@ export const storageKeys={
   theme:'conecta-theme',
   language:'conecta-language',
   premiumRequested:'conecta-premium-requested-v1',
+  privacySettings:'conecta-privacy-settings-v1',
+  blockedUsers:'conecta-blocked-users-v2',
 } as const;

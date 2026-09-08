@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BottomNav, Header, Sidebar } from './components/AppNavigation';
 import { PlanDetail } from './components/PlanComponents';
 import { createSharedPlan, fetchSharedPlans } from './lib/cloud';
+import { acceptPlanInvite, clearInviteFromUrl, inviteCodeFromUrl } from './lib/inviteBackend';
 import { fetchUnreadNotificationCount } from './lib/notificationsBackend';
 import { fetchRealPlans } from './lib/realPlansBackend';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
@@ -46,6 +47,28 @@ export default function App(){
       if(results[1].status==='rejected')console.warn('CONECTA shared plans load failed; local demo remains available',results[1].reason);
       setCreatedPlans(local=>mergePlans(real,mergePlans(shared,local)));
     });
+    return ()=>{active=false};
+  },[]);
+
+  useEffect(()=>{
+    const code=inviteCodeFromUrl();
+    if(!code)return;
+    let active=true;
+    void acceptPlanInvite(code)
+      .then(async planId=>{
+        const real=await fetchRealPlans();
+        if(!active)return;
+        setCreatedPlans(local=>mergePlans(real,local));
+        const invitedPlan=real.find(plan=>plan.backendId===planId);
+        if(invitedPlan){
+          setExploreFilter('all');
+          setExploreCategory(null);
+          setView('Explora');
+          setSelected(invitedPlan);
+        }
+        clearInviteFromUrl();
+      })
+      .catch(error=>console.warn('CONECTA invite acceptance failed; invite kept in URL for retry',error));
     return ()=>{active=false};
   },[]);
 

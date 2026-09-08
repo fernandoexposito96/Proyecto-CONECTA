@@ -28,7 +28,8 @@ export function accountFromUser(user:User|null,stored?:AccountSettings|null):Acc
   if(!user)return stored||demoAccount;
   const email=(user.email||stored?.email||demoAccount.email).trim();
   const sameStoredEmail=Boolean(stored?.email&&stored.email.trim().toLocaleLowerCase('es')===email.toLocaleLowerCase('es'));
-  const name=metadataName(user)||(sameStoredEmail&&stored?.name.trim()?stored.name.trim():nameFromEmail(email));
+  const storedName=sameStoredEmail?stored?.name.trim()||'':'';
+  const name=storedName||metadataName(user)||nameFromEmail(email);
   return {name,email};
 }
 

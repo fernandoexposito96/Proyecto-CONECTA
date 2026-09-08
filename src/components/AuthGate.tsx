@@ -26,13 +26,26 @@ export function AuthGate({children}:{children:ReactNode}){
           await hydrateCloudState();
           setCloudStorageWriter(queueCloudStateSave);
         }catch(error){
-          console.warn('CONECTA cloud hydration failed',error);
+          console.warn('CONECTA cloud hydration failed; local state kept available',error);
         }
       }
       if(active)setReady(true);
     };
 
-    void supabase.auth.getSession().then(({data})=>prepare(data.session));
+    void supabase.auth.getSession()
+      .then(({data,error})=>{
+        if(error)throw error;
+        return prepare(data.session);
+      })
+      .catch(error=>{
+        console.warn('CONECTA auth initialization failed',error);
+        if(!active)return;
+        setSession(null);
+        setCloudStorageWriter(null);
+        setMessage('No se ha podido conectar con el servicio de acceso. Comprueba tu conexión y vuelve a intentarlo.');
+        setReady(true);
+      });
+
     const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,nextSession)=>{
       window.setTimeout(()=>{void prepare(nextSession)},0);
     });

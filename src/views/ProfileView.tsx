@@ -19,25 +19,58 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
   const [avatar,setAvatar]=useState(demoAvatar);
   const [bio,setBio]=useState(()=>loadStored<string>(storageKeys.profileBio,''));
   const [draftBio,setDraftBio]=useState(bio);
+  const [profileSaving,setProfileSaving]=useState(false);
+  const [profileError,setProfileError]=useState('');
   const locationAllowed=canUseLocation(privacy);
 
   useEffect(()=>{
     let active=true;
-    void supabase.auth.getUser().then(({data})=>{
-      if(!active)return;
-      const stored=loadStored<AccountSettings>(storageKeys.settingsAccount,demoAccount);
-      const next=accountFromUser(data.user,stored);
-      setAccount(next);
-      setAvatar(avatarFromUser(data.user,next.name));
-      if(next.name!==stored.name||next.email!==stored.email)saveStored(storageKeys.settingsAccount,next);
-    });
+    void supabase.auth.getUser()
+      .then(async({data,error})=>{
+        if(error)throw error;
+        if(!active)return;
+        const stored=loadStored<AccountSettings>(storageKeys.settingsAccount,demoAccount);
+        const next=accountFromUser(data.user,stored);
+        setAccount(next);
+        setAvatar(avatarFromUser(data.user,next.name));
+        if(next.name!==stored.name||next.email!==stored.email)saveStored(storageKeys.settingsAccount,next);
+        if(!data.user)return;
+        const {data:profile,error:profileLoadError}=await supabase.from('profiles').select('bio').eq('id',data.user.id).maybeSingle();
+        if(profileLoadError)throw profileLoadError;
+        if(active&&profile&&typeof profile.bio==='string'){
+          setBio(profile.bio);
+          setDraftBio(profile.bio);
+        }
+      })
+      .catch(error=>{
+        console.warn('CONECTA profile load failed; local profile kept',error);
+        if(active)setProfileError('No se ha podido sincronizar el perfil. Se mantienen tus datos locales.');
+      });
     return ()=>{active=false};
   },[]);
 
-  useEffect(()=>{if(bio)saveStored(storageKeys.profileBio,bio)},[bio]);
+  useEffect(()=>{saveStored(storageKeys.profileBio,bio)},[bio]);
 
   const displayBio=bio||(isDemoAccount(account)?demoBio:emptyBio);
-  const saveProfile=()=>{setBio(draftBio.trim());setEditing(false)};
+  const saveProfile=async()=>{
+    const clean=draftBio.trim();
+    setProfileSaving(true);
+    setProfileError('');
+    try{
+      const {data:{user},error:userError}=await supabase.auth.getUser();
+      if(userError)throw userError;
+      if(!user)throw new Error('Necesitas iniciar sesión para guardar el perfil.');
+      const {error}=await supabase.from('profiles').upsert({id:user.id,display_name:account.name,bio:clean},{onConflict:'id'});
+      if(error)throw error;
+      setBio(clean);
+      setEditing(false);
+    }catch(error){
+      console.warn('CONECTA profile save failed',error);
+      setProfileError(error instanceof Error?error.message:'No se ha podido guardar el perfil.');
+    }finally{
+      setProfileSaving(false);
+    }
+  };
 
   const demoStats=useMemo(()=>{
     const created=loadStored<Plan[]>(storageKeys.createdPlans,[]);
@@ -57,5 +90,5 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
     };
   },[account,blocked]);
 
-  return <div className="page profile-page"><div className="profile-cover"><img loading="lazy" decoding="async" src="./assets/images/photo-1500530855697-b586d89ba3ee.jpg" alt="Portada del perfil"/><button aria-label="Abrir ajustes" onClick={()=>setView('Ajustes')}><Settings/></button></div><div className="profile-main"><img className="profile-avatar" loading="lazy" decoding="async" src={avatar} alt={`Foto de perfil de ${account.name}`}/><button className="edit" onClick={()=>{setDraftBio(displayBio);setEditing(v=>!v)}}>{editing?'Cancelar':'Editar perfil'}</button><h1>{account.name} <ShieldCheck/></h1><p>{locationAllowed?'Tarragona':'Ubicación oculta a otros usuarios'}</p><div className="stats"><div><strong>{demoStats.plans}</strong><span>Planes</span></div><div><strong>{demoStats.connections}</strong><span>Conexiones</span></div><div><strong>{demoStats.ratings}</strong><span>Valoraciones</span></div></div>{editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button onClick={saveProfile}>Guardar cambios</button></div>:<p className="bio">{displayBio}</p>}<div className="profile-tags"><span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span><span><Languages/> Español, Catalán, Inglés</span><span><ShieldCheck/> Perfil: {privacy.profileVisibility}</span></div><div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>{tab==='Fotos'&&<div className="photo-grid">{photos.map((id,i)=><img key={id} loading="lazy" decoding="async" src={`./assets/images/${id}.jpg`} alt={`Foto ${i+1} del perfil`}/>)}</div>}{tab==='Planes'&&<div className="profile-tab-panel"><strong>{demoStats.plans} planes</strong><span>{demoStats.created} creados · {demoStats.joined} unidos · {demoStats.favorites} favoritos en este dispositivo.</span></div>}{tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones nuevas visibles después de aplicar bloqueos.</span></div>}{tab==='Valoraciones'&&<div className="profile-tab-panel"><strong>{demoStats.ratingScore}</strong><span>{demoStats.ratings} valoraciones asociadas a este perfil.</span></div>}</div></div>
+  return <div className="page profile-page"><div className="profile-cover"><img loading="lazy" decoding="async" src="./assets/images/photo-1500530855697-b586d89ba3ee.jpg" alt="Portada del perfil"/><button type="button" aria-label="Abrir ajustes" onClick={()=>setView('Ajustes')}><Settings/></button></div><div className="profile-main"><img className="profile-avatar" loading="lazy" decoding="async" src={avatar} alt={`Foto de perfil de ${account.name}`}/><button type="button" className="edit" onClick={()=>{setDraftBio(bio);setProfileError('');setEditing(v=>!v)}}>{editing?'Cancelar':'Editar perfil'}</button><h1>{account.name} <ShieldCheck/></h1><p>{locationAllowed?'Tarragona':'Ubicación oculta a otros usuarios'}</p><div className="stats"><div><strong>{demoStats.plans}</strong><span>Planes</span></div><div><strong>{demoStats.connections}</strong><span>Conexiones</span></div><div><strong>{demoStats.ratings}</strong><span>Valoraciones</span></div></div>{editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button type="button" disabled={profileSaving} onClick={()=>{void saveProfile()}}>{profileSaving?'Guardando…':'Guardar cambios'}</button></div>:<p className="bio">{displayBio}</p>}{profileError&&<p className="settings-success" role="status">{profileError}</p>}<div className="profile-tags"><span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span><span><Languages/> Español, Catalán, Inglés</span><span><ShieldCheck/> Perfil: {privacy.profileVisibility}</span></div><div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button type="button" key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>{tab==='Fotos'&&<div className="photo-grid">{photos.map((id,i)=><img key={id} loading="lazy" decoding="async" src={`./assets/images/${id}.jpg`} alt={`Foto ${i+1} del perfil`}/>)}</div>}{tab==='Planes'&&<div className="profile-tab-panel"><strong>{demoStats.plans} planes</strong><span>{demoStats.created} creados · {demoStats.joined} unidos · {demoStats.favorites} favoritos en este dispositivo.</span></div>}{tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones nuevas visibles después de aplicar bloqueos.</span></div>}{tab==='Valoraciones'&&<div className="profile-tab-panel"><strong>{demoStats.ratingScore}</strong><span>{demoStats.ratings} valoraciones asociadas a este perfil.</span></div>}</div></div>
 }

@@ -37,7 +37,7 @@ export default function App(){
     let active=true;
     void fetchSharedPlans()
       .then(shared=>{if(active)setCreatedPlans(local=>mergePlans(shared,local))})
-      .catch(error=>console.warn('CONECTA shared plans load failed',error));
+      .catch(error=>console.warn('CONECTA shared plans load failed; local demo remains available',error));
     return ()=>{active=false};
   },[]);
 
@@ -55,14 +55,19 @@ export default function App(){
     setChatTarget(name||null);
     setView('Chat');
   };
-  const addCreatedPlan=(plan:Plan)=>{
+  const addCreatedPlan=async(plan:Plan):Promise<boolean>=>{
     setCreatedPlans(prev=>mergePlans([plan],prev));
     setExploreFilter('all');
     setExploreCategory(null);
-    void createSharedPlan(plan)
-      .then(()=>fetchSharedPlans())
-      .then(shared=>setCreatedPlans(local=>mergePlans(shared,local)))
-      .catch(error=>console.warn('CONECTA shared plan publish failed',error));
+    try{
+      await createSharedPlan(plan);
+      const shared=await fetchSharedPlans();
+      setCreatedPlans(local=>mergePlans(shared,local));
+      return true;
+    }catch(error){
+      console.warn('CONECTA shared plan publish failed; local copy kept',error);
+      return false;
+    }
   };
 
   return <div className="app-shell">

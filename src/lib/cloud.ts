@@ -13,6 +13,7 @@ const privacyKey='conecta-privacy-settings-v1';
 const blockedUsersKey='conecta-blocked-users-v2';
 let pendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
+let flushInFlight=false;
 
 function localPrototypeState(){
   const state:Record<string,unknown>={};
@@ -78,7 +79,8 @@ async function mergeRealProfilePrivacy(state:Record<string,unknown>){
 }
 
 export async function hydrateCloudState(){
-  const {data:{session}}=await supabase.auth.getSession();
+  const {data:{session},error:sessionError}=await supabase.auth.getSession();
+  if(sessionError)throw sessionError;
   if(!session)return false;
 
   const previousUserId=window.localStorage.getItem(authUserMarker);
@@ -122,34 +124,56 @@ export async function hydrateCloudState(){
   return true;
 }
 
+function scheduleFlush(delay=300){
+  if(flushTimer!==null)window.clearTimeout(flushTimer);
+  flushTimer=window.setTimeout(()=>{void flushCloudState()},delay);
+}
+
 async function flushCloudState(){
   flushTimer=null;
+  if(flushInFlight){
+    if(Object.keys(pendingState).length)scheduleFlush(300);
+    return;
+  }
+
   const patch=pendingState;
   pendingState={};
   if(!Object.keys(patch).length)return;
 
-  const {data:{session}}=await supabase.auth.getSession();
-  if(!session)return;
+  flushInFlight=true;
+  try{
+    const {data:{session},error:sessionError}=await supabase.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session)return;
 
-  const {data}=await supabase
-    .from('prototype_state')
-    .select('state')
-    .eq('user_id',session.user.id)
-    .maybeSingle();
+    const {data,error:readError}=await supabase
+      .from('prototype_state')
+      .select('state')
+      .eq('user_id',session.user.id)
+      .maybeSingle();
+    if(readError)throw readError;
 
-  const current=data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)
-    ? data.state as Record<string,unknown>
-    : {};
+    const current=data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)
+      ? data.state as Record<string,unknown>
+      : {};
 
-  const {error}=await supabase
-    .from('prototype_state')
-    .upsert({
-      user_id:session.user.id,
-      state:{...current,...patch},
-      updated_at:new Date().toISOString(),
-    },{onConflict:'user_id'});
+    const {error}=await supabase
+      .from('prototype_state')
+      .upsert({
+        user_id:session.user.id,
+        state:{...current,...patch},
+        updated_at:new Date().toISOString(),
+      },{onConflict:'user_id'});
 
-  if(error)console.warn('CONECTA cloud state sync failed',error.message);
+    if(error)throw error;
+  }catch(error){
+    pendingState={...patch,...pendingState};
+    console.warn('CONECTA cloud state sync failed; retry scheduled',error);
+    scheduleFlush(1500);
+  }finally{
+    flushInFlight=false;
+    if(Object.keys(pendingState).length&&flushTimer===null)scheduleFlush(300);
+  }
 }
 
 export function queueCloudStateSave(key:string,value:unknown){
@@ -161,8 +185,7 @@ export function queueCloudStateSave(key:string,value:unknown){
   if(key===blockedUsersKey&&isBlockedUsers(value)){
     void syncBackendBlocks(value).catch(error=>console.warn('CONECTA block write failed; demo state kept',error));
   }
-  if(flushTimer!==null)window.clearTimeout(flushTimer);
-  flushTimer=window.setTimeout(()=>{void flushCloudState()},300);
+  scheduleFlush(300);
 }
 
 type PrototypePlanRow={
@@ -194,7 +217,8 @@ export async function fetchSharedPlans():Promise<Plan[]>{
 }
 
 export async function createSharedPlan(plan:Plan){
-  const {data:{session}}=await supabase.auth.getSession();
+  const {data:{session},error:sessionError}=await supabase.auth.getSession();
+  if(sessionError)throw sessionError;
   if(!session)throw new Error('Necesitas iniciar sesión para publicar un plan.');
 
   const {error}=await supabase

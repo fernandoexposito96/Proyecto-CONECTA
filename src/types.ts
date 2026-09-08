@@ -49,6 +49,8 @@ export type ChatItem = {
   count: string;
   isGroup: boolean;
   avatar: string;
+  conversationId?: string;
+  userId?: string;
 };
 
 export type ProfileTab = 'Fotos' | 'Planes' | 'Conexiones' | 'Valoraciones';

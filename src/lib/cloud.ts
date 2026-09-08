@@ -88,10 +88,11 @@ export function resetCloudStateQueue(){
   }
 }
 
-export async function hydrateCloudState(){
+export async function hydrateCloudState(expectedUserId?:string){
   const {data:{session},error:sessionError}=await supabase.auth.getSession();
   if(sessionError)throw sessionError;
   if(!session)return false;
+  if(expectedUserId&&session.user.id!==expectedUserId)return false;
 
   const previousUserId=window.localStorage.getItem(authUserMarker);
   const previousLocalState=localPrototypeState();

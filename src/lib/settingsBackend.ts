@@ -1,4 +1,4 @@
-import type { AccountSettings, Language, NotificationFrequency, PrivacySettings, Theme, ToggleKey } from '../types';
+import type { Language, NotificationFrequency, PrivacySettings, Theme, ToggleKey } from '../types';
 import { supabase } from './supabase';
 
 export type NotificationToggles=Record<ToggleKey,boolean>;
@@ -15,6 +15,12 @@ const themeToBackend:Record<Theme,'light'|'dark'|'system'>={Claro:'light',Oscuro
 const backendToTheme:Record<'light'|'dark'|'system',Theme>={light:'Claro',dark:'Oscuro',system:'Sistema'};
 const languageToBackend:Record<Language,'es'|'ca'|'en'>={Español:'es',Català:'ca',English:'en'};
 const backendToLanguage:Record<'es'|'ca'|'en',Language>={es:'Español',ca:'Català',en:'English'};
+
+const notificationTogglesKey='conecta-notification-toggles-v1';
+const notificationFrequencyKey='conecta-notification-frequency-v1';
+const themeKey='conecta-theme';
+const languageKey='conecta-language';
+const privacyKey='conecta-privacy-settings-v1';
 
 async function currentUser(){
   const {data:{user},error}=await supabase.auth.getUser();
@@ -33,6 +39,19 @@ function isNotificationToggles(value:unknown):value is NotificationToggles{
 
 function isFrequency(value:unknown):value is NotificationFrequency{
   return value==='daily'||value==='weekly'||value==='important';
+}
+
+function isTheme(value:unknown):value is Theme{
+  return value==='Claro'||value==='Oscuro'||value==='Sistema';
+}
+
+function isLanguage(value:unknown):value is Language{
+  return value==='Español'||value==='Català'||value==='English';
+}
+
+function isPrivacy(value:unknown):value is PrivacySettings{
+  if(!isObject(value))return false;
+  return typeof value.profileVisibility==='string'&&typeof value.planVisibility==='string'&&typeof value.locationSharing==='string'&&typeof value.messagePermission==='string'&&typeof value.connectionRequests==='string';
 }
 
 function privacyToBackend(value:PrivacySettings){
@@ -65,47 +84,30 @@ async function upsertUserSettings(patch:Record<string,unknown>){
   return true;
 }
 
-export async function saveAccountIdentity(account:AccountSettings){
-  const cleanName=account.name.trim();
-  if(!cleanName)return false;
-  const user=await currentUser();
-  if(!user)return false;
-
-  const {error:authError}=await supabase.auth.updateUser({data:{display_name:cleanName,full_name:cleanName}});
-  if(authError)throw authError;
-
-  const {error:profileError}=await supabase
-    .from('profiles')
-    .upsert({id:user.id,display_name:cleanName,updated_at:new Date().toISOString()},{onConflict:'id'});
-  if(profileError)throw profileError;
-  return true;
+function loadLocalJson(key:string):unknown{
+  try{
+    const raw=window.localStorage.getItem(key);
+    return raw?JSON.parse(raw):undefined;
+  }catch{
+    return undefined;
+  }
 }
 
-export async function saveNotificationSettings(toggles:NotificationToggles,frequency:NotificationFrequency){
-  const user=await currentUser();
-  if(!user)return false;
-
-  const notifications={...toggles,frequency};
-  const [{error:settingsError},{error:preferenceError}]=await Promise.all([
-    supabase.from('user_settings').upsert({user_id:user.id,notifications,updated_at:new Date().toISOString()},{onConflict:'user_id'}),
-    supabase.from('notification_preferences').upsert({
-      user_id:user.id,
-      messages:toggles.messages,
-      connections:toggles.requests,
-      plans:toggles.planUpdates||toggles.reminders,
-      events:toggles.planUpdates||toggles.reminders,
-      communities:toggles.news,
-      updated_at:new Date().toISOString(),
-    },{onConflict:'user_id'}),
-  ]);
-  if(settingsError)throw settingsError;
-  if(preferenceError)throw preferenceError;
-  return true;
+async function syncNotificationsToUserSettings(){
+  const toggles=loadLocalJson(notificationTogglesKey);
+  const frequency=loadLocalJson(notificationFrequencyKey);
+  if(!isNotificationToggles(toggles))return false;
+  const safeFrequency=isFrequency(frequency)?frequency:'daily';
+  return upsertUserSettings({notifications:{...toggles,frequency:safeFrequency}});
 }
 
-export const saveThemeSetting=(theme:Theme)=>upsertUserSettings({appearance:themeToBackend[theme]});
-export const saveLanguageSetting=(language:Language)=>upsertUserSettings({language:languageToBackend[language]});
-export const savePrivacySettingsBackend=(privacy:PrivacySettings)=>upsertUserSettings({privacy:privacyToBackend(privacy)});
+export async function syncSettingStorageKey(key:string,value:unknown){
+  if(key===themeKey&&isTheme(value))return upsertUserSettings({appearance:themeToBackend[value]});
+  if(key===languageKey&&isLanguage(value))return upsertUserSettings({language:languageToBackend[value]});
+  if(key===privacyKey&&isPrivacy(value))return upsertUserSettings({privacy:privacyToBackend(value)});
+  if((key===notificationTogglesKey&&isNotificationToggles(value))||(key===notificationFrequencyKey&&isFrequency(value)))return syncNotificationsToUserSettings();
+  return false;
+}
 
 export async function loadBackendSettings():Promise<BackendSettings|null>{
   const user=await currentUser();

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, CheckCircle2 } from 'lucide-react';
+import { Bell, CheckCircle2, MessageCircle } from 'lucide-react';
 import { fetchBackendNotifications, fetchUnreadNotificationCount, markBackendNotificationRead } from '../lib/notificationsBackend';
 import { loadStored, storageKeys } from '../lib/storage';
 import type { ToggleKey } from '../types';
@@ -9,18 +9,21 @@ const defaultToggles:Record<ToggleKey,boolean>={messages:true,requests:true,plan
 type NotificationItem={
   id:string;
   toggleKey:ToggleKey;
+  backendType:string;
   title:string;
   body:string;
   time:string;
   read:boolean;
   backend:boolean;
+  entityType:string|null;
+  entityId:string|null;
 };
 
 const demoNotifications:NotificationItem[]=[
-  {id:'demo-plan',toggleKey:'planUpdates',title:'Plan actualizado',body:'Pádel Sunset cambia su hora a las 19:30.',time:'Hace 10 min',read:false,backend:false},
-  {id:'demo-request',toggleKey:'requests',title:'Nueva conexión',body:'Marta ha aceptado tu solicitud de conexión.',time:'Hace 1 h',read:true,backend:false},
-  {id:'demo-reminder',toggleKey:'reminders',title:'Recordatorio',body:'Running por la costa empieza mañana a las 09:00.',time:'Hace 3 h',read:true,backend:false},
-  {id:'demo-message',toggleKey:'messages',title:'Grupo activo',body:'Hay nuevos mensajes en Viaje a Madrid.',time:'Ayer',read:true,backend:false},
+  {id:'demo-plan',toggleKey:'planUpdates',backendType:'demo',title:'Plan actualizado',body:'Pádel Sunset cambia su hora a las 19:30.',time:'Hace 10 min',read:false,backend:false,entityType:null,entityId:null},
+  {id:'demo-request',toggleKey:'requests',backendType:'demo',title:'Nueva conexión',body:'Marta ha aceptado tu solicitud de conexión.',time:'Hace 1 h',read:true,backend:false,entityType:null,entityId:null},
+  {id:'demo-reminder',toggleKey:'reminders',backendType:'demo',title:'Recordatorio',body:'Running por la costa empieza mañana a las 09:00.',time:'Hace 3 h',read:true,backend:false,entityType:null,entityId:null},
+  {id:'demo-message',toggleKey:'messages',backendType:'demo',title:'Grupo activo',body:'Hay nuevos mensajes en Viaje a Madrid.',time:'Ayer',read:true,backend:false,entityType:null,entityId:null},
 ];
 
 function toggleForType(type:string):ToggleKey{
@@ -48,7 +51,7 @@ function relativeTime(value:string){
   return new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short'}).format(new Date(timestamp));
 }
 
-export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(count:number)=>void}){
+export function NotificationsView({onUnreadCountChange,onOpenPlanChat}:{onUnreadCountChange?:(count:number)=>void;onOpenPlanChat?:(planTitle:string)=>void}){
   const [toggles]=useState<Record<ToggleKey,boolean>>(()=>loadStored(storageKeys.notificationToggles,defaultToggles));
   const [items,setItems]=useState<NotificationItem[]>(demoNotifications);
   const [usingDemo,setUsingDemo]=useState(true);
@@ -71,11 +74,14 @@ export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(c
           const mapped=rows.map(row=>({
             id:row.id,
             toggleKey:toggleForType(row.type),
+            backendType:row.type,
             title:row.title,
             body:row.body,
             time:relativeTime(row.createdAt),
             read:row.read,
             backend:true,
+            entityType:row.entityType,
+            entityId:row.entityId,
           } satisfies NotificationItem));
           setItems(mapped);
           setUsingDemo(false);
@@ -103,9 +109,14 @@ export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(c
 
   const visible=useMemo(()=>items.filter(item=>toggles[item.toggleKey]),[items,toggles]);
 
+  const openNotificationAction=(item:NotificationItem)=>{
+    if(item.backendType==='plan_reminder'&&item.entityType==='plan'&&item.body.trim())onOpenPlanChat?.(item.body.trim());
+  };
+
   const markRead=(item:NotificationItem)=>{
-    if(item.read)return;
+    if(item.read){openNotificationAction(item);return;}
     setItems(current=>current.map(entry=>entry.id===item.id?{...entry,read:true}:entry));
+    openNotificationAction(item);
     if(!item.backend)return;
 
     void (async()=>{
@@ -131,8 +142,8 @@ export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(c
     {loading&&<div className="empty-state">Actualizando notificaciones…</div>}
     {!loading&&error&&<div className="notification-status" role="status">{error}</div>}
     {!loading&&usingDemo&&!error&&<div className="notification-status">Aún no tienes notificaciones reales. Conservamos el demo para que puedas revisar la experiencia.</div>}
-    {!loading&&(visible.length?<div className="notification-list">{visible.map(item=><button key={item.id} type="button" className={`notification-card ${item.read?'':'is-new'}`} onClick={()=>markRead(item)} aria-label={`${item.title}. ${item.read?'Leída':'Marcar como leída'}`}>
-      <span className="notification-icon"><CheckCircle2/></span><span className="notification-copy"><strong>{item.title}</strong><span>{item.body}</span><small>{item.time}</small></span>
-    </button>)}</div>:<div className="empty-state">Has desactivado estas notificaciones desde Ajustes.</div>)}
+    {!loading&&(visible.length?<div className="notification-list">{visible.map(item=>{const opensChat=item.backendType==='plan_reminder'&&item.entityType==='plan';return <button key={item.id} type="button" className={`notification-card ${item.read?'':'is-new'}`} onClick={()=>markRead(item)} aria-label={`${item.title}. ${opensChat?'Abrir chat del plan':item.read?'Leída':'Marcar como leída'}`}>
+      <span className="notification-icon">{opensChat?<MessageCircle/>:<CheckCircle2/>}</span><span className="notification-copy"><strong>{item.title}</strong><span>{item.body}</span><small>{item.time}{opensChat?' · Abrir chat del plan':''}</small></span>
+    </button>})}</div>:<div className="empty-state">Has desactivado estas notificaciones desde Ajustes.</div>)}
   </div>
 }

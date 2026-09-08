@@ -1,4 +1,4 @@
-import type { AccountSettings, BlockedUser, Plan, PrivacySettings, ToggleKey } from '../types';
+import type { BlockedUser, Plan, PrivacySettings } from '../types';
 import { accountFromUser, demoAccount } from './identity';
 import { defaultPrivacySettings } from './privacy';
 import { loadProfilePrivacySettings, syncBackendBlocks, syncProfilePrivacySettings } from './privacyBackend';
@@ -11,7 +11,6 @@ const themeKey='conecta-theme';
 const languageKey='conecta-language';
 const privacyKey='conecta-privacy-settings-v1';
 const blockedUsersKey='conecta-blocked-users-v2';
-const notificationTogglesKey='conecta-notification-toggles-v1';
 let pendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
 let flushInFlight=false;
@@ -61,53 +60,6 @@ function isPrivacySettings(value:unknown):value is PrivacySettings{
 function isBlockedUsers(value:unknown):value is BlockedUser[]{
   if(!Array.isArray(value))return false;
   return value.every(item=>Boolean(item&&typeof item==='object'&&typeof (item as BlockedUser).userId==='string'&&typeof (item as BlockedUser).name==='string'));
-}
-
-function isAccountSettings(value:unknown):value is AccountSettings{
-  if(!value||typeof value!=='object'||Array.isArray(value))return false;
-  const item=value as Record<string,unknown>;
-  return typeof item.name==='string'&&typeof item.email==='string';
-}
-
-function isNotificationToggles(value:unknown):value is Record<ToggleKey,boolean>{
-  if(!value||typeof value!=='object'||Array.isArray(value))return false;
-  const item=value as Record<string,unknown>;
-  return ['messages','requests','planUpdates','reminders','news','offers'].every(key=>typeof item[key]==='boolean');
-}
-
-async function syncAccountIdentity(account:AccountSettings){
-  const cleanName=account.name.trim();
-  if(!cleanName)return false;
-  const {data:{user},error:userError}=await supabase.auth.getUser();
-  if(userError)throw userError;
-  if(!user)return false;
-
-  const {error:authError}=await supabase.auth.updateUser({data:{display_name:cleanName,full_name:cleanName}});
-  if(authError)throw authError;
-
-  const {error:profileError}=await supabase
-    .from('profiles')
-    .upsert({id:user.id,display_name:cleanName,updated_at:new Date().toISOString()},{onConflict:'id'});
-  if(profileError)throw profileError;
-  return true;
-}
-
-async function syncNotificationPreferences(toggles:Record<ToggleKey,boolean>){
-  const {data:{user},error:userError}=await supabase.auth.getUser();
-  if(userError)throw userError;
-  if(!user)return false;
-
-  const {error}=await supabase
-    .from('notification_preferences')
-    .upsert({
-      user_id:user.id,
-      messages:toggles.messages,
-      connections:toggles.requests,
-      plans:toggles.planUpdates||toggles.reminders,
-      updated_at:new Date().toISOString(),
-    },{onConflict:'user_id'});
-  if(error)throw error;
-  return true;
 }
 
 async function mergeRealProfilePrivacy(state:Record<string,unknown>){
@@ -241,12 +193,6 @@ async function flushCloudState(){
 export function queueCloudStateSave(key:string,value:unknown){
   if(!key.startsWith(storagePrefix)||key===authUserMarker)return;
   pendingState[key]=value;
-  if(key===accountKey&&isAccountSettings(value)){
-    void syncAccountIdentity(value).catch(error=>console.warn('CONECTA account identity sync failed; cloud state kept',error));
-  }
-  if(key===notificationTogglesKey&&isNotificationToggles(value)){
-    void syncNotificationPreferences(value).catch(error=>console.warn('CONECTA notification preference sync failed; cloud state kept',error));
-  }
   if(key===privacyKey&&isPrivacySettings(value)){
     void syncProfilePrivacySettings(value).catch(error=>console.warn('CONECTA profile privacy write failed; demo state kept',error));
   }

@@ -14,6 +14,7 @@ const blockedUsersKey='conecta-blocked-users-v2';
 let pendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
 let flushInFlight=false;
+let syncGeneration=0;
 
 function localPrototypeState(){
   const state:Record<string,unknown>={};
@@ -78,6 +79,15 @@ async function mergeRealProfilePrivacy(state:Record<string,unknown>){
   return state;
 }
 
+export function resetCloudStateQueue(){
+  syncGeneration+=1;
+  pendingState={};
+  if(flushTimer!==null){
+    window.clearTimeout(flushTimer);
+    flushTimer=null;
+  }
+}
+
 export async function hydrateCloudState(){
   const {data:{session},error:sessionError}=await supabase.auth.getSession();
   if(sessionError)throw sessionError;
@@ -137,6 +147,7 @@ async function flushCloudState(){
   }
 
   const patch=pendingState;
+  const generation=syncGeneration;
   pendingState={};
   if(!Object.keys(patch).length)return;
 
@@ -144,7 +155,7 @@ async function flushCloudState(){
   try{
     const {data:{session},error:sessionError}=await supabase.auth.getSession();
     if(sessionError)throw sessionError;
-    if(!session)return;
+    if(!session||generation!==syncGeneration)return;
 
     const {data,error:readError}=await supabase
       .from('prototype_state')
@@ -152,6 +163,7 @@ async function flushCloudState(){
       .eq('user_id',session.user.id)
       .maybeSingle();
     if(readError)throw readError;
+    if(generation!==syncGeneration)return;
 
     const current=data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)
       ? data.state as Record<string,unknown>
@@ -167,12 +179,13 @@ async function flushCloudState(){
 
     if(error)throw error;
   }catch(error){
+    if(generation!==syncGeneration)return;
     pendingState={...patch,...pendingState};
     console.warn('CONECTA cloud state sync failed; retry scheduled',error);
     scheduleFlush(1500);
   }finally{
     flushInFlight=false;
-    if(Object.keys(pendingState).length&&flushTimer===null)scheduleFlush(300);
+    if(generation===syncGeneration&&Object.keys(pendingState).length&&flushTimer===null)scheduleFlush(300);
   }
 }
 

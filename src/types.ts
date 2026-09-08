@@ -51,7 +51,23 @@ export type ChatItem = {
 
 export type ProfileTab = 'Fotos' | 'Planes' | 'Conexiones' | 'Valoraciones';
 
-export type SettingsScreen = 'root' | 'security' | 'privacy' | 'notifications' | 'help' | 'premium' | 'account' | 'appearance' | 'language' | 'about' | 'helpDetail' | 'actionDetail';
+export type SettingsScreen =
+  | 'root'
+  | 'security'
+  | 'privacy'
+  | 'notifications'
+  | 'help'
+  | 'premium'
+  | 'account'
+  | 'appearance'
+  | 'language'
+  | 'about'
+  | 'helpDetail'
+  | 'actionDetail'
+  | 'privacyField'
+  | 'blockedUsers'
+  | 'changePassword';
+
 export type ToggleKey = 'messages' | 'requests' | 'planUpdates' | 'reminders' | 'news' | 'offers';
 export type Theme = 'Claro' | 'Oscuro' | 'Sistema';
 export type Language = 'Español' | 'Català' | 'English';
@@ -59,3 +75,19 @@ export type NotificationFrequency = 'daily' | 'weekly' | 'important';
 export type HelpItem = { title: string; body: string };
 export type ActionItem = { title: string; body: string };
 export type AccountSettings = { name: string; email: string };
+
+export type PrivacyFieldKey = 'profileVisibility' | 'planVisibility' | 'locationSharing' | 'messagePermission' | 'connectionRequests';
+
+export type PrivacySettings = {
+  profileVisibility: 'Todos' | 'Solo conexiones';
+  planVisibility: 'Todos' | 'Solo conexiones';
+  locationSharing: 'Siempre' | 'Al usar la app' | 'Nunca';
+  messagePermission: 'Todos' | 'Solo conexiones';
+  connectionRequests: 'Todos' | 'Nadie';
+};
+
+export type BlockedUser = {
+  userId: string;
+  name: string;
+  avatar?: string;
+};

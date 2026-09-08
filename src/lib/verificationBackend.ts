@@ -31,15 +31,14 @@ export async function loadIdentityVerification():Promise<IdentityVerificationSta
 }
 
 export async function submitSelfieVerification(file:File){
-  if(!file.type.startsWith('image/'))throw new Error('Selecciona una foto válida.');
+  if(file.type!=='image/jpeg')throw new Error('Usa una foto JPEG tomada con la cámara.');
   if(file.size>15_000_000)throw new Error('La foto supera el límite de 15 MB.');
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
   if(!user)throw new Error('Necesitas iniciar sesión para verificar tu identidad.');
 
-  const extension=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
-  const path=`${user.id}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-  const {error:uploadError}=await supabase.storage.from('identity-video').upload(path,file,{upsert:false,contentType:file.type});
+  const path=`${user.id}/${Date.now()}-${crypto.randomUUID()}.jpg`;
+  const {error:uploadError}=await supabase.storage.from('identity-video').upload(path,file,{upsert:false,contentType:'image/jpeg'});
   if(uploadError)throw uploadError;
 
   const {error:insertError}=await supabase.from('identity_verifications').insert({

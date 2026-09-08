@@ -30,6 +30,7 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [backendChats,setBackendChats]=useState<BackendChatPreview[]>([]);
   const [backendThreads,setBackendThreads]=useState<Record<string,BackendChatMessage[]>>({});
   const [backendUserId,setBackendUserId]=useState<string|null>(null);
+  const [sending,setSending]=useState(false);
 
   useEffect(()=>{saveStored(storageKeys.chatMessages,sent)},[sent]);
   useEffect(()=>{if(initialContact&&!blocked.has(initialContact))setActiveChat(initialContact)},[initialContact,blocked]);
@@ -80,6 +81,10 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const activeItem=useMemo(()=>activeChat?items.find(item=>chatKey(item)===activeChat||item.name===activeChat):undefined,[activeChat,items]);
 
   useEffect(()=>{
+    if(activeChat&&!activeItem)setActiveChat(null);
+  },[activeChat,activeItem]);
+
+  useEffect(()=>{
     const conversationId=activeItem?.conversationId;
     if(!conversationId)return;
     let active=true;
@@ -96,30 +101,34 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
     return !q||`${item.name} ${item.msg}`.toLocaleLowerCase('es').includes(q);
   }),[items,tab,query]);
 
-  if(activeChat){
+  if(activeChat&&activeItem){
     const item=activeItem;
-    if(!item){setActiveChat(null);return null;}
     const localMessages=sent[item.name]||[];
     const realMessages=item.conversationId?backendThreads[item.conversationId]||[]:[];
     const send=async()=>{
       const text=draft.trim();
-      if(!text)return;
+      if(!text||sending)return;
+      setSending(true);
       setDraft('');
-      if(item.conversationId){
-        try{
-          const sentReal=await sendBackendMessage(item.conversationId,text);
-          if(sentReal){
-            const refreshed=await loadBackendMessages(item.conversationId);
-            setBackendThreads(current=>({...current,[item.conversationId as string]:refreshed}));
-            return;
+      try{
+        if(item.conversationId){
+          try{
+            const sentReal=await sendBackendMessage(item.conversationId,text);
+            if(sentReal){
+              const refreshed=await loadBackendMessages(item.conversationId);
+              setBackendThreads(current=>({...current,[item.conversationId as string]:refreshed}));
+              return;
+            }
+          }catch(error){
+            console.warn('CONECTA real message send failed; demo fallback kept',error);
           }
-        }catch(error){
-          console.warn('CONECTA real message send failed; demo fallback kept',error);
         }
+        setSent(value=>({...value,[item.name]:[...(value[item.name]||[]),text]}));
+      }finally{
+        setSending(false);
       }
-      setSent(value=>({...value,[item.name]:[...(value[item.name]||[]),text]}));
     };
-    return <div className="page chat-page"><div className="chat-thread-head"><button aria-label="Volver a chats" onClick={()=>setActiveChat(null)}><ChevronLeft/></button><img src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>Conversación</span></div></div><div className="chat-thread">{realMessages.length?realMessages.map(message=><div className={`message ${message.senderId===backendUserId?'sent':'received'}`} key={message.id}>{message.content}</div>):<div className="message received">{item.msg}</div>}{localMessages.map((message,index)=><div className="message sent" key={`${message}-${index}`}>{message}</div>)}</div><div className="chat-composer"><input value={draft} onChange={event=>setDraft(event.target.value)} onKeyDown={event=>{if(event.key==='Enter')void send();}} placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje"/><button onClick={()=>{void send()}} aria-label="Enviar mensaje"><Send/></button></div></div>;
+    return <div className="page chat-page"><div className="chat-thread-head"><button aria-label="Volver a chats" onClick={()=>setActiveChat(null)}><ChevronLeft/></button><img src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>Conversación</span></div></div><div className="chat-thread">{realMessages.length?realMessages.map(message=><div className={`message ${message.senderId===backendUserId?'sent':'received'}`} key={message.id}>{message.content}</div>):<div className="message received">{item.msg}</div>}{localMessages.map((message,index)=><div className="message sent" key={`${message}-${index}`}>{message}</div>)}</div><div className="chat-composer"><input value={draft} disabled={sending} onChange={event=>setDraft(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();void send();}}} placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje"/><button disabled={sending||!draft.trim()} onClick={()=>{void send()}} aria-label="Enviar mensaje"><Send/></button></div></div>;
   }
 
   const blockedAttempt=Boolean(initialContact&&blocked.has(initialContact));

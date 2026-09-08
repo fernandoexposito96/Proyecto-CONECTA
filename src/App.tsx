@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BottomNav, Header, Sidebar } from './components/AppNavigation';
 import { PlanDetail } from './components/PlanComponents';
 import { createSharedPlan, fetchSharedPlans } from './lib/cloud';
+import { fetchUnreadNotificationCount } from './lib/notificationsBackend';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
 import type { ExploreFilter, Plan, View } from './types';
 import { ChatView } from './views/ChatView';
@@ -30,6 +31,7 @@ export default function App(){
   const [exploreFilter,setExploreFilter]=useState<ExploreFilter>('near');
   const [exploreCategory,setExploreCategory]=useState<string|null>(null);
   const [chatTarget,setChatTarget]=useState<string|null>(null);
+  const [unreadNotifications,setUnreadNotifications]=useState(0);
 
   useEffect(()=>{saveStored(storageKeys.createdPlans,createdPlans)},[createdPlans]);
 
@@ -38,6 +40,14 @@ export default function App(){
     void fetchSharedPlans()
       .then(shared=>{if(active)setCreatedPlans(local=>mergePlans(shared,local))})
       .catch(error=>console.warn('CONECTA shared plans load failed; local demo remains available',error));
+    return ()=>{active=false};
+  },[]);
+
+  useEffect(()=>{
+    let active=true;
+    void fetchUnreadNotificationCount()
+      .then(count=>{if(active)setUnreadNotifications(count)})
+      .catch(error=>console.warn('CONECTA unread notifications unavailable; indicator hidden',error));
     return ()=>{active=false};
   },[]);
 
@@ -73,14 +83,14 @@ export default function App(){
   return <div className="app-shell">
     <Sidebar view={view} setView={setView}/>
     <main>
-      <Header view={view} setView={setView}/>
+      <Header view={view} setView={setView} unreadNotifications={unreadNotifications}/>
       <div className="content">
         {view==='Inicio'&&<HomeView setView={setView} onPlan={setSelected} onExplore={openExplore}/>} 
         {view==='Explora'&&<ExploreView onPlan={setSelected} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} 
         {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
         {view==='Ajustes'&&<SettingsView/>}
-        {view==='Notificaciones'&&<NotificationsView/>}
+        {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications}/>} 
         {view==='Crear'&&<CreatePlanView setView={setView} onCreate={addCreatedPlan}/>} 
       </div>
     </main>

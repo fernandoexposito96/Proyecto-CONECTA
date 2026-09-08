@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Languages, MapPin, Settings, ShieldCheck } from 'lucide-react';
 import { accountFromUser, avatarFromUser, demoAccount, demoAvatar, isDemoAccount } from '../lib/identity';
+import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 import type { AccountSettings, Plan, ProfileTab, View } from '../types';
@@ -10,12 +11,15 @@ const demoBio='Deporte, viajes, buena comida y conocer gente increíble. La vida
 const emptyBio='Añade una biografía para contar qué planes te gustan y qué buscas en CONECTA.';
 
 export function ProfileView({setView}:{setView:(v:View)=>void}){
+  const [privacy]=useState(loadPrivacySettings);
+  const [blocked]=useState<Set<string>>(()=>blockedNames());
   const [tab,setTab]=useState<ProfileTab>('Fotos');
   const [editing,setEditing]=useState(false);
   const [account,setAccount]=useState<AccountSettings>(()=>loadStored(storageKeys.settingsAccount,demoAccount));
   const [avatar,setAvatar]=useState(demoAvatar);
   const [bio,setBio]=useState(()=>loadStored<string>(storageKeys.profileBio,''));
   const [draftBio,setDraftBio]=useState(bio);
+  const locationAllowed=canUseLocation(privacy);
 
   useEffect(()=>{
     let active=true;
@@ -38,7 +42,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
   const demoStats=useMemo(()=>{
     const created=loadStored<Plan[]>(storageKeys.createdPlans,[]);
     const joined=loadStored<string[]>(storageKeys.joinedPlans,[]);
-    const connections=loadStored<string[]>(storageKeys.connections,[]);
+    const connections=loadStored<string[]>(storageKeys.connections,[]).filter(name=>!blocked.has(name));
     const favorites=loadStored<string[]>(storageKeys.planFavorites,[]);
     const demo=isDemoAccount(account);
     return {
@@ -51,7 +55,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
       favorites:favorites.length,
       newConnections:connections.length,
     };
-  },[account]);
+  },[account,blocked]);
 
-  return <div className="page profile-page"><div className="profile-cover"><img loading="lazy" decoding="async" src="./assets/images/photo-1500530855697-b586d89ba3ee.jpg" alt="Portada del perfil"/><button aria-label="Abrir ajustes" onClick={()=>setView('Ajustes')}><Settings/></button></div><div className="profile-main"><img className="profile-avatar" loading="lazy" decoding="async" src={avatar} alt={`Foto de perfil de ${account.name}`}/><button className="edit" onClick={()=>{setDraftBio(displayBio);setEditing(v=>!v)}}>{editing?'Cancelar':'Editar perfil'}</button><h1>{account.name} <ShieldCheck/></h1><p>Tarragona</p><div className="stats"><div><strong>{demoStats.plans}</strong><span>Planes</span></div><div><strong>{demoStats.connections}</strong><span>Conexiones</span></div><div><strong>{demoStats.ratings}</strong><span>Valoraciones</span></div></div>{editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button onClick={saveProfile}>Guardar cambios</button></div>:<p className="bio">{displayBio}</p>}<div className="profile-tags"><span><MapPin/> Tarragona</span><span><Languages/> Español, Catalán, Inglés</span><span><ShieldCheck/> Verificado</span></div><div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>{tab==='Fotos'&&<div className="photo-grid">{photos.map((id,i)=><img key={id} loading="lazy" decoding="async" src={`./assets/images/${id}.jpg`} alt={`Foto ${i+1} del perfil`}/>)}</div>}{tab==='Planes'&&<div className="profile-tab-panel"><strong>{demoStats.plans} planes</strong><span>{demoStats.created} creados · {demoStats.joined} unidos · {demoStats.favorites} favoritos en este dispositivo.</span></div>}{tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones nuevas añadidas desde el demo actual.</span></div>}{tab==='Valoraciones'&&<div className="profile-tab-panel"><strong>{demoStats.ratingScore}</strong><span>{demoStats.ratings} valoraciones asociadas a este perfil.</span></div>}</div></div>
+  return <div className="page profile-page"><div className="profile-cover"><img loading="lazy" decoding="async" src="./assets/images/photo-1500530855697-b586d89ba3ee.jpg" alt="Portada del perfil"/><button aria-label="Abrir ajustes" onClick={()=>setView('Ajustes')}><Settings/></button></div><div className="profile-main"><img className="profile-avatar" loading="lazy" decoding="async" src={avatar} alt={`Foto de perfil de ${account.name}`}/><button className="edit" onClick={()=>{setDraftBio(displayBio);setEditing(v=>!v)}}>{editing?'Cancelar':'Editar perfil'}</button><h1>{account.name} <ShieldCheck/></h1><p>{locationAllowed?'Tarragona':'Ubicación oculta a otros usuarios'}</p><div className="stats"><div><strong>{demoStats.plans}</strong><span>Planes</span></div><div><strong>{demoStats.connections}</strong><span>Conexiones</span></div><div><strong>{demoStats.ratings}</strong><span>Valoraciones</span></div></div>{editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button onClick={saveProfile}>Guardar cambios</button></div>:<p className="bio">{displayBio}</p>}<div className="profile-tags"><span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span><span><Languages/> Español, Catalán, Inglés</span><span><ShieldCheck/> Perfil: {privacy.profileVisibility}</span></div><div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>{tab==='Fotos'&&<div className="photo-grid">{photos.map((id,i)=><img key={id} loading="lazy" decoding="async" src={`./assets/images/${id}.jpg`} alt={`Foto ${i+1} del perfil`}/>)}</div>}{tab==='Planes'&&<div className="profile-tab-panel"><strong>{demoStats.plans} planes</strong><span>{demoStats.created} creados · {demoStats.joined} unidos · {demoStats.favorites} favoritos en este dispositivo.</span></div>}{tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones nuevas visibles después de aplicar bloqueos.</span></div>}{tab==='Valoraciones'&&<div className="profile-tab-panel"><strong>{demoStats.ratingScore}</strong><span>{demoStats.ratings} valoraciones asociadas a este perfil.</span></div>}</div></div>
 }

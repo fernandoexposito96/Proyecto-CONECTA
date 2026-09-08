@@ -1,7 +1,7 @@
-import type { Plan, PrivacySettings } from '../types';
+import type { BlockedUser, Plan, PrivacySettings } from '../types';
 import { accountFromUser, demoAccount } from './identity';
 import { defaultPrivacySettings } from './privacy';
-import { loadProfilePrivacySettings, syncProfilePrivacySettings } from './privacyBackend';
+import { loadProfilePrivacySettings, syncBackendBlocks, syncProfilePrivacySettings } from './privacyBackend';
 import { supabase } from './supabase';
 
 const storagePrefix='conecta-';
@@ -10,6 +10,7 @@ const accountKey='conecta-settings-account-v1';
 const themeKey='conecta-theme';
 const languageKey='conecta-language';
 const privacyKey='conecta-privacy-settings-v1';
+const blockedUsersKey='conecta-blocked-users-v2';
 let pendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
 
@@ -54,6 +55,11 @@ function isPrivacySettings(value:unknown):value is PrivacySettings{
   return typeof item.profileVisibility==='string'&&typeof item.planVisibility==='string'&&typeof item.locationSharing==='string'&&typeof item.messagePermission==='string'&&typeof item.connectionRequests==='string';
 }
 
+function isBlockedUsers(value:unknown):value is BlockedUser[]{
+  if(!Array.isArray(value))return false;
+  return value.every(item=>Boolean(item&&typeof item==='object'&&typeof (item as BlockedUser).userId==='string'&&typeof (item as BlockedUser).name==='string'));
+}
+
 async function mergeRealProfilePrivacy(state:Record<string,unknown>){
   const local=isPrivacySettings(state[privacyKey])?state[privacyKey]:defaultPrivacySettings;
   try{
@@ -91,6 +97,7 @@ export async function hydrateCloudState(){
     const state=await mergeRealProfilePrivacy({...data.state as Record<string,unknown>});
     writePrototypeState(state);
     window.localStorage.setItem(authUserMarker,session.user.id);
+    if(isBlockedUsers(state[blockedUsersKey]))void syncBackendBlocks(state[blockedUsersKey]).catch(error=>console.warn('CONECTA block sync failed; demo fallback kept',error));
     return true;
   }
 
@@ -106,6 +113,7 @@ export async function hydrateCloudState(){
 
   writePrototypeState(state);
   window.localStorage.setItem(authUserMarker,session.user.id);
+  if(isBlockedUsers(state[blockedUsersKey]))void syncBackendBlocks(state[blockedUsersKey]).catch(error=>console.warn('CONECTA block sync failed; demo fallback kept',error));
 
   const {error:upsertError}=await supabase
     .from('prototype_state')
@@ -149,6 +157,9 @@ export function queueCloudStateSave(key:string,value:unknown){
   pendingState[key]=value;
   if(key===privacyKey&&isPrivacySettings(value)){
     void syncProfilePrivacySettings(value).catch(error=>console.warn('CONECTA profile privacy write failed; demo state kept',error));
+  }
+  if(key===blockedUsersKey&&isBlockedUsers(value)){
+    void syncBackendBlocks(value).catch(error=>console.warn('CONECTA block write failed; demo state kept',error));
   }
   if(flushTimer!==null)window.clearTimeout(flushTimer);
   flushTimer=window.setTimeout(()=>{void flushCloudState()},300);

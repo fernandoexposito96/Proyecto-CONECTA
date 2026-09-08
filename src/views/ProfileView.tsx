@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronRight, Languages, MapPin, Pencil, Quote, Settings, ShieldCheck, Star, UsersRound } from 'lucide-react';
+import { CalendarDays, ChevronRight, MapPin, Pencil, Settings, ShieldCheck, Star, UsersRound } from 'lucide-react';
 import { accountFromUser, avatarFromUser, demoAccount, demoAvatar, isDemoAccount } from '../lib/identity';
 import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
@@ -7,8 +7,6 @@ import { supabase } from '../lib/supabase';
 import type { AccountSettings, Plan, ProfileTab, View } from '../types';
 
 const photos=['photo-1507525428034-b723cf961d3e','photo-1500530855697-b586d89ba3ee','photo-1533105079780-92b9be482077','photo-1544551763-46a013bb70d5','photo-1519046904884-53103b34b206','photo-1500534623283-312aade485b7'];
-const demoBio='Deporte, viajes, buena comida y conocer gente increíble. La vida son planes! ✈️🌍☕';
-const emptyBio='Añade una biografía para contar qué planes te gustan y qué buscas en CONECTA.';
 
 export function ProfileView({setView}:{setView:(v:View)=>void}){
   const [privacy]=useState(loadPrivacySettings);
@@ -51,7 +49,6 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
 
   useEffect(()=>{saveStored(storageKeys.profileBio,bio)},[bio]);
 
-  const displayBio=bio||(isDemoAccount(account)?demoBio:emptyBio);
   const saveProfile=async()=>{
     const clean=draftBio.trim();
     setProfileSaving(true);
@@ -131,14 +128,8 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
           </button>
         </div>
 
-        {editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button type="button" disabled={profileSaving} onClick={()=>{void saveProfile()}}>{profileSaving?'Guardando…':'Guardar cambios'}</button></div>:<div className="profile-about-card"><Quote/><p>{displayBio}</p></div>}
+        {editing&&<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button type="button" disabled={profileSaving} onClick={()=>{void saveProfile()}}>{profileSaving?'Guardando…':'Guardar cambios'}</button></div>}
         {profileError&&<p className="profile-error" role="alert">{profileError}</p>}
-
-        <div className="profile-tags">
-          <span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span>
-          <span><Languages/> Español, Catalán, Inglés</span>
-          <span><UsersRound/> {privacy.profileVisibility}</span>
-        </div>
 
         <div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button type="button" key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronRight, MapPin, Pencil, Settings, ShieldCheck, Star, UsersRound } from 'lucide-react';
+import { CalendarDays, Camera, ChevronRight, MapPin, MoreHorizontal, Pencil, ShieldCheck, Star, UsersRound } from 'lucide-react';
 import { accountFromUser, avatarFromUser, demoAccount, demoAvatar, isDemoAccount } from '../lib/identity';
 import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
@@ -7,6 +7,9 @@ import { supabase } from '../lib/supabase';
 import type { AccountSettings, Plan, ProfileTab, View } from '../types';
 
 const photos=['photo-1507525428034-b723cf961d3e','photo-1500530855697-b586d89ba3ee','photo-1533105079780-92b9be482077','photo-1544551763-46a013bb70d5','photo-1519046904884-53103b34b206','photo-1500534623283-312aade485b7'];
+const coverPhotos=['photo-1500530855697-b586d89ba3ee','photo-1507525428034-b723cf961d3e','photo-1533105079780-92b9be482077'];
+const demoBio='Me encanta descubrir nuevos sitios, la buena comida y los planes espontáneos. Siempre es mejor vivir experiencias en buena compañía.';
+const emptyBio='Añade una biografía desde Editar perfil.';
 
 export function ProfileView({setView}:{setView:(v:View)=>void}){
   const [privacy]=useState(loadPrivacySettings);
@@ -17,6 +20,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
   const [avatar,setAvatar]=useState(demoAvatar);
   const [bio,setBio]=useState(()=>loadStored<string>(storageKeys.profileBio,''));
   const [draftBio,setDraftBio]=useState(bio);
+  const [coverIndex,setCoverIndex]=useState(0);
   const [profileSaving,setProfileSaving]=useState(false);
   const [profileError,setProfileError]=useState('');
   const locationAllowed=canUseLocation(privacy);
@@ -49,6 +53,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
 
   useEffect(()=>{saveStored(storageKeys.profileBio,bio)},[bio]);
 
+  const displayBio=bio||(isDemoAccount(account)?demoBio:emptyBio);
   const saveProfile=async()=>{
     const clean=draftBio.trim();
     setProfileSaving(true);
@@ -90,9 +95,10 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
   return <div className="page profile-page">
     <div className="profile-shell">
       <div className="profile-cover">
-        <img loading="lazy" decoding="async" src="./assets/images/photo-1500530855697-b586d89ba3ee.jpg" alt="Portada del perfil"/>
+        <img loading="lazy" decoding="async" src={`./assets/images/${coverPhotos[coverIndex]}.jpg`} alt="Portada del perfil"/>
         <div className="profile-cover-glow" aria-hidden="true"/>
-        <button type="button" className="profile-settings" aria-label="Abrir ajustes" onClick={()=>setView('Ajustes')}><Settings/></button>
+        <span className="profile-cover-copy" aria-hidden="true">Buenas experiencias<br/>mejores personas ♡</span>
+        <button type="button" className="profile-cover-action" onClick={()=>setCoverIndex(i=>(i+1)%coverPhotos.length)}><Camera/> Cambiar portada</button>
       </div>
 
       <div className="profile-main">
@@ -107,8 +113,17 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
             <p className="profile-location"><MapPin/> {locationAllowed?'Tarragona':'Ubicación oculta a otros usuarios'}</p>
             <span className="profile-verification"><ShieldCheck/> Perfil verificado</span>
           </div>
-          <button type="button" className="profile-edit-btn" onClick={()=>{setDraftBio(bio);setProfileError('');setEditing(v=>!v)}}><Pencil/>{editing?'Cancelar':'Editar perfil'}</button>
+          <div className="profile-actions">
+            <button type="button" className="profile-edit-btn" onClick={()=>{setDraftBio(bio);setProfileError('');setEditing(v=>!v)}}><Pencil/>{editing?'Cancelar':'Editar perfil'}</button>
+            <button type="button" className="profile-more-btn" aria-label="Más opciones" onClick={()=>setView('Ajustes')}><MoreHorizontal/></button>
+          </div>
         </div>
+
+        {editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button type="button" disabled={profileSaving} onClick={()=>{void saveProfile()}}>{profileSaving?'Guardando…':'Guardar cambios'}</button></div>:<>
+          <p className="profile-bio">{displayBio}</p>
+          <div className="profile-interests" aria-label="Intereses"><span>🌴 Viajes</span><span>🍴 Gastronomía</span><span>⛰ Naturaleza</span><span>+3</span></div>
+        </>}
+        {profileError&&<p className="profile-error" role="alert">{profileError}</p>}
 
         <div className="profile-stats" aria-label="Resumen del perfil">
           <button type="button" onClick={()=>setTab('Planes')}>
@@ -127,9 +142,6 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
             <ChevronRight/>
           </button>
         </div>
-
-        {editing&&<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button type="button" disabled={profileSaving} onClick={()=>{void saveProfile()}}>{profileSaving?'Guardando…':'Guardar cambios'}</button></div>}
-        {profileError&&<p className="profile-error" role="alert">{profileError}</p>}
 
         <div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button type="button" key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
 

@@ -130,7 +130,16 @@ type PrototypePlanRow={
   created_at:string;
 };
 
+function isPlan(value:unknown):value is Plan{
+  return Boolean(
+    value&&typeof value==='object'&&
+    'title' in value&&typeof (value as Plan).title==='string'&&
+    'image' in value&&typeof (value as Plan).image==='string'
+  );
+}
+
 export async function fetchSharedPlans():Promise<Plan[]>{
+  const {data:{session}}=await supabase.auth.getSession();
   const {data,error}=await supabase
     .from('prototype_plans')
     .select('id,creator_id,plan,created_at')
@@ -139,12 +148,12 @@ export async function fetchSharedPlans():Promise<Plan[]>{
 
   if(error)throw error;
   return ((data||[]) as PrototypePlanRow[])
-    .map(row=>row.plan)
-    .filter((plan):plan is Plan=>Boolean(
-      plan&&typeof plan==='object'&&
-      'title' in plan&&typeof (plan as Plan).title==='string'&&
-      'image' in plan&&typeof (plan as Plan).image==='string'
-    ));
+    .filter(row=>{
+      if(!isPlan(row.plan))return false;
+      if(row.plan.visibility!=='Solo conexiones')return true;
+      return Boolean(session&&row.creator_id===session.user.id);
+    })
+    .map(row=>row.plan as Plan);
 }
 
 export async function createSharedPlan(plan:Plan){

@@ -27,23 +27,35 @@ export async function loadPlanPolls(planId:string):Promise<PlanPoll[]>{
   const pollIds=(pollRows||[]).map(row=>String(row.id||'')).filter(Boolean);
   if(!pollIds.length)return [];
 
-  const [{data:optionRows,error:optionError},{data:voteRows,error:voteError},{data:{user},error:userError}]=await Promise.all([
-    supabase.from('plan_poll_options').select('id,poll_id,label,position').in('poll_id',pollIds).order('position',{ascending:true}),
-    supabase.from('plan_poll_votes').select('option_id,user_id').in('option_id',(await supabase.from('plan_poll_options').select('id').in('poll_id',pollIds)).data?.map(row=>row.id)||[]),
-    supabase.auth.getUser(),
-  ]);
+  const {data:optionRows,error:optionError}=await supabase
+    .from('plan_poll_options')
+    .select('id,poll_id,label,position')
+    .in('poll_id',pollIds)
+    .order('position',{ascending:true});
   if(optionError)throw optionError;
-  if(voteError)throw voteError;
-  if(userError)throw userError;
 
+  const optionIds=(optionRows||[]).map(row=>String(row.id||'')).filter(Boolean);
+  let voteRows:Array<{option_id:string;user_id:string}>=[];
+  if(optionIds.length){
+    const {data,error}=await supabase
+      .from('plan_poll_votes')
+      .select('option_id,user_id')
+      .in('option_id',optionIds);
+    if(error)throw error;
+    voteRows=(data||[]) as Array<{option_id:string;user_id:string}>;
+  }
+
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
   const currentUserId=user?.id||'';
+
   return (pollRows||[]).map(row=>{
     const id=String(row.id||'');
     const options=(optionRows||[])
       .filter(option=>String(option.poll_id||'')===id)
       .map(option=>{
         const optionId=String(option.id||'');
-        const votes=(voteRows||[]).filter(vote=>String(vote.option_id||'')===optionId);
+        const votes=voteRows.filter(vote=>String(vote.option_id||'')===optionId);
         return {
           id:optionId,
           label:String(option.label||''),

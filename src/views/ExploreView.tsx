@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, Heart, Info, MapPin, Plus, Search, Send, SlidersHorizontal, Star, X } from 'lucide-react';
+import { ChevronLeft, Heart, Info, MapPin, Plus, Search, Send, SlidersHorizontal, Star, UserX, X } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, people, plans } from '../data/demoData';
 import { filterExplorePlans } from '../lib/planLogic';
-import { blockedNames, canUseLocation, distanceCopy, loadPrivacySettings } from '../lib/privacy';
+import { blockedNames, canUseLocation, distanceCopy, loadBlockedUsers, loadPrivacySettings } from '../lib/privacy';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { ExploreFilter, PeopleFilter, Person, Plan, Story } from '../types';
 
@@ -17,9 +17,11 @@ const storyCatalog:Story[]=[
   {name:'Álex',time:'8 h',avatar:socialPeopleBase.find(person=>person.name==='Álex')?.image||'',image:'./assets/images/photo-1551632811-561732d1e306.jpg',caption:'Hoy tocaba desconectar aquí 🏔️',location:'La Mussara'}
 ];
 
+const demoUserId=(name:string)=>`demo-${name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').replace(/[^a-z0-9]+/g,'-')}`;
+
 export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCategory=null,onChat}:{onPlan:(p:Plan)=>void,extraPlans?:Plan[],initialFilter?:ExploreFilter,initialCategory?:string|null,onChat:(name:string)=>void}){
   const [privacy]=useState(loadPrivacySettings);
-  const [blocked]=useState<Set<string>>(()=>blockedNames());
+  const [blocked,setBlocked]=useState<Set<string>>(()=>blockedNames());
   const locationAllowed=canUseLocation(privacy);
   const socialPeople=useMemo(()=>socialPeopleBase.filter(person=>!blocked.has(person.name)),[blocked]);
   const stories=useMemo(()=>storyCatalog.filter(story=>!blocked.has(story.name)),[blocked]);
@@ -71,6 +73,15 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
     if(like)setLiked(prev=>{const next=new Set(prev);next.add(person.name);return next});
     setPersonIndex(i=>i+1);
   };
+  const blockPerson=(person:Person)=>{
+    const current=loadBlockedUsers();
+    if(!current.some(user=>user.name===person.name)){
+      saveStored(storageKeys.blockedUsers,[...current,{userId:demoUserId(person.name),name:person.name,avatar:person.image}]);
+    }
+    setBlocked(previous=>new Set(previous).add(person.name));
+    setLiked(previous=>{const next=new Set(previous);next.delete(person.name);return next});
+    setPersonDetail(null);
+  };
   const sendStoryReply=()=>{
     const text=storyReply.trim();
     if(!text||storyIndex===null)return;
@@ -89,7 +100,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
       <div className="people-swipe-head"><button aria-label="Volver a Personas para ti" onClick={()=>{setPeopleMode(false);setPersonIndex(0);setPersonDetail(null)}}><ChevronLeft/></button><div className="people-swipe-title"><h1>Personas para ti</h1><p>Desliza para conocer gente afín</p></div><button aria-label="Cambiar filtro de personas" onClick={cyclePeopleFilter}><SlidersHorizontal/></button></div>
       <div className="swipe-filter-row"><button disabled={!locationAllowed} className={peopleFilter==='near'?'active':''} onClick={()=>setPeopleFilter('near')}>Cerca de mí</button><button className={peopleFilter==='age'?'active':''} onClick={()=>setPeopleFilter('age')}>Edad</button><button className={peopleFilter==='interests'?'active':''} onClick={()=>setPeopleFilter('interests')}>Intereses</button><button className={peopleFilter==='match'?'active':''} onClick={()=>setPeopleFilter('match')}>Afinidad</button></div>
       {person?<><div className="swipe-card"><img src={person.image} alt={`${person.name}, ${person.age} años`}/><div className="swipe-progress">{socialPeople.map((p,i)=><span key={p.name} className={i===personIndex?'active':''}/>)}</div><div className="swipe-card-info"><div className="swipe-card-info-top"><h2>{person.name}, {person.age}<i/></h2><button className="swipe-info-button" aria-label={`Ver perfil de ${person.name}`} onClick={()=>setPersonDetail(person)}><Info/></button></div><div className="swipe-meta"><MapPin/> {distanceCopy(person.distance,privacy)} · {person.match} afinidad</div><p className="swipe-bio">{person.bio}</p><div className="swipe-tags">{person.tags.map(tag=><span key={tag}>{tag}</span>)}</div></div></div><div className="swipe-actions"><button className="swipe-action nope" onClick={()=>advancePerson(false)}><span><X/></span>No me gusta</button><button className="swipe-action skip" onClick={()=>advancePerson(false)}><span><Star/></span>Pasa</button><button className="swipe-action like" onClick={()=>advancePerson(true)}><span><Heart fill="currentColor"/></span>Me gusta</button></div></>:<div className="swipe-empty"><strong>Ya has visto las personas disponibles</strong><span>Vuelve a empezar para seguir probando el flujo.</span><button onClick={()=>setPersonIndex(0)}>Volver a empezar</button></div>}
-      {personDetail&&<div className="person-detail-overlay" onClick={()=>setPersonDetail(null)}><article className="person-detail-card" onClick={e=>e.stopPropagation()}><div className="person-detail-hero"><img src={personDetail.image} alt={personDetail.name}/><button className="person-detail-back" aria-label="Cerrar perfil" onClick={()=>setPersonDetail(null)}><ChevronLeft/></button><div className="person-detail-title"><h2>{personDetail.name}, {personDetail.age}</h2><span>{distanceCopy(personDetail.distance,privacy)} · {personDetail.match} afinidad</span></div></div><div className="person-detail-body"><strong>{personDetail.job}</strong><p>{personDetail.bio}</p><div className="person-detail-tags">{personDetail.tags.map(tag=><span key={tag}>{tag}</span>)}</div><div className="person-mini-gallery">{personDetail.gallery.map((image,i)=><img key={image} src={image} alt={`Foto ${i+1} de ${personDetail.name}`}/>)}</div><button className="person-chat-cta" onClick={()=>onChat(personDetail.name)}>Hablar con {personDetail.name}</button></div></article></div>}
+      {personDetail&&<div className="person-detail-overlay" onClick={()=>setPersonDetail(null)}><article className="person-detail-card" onClick={e=>e.stopPropagation()}><div className="person-detail-hero"><img src={personDetail.image} alt={personDetail.name}/><button className="person-detail-back" aria-label="Cerrar perfil" onClick={()=>setPersonDetail(null)}><ChevronLeft/></button><div className="person-detail-title"><h2>{personDetail.name}, {personDetail.age}</h2><span>{distanceCopy(personDetail.distance,privacy)} · {personDetail.match} afinidad</span></div></div><div className="person-detail-body"><strong>{personDetail.job}</strong><p>{personDetail.bio}</p><div className="person-detail-tags">{personDetail.tags.map(tag=><span key={tag}>{tag}</span>)}</div><div className="person-mini-gallery">{personDetail.gallery.map((image,i)=><img key={image} src={image} alt={`Foto ${i+1} de ${personDetail.name}`}/>)}</div><button className="person-chat-cta" onClick={()=>onChat(personDetail.name)}>Hablar con {personDetail.name}</button><button className="settings-danger-cta" onClick={()=>blockPerson(personDetail)}><UserX/><span><strong>Bloquear a {personDetail.name}</strong><small>Dejará de aparecer en Explorar y Chat.</small></span></button></div></article></div>}
     </div>;
   }
 

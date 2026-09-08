@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { hydrateCloudState, queueCloudStateSave } from '../lib/cloud';
+import { hydrateCloudState, queueCloudStateSave, resetCloudStateQueue } from '../lib/cloud';
 import { setCloudStorageWriter } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 
@@ -23,6 +23,7 @@ export function AuthGate({children}:{children:ReactNode}){
       setReady(false);
       setSession(nextSession);
       setCloudStorageWriter(null);
+      resetCloudStateQueue();
       if(nextSession){
         try{
           await hydrateCloudState();
@@ -44,6 +45,7 @@ export function AuthGate({children}:{children:ReactNode}){
         if(active){
           setSession(null);
           setCloudStorageWriter(null);
+          resetCloudStateQueue();
           setReady(true);
         }
       }
@@ -58,6 +60,7 @@ export function AuthGate({children}:{children:ReactNode}){
       active=false;
       prepareVersion+=1;
       setCloudStorageWriter(null);
+      resetCloudStateQueue();
       subscription.unsubscribe();
     };
   },[]);

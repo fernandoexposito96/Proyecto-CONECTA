@@ -34,6 +34,7 @@ try{
   console.log('✓ CategoryIcon renderiza un icono React');
 
   fs.writeFileSync(path.join(tmp,'settingsBackend.mjs'),'export async function syncSettingStorageKey(){ return false; }\n');
+  fs.writeFileSync(path.join(tmp,'PlanFeatureTools.mjs'),'export function PlanFeatureTools(){ return null; }\n');
   compile('src/lib/storage.ts','storage.mjs',code=>code
     .replace("'./settingsBackend'","'./settingsBackend.mjs'")
     .replace('"./settingsBackend"','"./settingsBackend.mjs"'));
@@ -42,7 +43,9 @@ try{
     .replace("'../lib/storage'","'./storage.mjs'")
     .replace('"../lib/storage"','"./storage.mjs"')
     .replace("'../lib/privacy'","'./privacy.mjs'")
-    .replace('"../lib/privacy"','"./privacy.mjs"'));
+    .replace('"../lib/privacy"','"./privacy.mjs"')
+    .replace("'./PlanFeatureTools'","'./PlanFeatureTools.mjs'")
+    .replace('"./PlanFeatureTools"','"./PlanFeatureTools.mjs"'));
   global.window={
     localStorage:{getItem:()=>null,setItem:()=>{},removeItem:()=>{},clear:()=>{},key:()=>null,length:0},
   };

@@ -7,6 +7,8 @@ export type BackendNotification={
   body:string;
   read:boolean;
   createdAt:string;
+  entityType:string|null;
+  entityId:string|null;
 };
 
 type NotificationRow={
@@ -16,13 +18,15 @@ type NotificationRow={
   body:string|null;
   read:boolean;
   created_at:string;
+  entity_type:string|null;
+  entity_id:string|null;
 };
 
 export async function fetchBackendNotifications(limit=100):Promise<BackendNotification[]>{
   const safeLimit=Math.max(1,Math.min(limit,200));
   const {data,error}=await supabase
     .from('notifications')
-    .select('id,type,title,body,read,created_at')
+    .select('id,type,title,body,read,created_at,entity_type,entity_id')
     .order('created_at',{ascending:false})
     .limit(safeLimit);
   if(error)throw error;
@@ -33,6 +37,8 @@ export async function fetchBackendNotifications(limit=100):Promise<BackendNotifi
     body:row.body||'',
     read:row.read,
     createdAt:row.created_at,
+    entityType:row.entity_type,
+    entityId:row.entity_id,
   }));
 }
 

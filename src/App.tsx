@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { BottomNav, Header, Sidebar } from './components/AppNavigation';
 import { PlanDetail } from './components/PlanComponents';
 import { createSharedPlan, fetchSharedPlans } from './lib/cloud';
+import { acceptPlanInvite, clearInviteFromUrl, inviteCodeFromUrl } from './lib/inviteBackend';
 import { fetchUnreadNotificationCount } from './lib/notificationsBackend';
+import { fetchRealPlans } from './lib/realPlansBackend';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
 import type { ExploreFilter, Plan, View } from './types';
+import { CalendarView } from './views/CalendarView';
 import { ChatView } from './views/ChatView';
 import { CreatePlanView } from './views/CreatePlanView';
 import { ExploreView } from './views/ExploreView';
@@ -13,7 +16,7 @@ import { NotificationsView } from './views/NotificationsView';
 import { ProfileView } from './views/ProfileView';
 import { SettingsView } from './views/SettingsView';
 
-const planKey=(plan:Plan)=>`${plan.title}|${plan.time}|${plan.place}`;
+const planKey=(plan:Plan)=>plan.backendId?`backend:${plan.backendId}`:`${plan.title}|${plan.time}|${plan.place}`;
 const mergePlans=(primary:Plan[],secondary:Plan[])=>{
   const seen=new Set<string>();
   return [...primary,...secondary].filter(plan=>{
@@ -37,9 +40,36 @@ export default function App(){
 
   useEffect(()=>{
     let active=true;
-    void fetchSharedPlans()
-      .then(shared=>{if(active)setCreatedPlans(local=>mergePlans(shared,local))})
-      .catch(error=>console.warn('CONECTA shared plans load failed; local demo remains available',error));
+    void Promise.allSettled([fetchRealPlans(),fetchSharedPlans()]).then(results=>{
+      if(!active)return;
+      const real=results[0].status==='fulfilled'?results[0].value:[];
+      const shared=results[1].status==='fulfilled'?results[1].value:[];
+      if(results[0].status==='rejected')console.warn('CONECTA real plans load failed; demo/shared plans kept',results[0].reason);
+      if(results[1].status==='rejected')console.warn('CONECTA shared plans load failed; local demo remains available',results[1].reason);
+      setCreatedPlans(local=>mergePlans(real,mergePlans(shared,local)));
+    });
+    return ()=>{active=false};
+  },[]);
+
+  useEffect(()=>{
+    const code=inviteCodeFromUrl();
+    if(!code)return;
+    let active=true;
+    void acceptPlanInvite(code)
+      .then(async planId=>{
+        const real=await fetchRealPlans();
+        if(!active)return;
+        setCreatedPlans(local=>mergePlans(real,local));
+        const invitedPlan=real.find(plan=>plan.backendId===planId);
+        if(invitedPlan){
+          setExploreFilter('all');
+          setExploreCategory(null);
+          setView('Explora');
+          setSelected(invitedPlan);
+        }
+        clearInviteFromUrl();
+      })
+      .catch(error=>console.warn('CONECTA invite acceptance failed; invite kept in URL for retry',error));
     return ()=>{active=false};
   },[]);
 
@@ -62,6 +92,7 @@ export default function App(){
     setView('Explora');
   };
   const openChat=(name?:string)=>{
+    setSelected(null);
     setChatTarget(name||null);
     setView('Chat');
   };
@@ -90,11 +121,12 @@ export default function App(){
         {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
         {view==='Ajustes'&&<SettingsView/>}
-        {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications}/>} 
+        {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications} onOpenPlanChat={openChat}/>} 
         {view==='Crear'&&<CreatePlanView setView={setView} onCreate={addCreatedPlan}/>} 
+        {view==='Calendario'&&<CalendarView setView={setView}/>} 
       </div>
     </main>
     <BottomNav view={view} setView={setView}/>
-    {selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)}/>} 
+    {selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)} onOpenChat={openChat}/>} 
   </div>
 }

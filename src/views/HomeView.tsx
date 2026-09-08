@@ -1,15 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Check, ChevronRight, Coffee, Crown, MapPin, Music2, Plus, Search, Sparkles, X } from 'lucide-react';
+import { CalendarDays, CalendarRange, Check, ChevronRight, Coffee, Crown, Flame, MapPin, Music2, Plus, Search, Sparkles, Trophy, X } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, escapes, people, plans } from '../data/demoData';
 import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { removeBackendConnection, requestBackendConnection } from '../lib/socialBackend';
+import { loadSocialSummary, type SocialSummary } from '../lib/socialSummaryBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { ExploreFilter, Person, Plan, View } from '../types';
 
 const escapePlaces=['Barcelona','Costa Brava','Montseny'] as const;
 const escapeDistances=['98 km','142 km','122 km'] as const;
+const emptySummary:SocialSummary={attendedThisWeek:0,attendedLast7Days:0,streakWeeks:0,topCategory:null,nextPlan:null,weekPlans:[],upcomingPlans:[]};
+
+function nextPlanDate(value:string){
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return 'Fecha por confirmar';
+  return new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(date);
+}
 
 export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPlan:(p:Plan)=>void,onExplore:(filter?:ExploreFilter,category?:string|null)=>void}){
   const [privacy]=useState(loadPrivacySettings);
@@ -18,9 +26,19 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
   const [searchOpen,setSearchOpen]=useState(false);
   const [showAllPeople,setShowAllPeople]=useState(false);
   const [connected,setConnected]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.connections,[])));
+  const [summary,setSummary]=useState<SocialSummary>(emptySummary);
+  const [summaryReady,setSummaryReady]=useState(false);
   const locationAllowed=canUseLocation(privacy);
 
   useEffect(()=>{saveStored(storageKeys.connections,[...connected])},[connected]);
+  useEffect(()=>{
+    let active=true;
+    void loadSocialSummary()
+      .then(value=>{if(active)setSummary(value)})
+      .catch(error=>console.warn('CONECTA weekly summary unavailable; empty summary kept',error))
+      .finally(()=>{if(active)setSummaryReady(true)});
+    return ()=>{active=false};
+  },[]);
 
   const searchResults=useMemo(()=>{
     const q=heroQuery.trim().toLocaleLowerCase('es');
@@ -54,6 +72,9 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
 
   return <div className="page home-page">
     <section className="hero"><img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/><div className="hero-overlay"/><div className="hero-copy"><span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span><h1>La vida es mejor<br/>con buenos planes</h1><div className="hero-search-wrap"><div className="hero-search"><Search/><input value={heroQuery} onFocus={()=>setSearchOpen(true)} onChange={e=>{setHeroQuery(e.target.value);setSearchOpen(true)}} onKeyDown={e=>{if(e.key==='Enter'&&searchResults[0])onPlan(searchResults[0])}} placeholder="¿Qué te apetece hacer hoy?" aria-label="Buscar planes desde Inicio"/>{heroQuery&&<button type="button" aria-label="Limpiar búsqueda" onClick={()=>{setHeroQuery('');setSearchOpen(false)}}><X/></button>}</div>{searchOpen&&heroQuery.trim()&&<div className="hero-search-results">{searchResults.length?searchResults.map(p=><button key={p.title} onClick={()=>onPlan(p)}><img src={p.image} alt=""/><span><strong>{p.title}</strong><small>{p.place}{locationAllowed?` · ${p.distance}`:''}</small></span><ChevronRight/></button>):<div className="hero-search-empty">No hay planes que coincidan.</div>}<button className="hero-search-all" onClick={()=>openExplore('all')}>Ver todos los planes <ChevronRight/></button></div>}</div></div></section>
+
+    <section className="section home-social-summary"><div className="section-head"><div><small>TU SEMANA</small><h2>Tu CONECTA Wrapped</h2></div><button onClick={()=>setView('Calendario')}>Calendario <ChevronRight/></button></div><div className="wrapped-grid"><article><Flame/><strong>{summaryReady?summary.streakWeeks:'—'}</strong><span>semanas de racha</span></article><article><Trophy/><strong>{summaryReady?summary.attendedThisWeek:'—'}</strong><span>planes esta semana</span></article><article><Sparkles/><strong>{summaryReady?(summary.topCategory||'—'):'—'}</strong><span>categoría favorita</span></article></div>{summaryReady&&summary.nextPlan?<button className="next-plan-widget" type="button" onClick={()=>setView('Calendario')}><CalendarRange/><span><small>TU PRÓXIMO PLAN</small><strong>{summary.nextPlan.title}</strong><em>{nextPlanDate(summary.nextPlan.startsAt)} · {summary.nextPlan.location}</em></span><ChevronRight/></button>:summaryReady?<div className="next-plan-widget is-empty"><CalendarRange/><span><small>TU PRÓXIMO PLAN</small><strong>Aún no tienes uno confirmado</strong><em>Apúntate a un plan real y aparecerá aquí.</em></span></div>:null}</section>
+
     <section className="section"><div className="section-head"><h2>Descubre</h2><button onClick={()=>openExplore('all')}>Ver todo <ChevronRight/></button></div><div className="category-strip">{categories.slice(0,12).map(([name,image])=><button key={name} onClick={()=>openExplore('all',name)}><img loading="lazy" decoding="async" src={image} alt={name}/><span className="shade"/><b><CategoryIcon name={name}/>{name}</b></button>)}</div></section>
     <section className="section"><div className="section-head"><div><small>PARA TI</small><h2>Planes para ti</h2></div><button onClick={()=>openExplore('all')}>Ver todos <ChevronRight/></button></div><PlanCards items={plans.slice(0,5)} onPlan={onPlan}/></section>
     <section className="section now-section"><div className="section-head"><div><small>AHORA</small><h2>{locationAllowed?'Qué hacer cerca de ti':'Qué hacer hoy'}</h2></div><button onClick={()=>openExplore(locationAllowed?'near':'all')}>Explorar <ChevronRight/></button></div><div className="quick-grid"><button onClick={()=>openExplore('today')} aria-label="Explorar planes ahora mismo"><Sparkles/><strong>Ahora mismo</strong><span>Planes de hoy</span></button><button onClick={()=>openExplore('afternoon')} aria-label="Explorar planes para esta tarde"><Coffee/><strong>Esta tarde</strong><span>Planes de tarde</span></button><button onClick={()=>openExplore('tonight')} aria-label="Explorar planes para esta noche"><Music2/><strong>Esta noche</strong><span>Planes nocturnos</span></button><button onClick={()=>openExplore('weekend')} aria-label="Explorar planes para este fin de semana"><CalendarDays/><strong>Este finde</strong><span>Planes del finde</span></button></div></section>

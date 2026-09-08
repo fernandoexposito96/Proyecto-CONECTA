@@ -1,16 +1,19 @@
-export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes' | 'Notificaciones' | 'Crear';
+export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes' | 'Notificaciones' | 'Crear' | 'Calendario';
 
-export type ExploreFilter = 'all' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend';
+export type ExploreFilter = 'all' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend' | 'week';
 
 export type Plan = {
+  backendId?: string;
   title: string;
   image: string;
   time: string;
+  startsAt?: string;
   place: string;
   distance: string;
   spots: string;
   category: string;
   visibility?: 'Todos' | 'Solo conexiones';
+  shareSlug?: string;
 };
 
 export type PeopleFilter = 'near' | 'match' | 'age' | 'interests';

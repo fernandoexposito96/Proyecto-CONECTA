@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Languages, MapPin, Settings, ShieldCheck } from 'lucide-react';
+import { CalendarDays, ChevronRight, Languages, MapPin, Pencil, Quote, Settings, ShieldCheck, Star, UsersRound } from 'lucide-react';
 import { accountFromUser, avatarFromUser, demoAccount, demoAvatar, isDemoAccount } from '../lib/identity';
 import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
@@ -82,7 +82,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
       plans:(demo?23:0)+created.length+joined.length,
       connections:(demo?156:0)+connections.length,
       ratings:demo?48:0,
-      ratingScore:demo?'4,8 ⭐':'—',
+      ratingScore:demo?'4,8':'—',
       created:created.length,
       joined:joined.length,
       favorites:favorites.length,
@@ -90,5 +90,63 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
     };
   },[account,blocked]);
 
-  return <div className="page profile-page"><div className="profile-cover"><img loading="lazy" decoding="async" src="./assets/images/photo-1500530855697-b586d89ba3ee.jpg" alt="Portada del perfil"/><button type="button" aria-label="Abrir ajustes" onClick={()=>setView('Ajustes')}><Settings/></button></div><div className="profile-main"><img className="profile-avatar" loading="lazy" decoding="async" src={avatar} alt={`Foto de perfil de ${account.name}`}/><div className="profile-heading"><div className="profile-identity"><h1>{account.name}</h1><span className="profile-verification"><ShieldCheck/> Perfil verificado</span><p>{locationAllowed?'Tarragona':'Ubicación oculta a otros usuarios'}</p></div><button type="button" className="edit" onClick={()=>{setDraftBio(bio);setProfileError('');setEditing(v=>!v)}}>{editing?'Cancelar':'Editar perfil'}</button></div><div className="stats"><div><strong>{demoStats.plans}</strong><span>Planes</span></div><div><strong>{demoStats.connections}</strong><span>Conexiones</span></div><div><strong>{demoStats.ratings}</strong><span>Valoraciones</span></div></div>{editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button type="button" disabled={profileSaving} onClick={()=>{void saveProfile()}}>{profileSaving?'Guardando…':'Guardar cambios'}</button></div>:<p className="bio">{displayBio}</p>}{profileError&&<p className="profile-error" role="alert">{profileError}</p>}<div className="profile-tags"><span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span><span><Languages/> Español, Catalán, Inglés</span><span><ShieldCheck/> Perfil: {privacy.profileVisibility}</span></div><div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button type="button" key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>{tab==='Fotos'&&<div className="photo-grid">{photos.map((id,i)=><img key={id} loading="lazy" decoding="async" src={`./assets/images/${id}.jpg`} alt={`Foto ${i+1} del perfil`}/>)}</div>}{tab==='Planes'&&<div className="profile-tab-panel"><strong>{demoStats.plans} planes</strong><span>{demoStats.created} creados · {demoStats.joined} unidos · {demoStats.favorites} favoritos en este dispositivo.</span></div>}{tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones nuevas visibles después de aplicar bloqueos.</span></div>}{tab==='Valoraciones'&&<div className="profile-tab-panel"><strong>{demoStats.ratingScore}</strong><span>{demoStats.ratings} valoraciones asociadas a este perfil.</span></div>}</div></div>
+  return <div className="page profile-page">
+    <div className="profile-shell">
+      <div className="profile-cover">
+        <img loading="lazy" decoding="async" src="./assets/images/photo-1500530855697-b586d89ba3ee.jpg" alt="Portada del perfil"/>
+        <div className="profile-cover-glow" aria-hidden="true"/>
+        <button type="button" className="profile-settings" aria-label="Abrir ajustes" onClick={()=>setView('Ajustes')}><Settings/></button>
+      </div>
+
+      <div className="profile-main">
+        <div className="profile-avatar-wrap">
+          <img className="profile-avatar" loading="lazy" decoding="async" src={avatar} alt={`Foto de perfil de ${account.name}`}/>
+          <span className="profile-online-dot" aria-label="Perfil activo"/>
+        </div>
+
+        <div className="profile-heading">
+          <div className="profile-identity">
+            <h1>{account.name}</h1>
+            <p className="profile-location"><MapPin/> {locationAllowed?'Tarragona':'Ubicación oculta a otros usuarios'}</p>
+            <span className="profile-verification"><ShieldCheck/> Perfil verificado</span>
+          </div>
+          <button type="button" className="profile-edit-btn" onClick={()=>{setDraftBio(bio);setProfileError('');setEditing(v=>!v)}}><Pencil/>{editing?'Cancelar':'Editar perfil'}</button>
+        </div>
+
+        <div className="profile-stats" aria-label="Resumen del perfil">
+          <button type="button" onClick={()=>setTab('Planes')}>
+            <span className="profile-stat-icon"><CalendarDays/></span>
+            <span><strong>{demoStats.plans}</strong><small>Planes</small></span>
+            <ChevronRight/>
+          </button>
+          <button type="button" onClick={()=>setTab('Conexiones')}>
+            <span className="profile-stat-icon"><UsersRound/></span>
+            <span><strong>{demoStats.connections}</strong><small>Conexiones</small></span>
+            <ChevronRight/>
+          </button>
+          <button type="button" onClick={()=>setTab('Valoraciones')}>
+            <span className="profile-stat-icon"><Star/></span>
+            <span><strong>{demoStats.ratingScore}</strong><small>Valoraciones</small></span>
+            <ChevronRight/>
+          </button>
+        </div>
+
+        {editing?<div className="profile-editor"><label>Biografía<textarea value={draftBio} onChange={e=>setDraftBio(e.target.value)} maxLength={180}/></label><button type="button" disabled={profileSaving} onClick={()=>{void saveProfile()}}>{profileSaving?'Guardando…':'Guardar cambios'}</button></div>:<div className="profile-about-card"><Quote/><p>{displayBio}</p></div>}
+        {profileError&&<p className="profile-error" role="alert">{profileError}</p>}
+
+        <div className="profile-tags">
+          <span><MapPin/> {locationAllowed?'Tarragona':'Ubicación privada'}</span>
+          <span><Languages/> Español, Catalán, Inglés</span>
+          <span><UsersRound/> {privacy.profileVisibility}</span>
+        </div>
+
+        <div className="profile-tabs">{(['Fotos','Planes','Conexiones','Valoraciones'] as ProfileTab[]).map(t=><button type="button" key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
+
+        {tab==='Fotos'&&<div className="photo-grid">{photos.map((id,i)=><img key={id} loading="lazy" decoding="async" src={`./assets/images/${id}.jpg`} alt={`Foto ${i+1} del perfil`}/>)}</div>}
+        {tab==='Planes'&&<div className="profile-tab-panel"><strong>{demoStats.plans} planes</strong><span>{demoStats.created} creados · {demoStats.joined} unidos · {demoStats.favorites} favoritos en este dispositivo.</span></div>}
+        {tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones nuevas visibles después de aplicar bloqueos.</span></div>}
+        {tab==='Valoraciones'&&<div className="profile-tab-panel"><strong>{demoStats.ratingScore}</strong><span>{demoStats.ratings} valoraciones asociadas a este perfil.</span></div>}
+      </div>
+    </div>
+  </div>
 }

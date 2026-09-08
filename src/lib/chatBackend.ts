@@ -16,13 +16,13 @@ export type BackendChatMessage={
   createdAt:string;
 };
 
-async function currentUserId(){
+export async function backendCurrentUserId(){
   const {data:{user}}=await supabase.auth.getUser();
   return user?.id||null;
 }
 
 export async function loadBackendChats():Promise<BackendChatPreview[]>{
-  const userId=await currentUserId();
+  const userId=await backendCurrentUserId();
   if(!userId)return [];
 
   const {data:ownMemberships,error:membershipError}=await supabase
@@ -70,22 +70,24 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
     if(conversationId&&!latestByConversation.has(conversationId))latestByConversation.set(conversationId,String(message.content||''));
   }
 
-  return (conversations||[]).map(conversation=>{
+  return (conversations||[]).flatMap(conversation=>{
     const conversationId=String(conversation.id||'');
+    const latest=latestByConversation.get(conversationId);
+    if(!latest)return [];
     const isGroup=String(conversation.type||'direct')!=='direct';
     const memberIds=(members||[])
       .filter(member=>String(member.conversation_id||'')===conversationId)
       .map(member=>String(member.user_id||''));
     const otherId=memberIds.find(id=>id&&id!==userId);
     const profile=otherId?profilesById.get(otherId):undefined;
-    return {
+    return [{
       conversationId,
       userId:otherId||undefined,
       name:isGroup?String(conversation.title||'Grupo CONECTA'):(profile?.name||'Conversación'),
       avatar:profile?.avatar,
-      message:latestByConversation.get(conversationId)||'Conversación real de CONECTA',
+      message:latest,
       isGroup,
-    };
+    }];
   });
 }
 
@@ -109,7 +111,7 @@ export async function loadBackendMessages(conversationId:string):Promise<Backend
 export async function sendBackendMessage(conversationId:string,content:string){
   const clean=content.trim();
   if(!conversationId||!clean)return false;
-  const userId=await currentUserId();
+  const userId=await backendCurrentUserId();
   if(!userId)return false;
 
   const {error}=await supabase.from('messages').insert({

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, CheckCircle2 } from 'lucide-react';
-import { fetchBackendNotifications, markBackendNotificationRead } from '../lib/notificationsBackend';
+import { fetchBackendNotifications, fetchUnreadNotificationCount, markBackendNotificationRead } from '../lib/notificationsBackend';
 import { loadStored, storageKeys } from '../lib/storage';
 import type { ToggleKey } from '../types';
 
@@ -54,6 +54,13 @@ export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(c
   const [usingDemo,setUsingDemo]=useState(true);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
+  const unreadRequestVersion=useRef(0);
+
+  const refreshUnreadCount=useCallback(async()=>{
+    const version=++unreadRequestVersion.current;
+    const count=await fetchUnreadNotificationCount();
+    if(version===unreadRequestVersion.current)onUnreadCountChange?.(count);
+  },[onUnreadCountChange]);
 
   useEffect(()=>{
     let active=true;
@@ -72,11 +79,9 @@ export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(c
           } satisfies NotificationItem));
           setItems(mapped);
           setUsingDemo(false);
-          onUnreadCountChange?.(mapped.filter(item=>!item.read&&toggles[item.toggleKey]).length);
         }else{
           setItems(demoNotifications);
           setUsingDemo(true);
-          onUnreadCountChange?.(0);
         }
         setError('');
       })
@@ -88,8 +93,13 @@ export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(c
         setError('No se han podido actualizar las notificaciones reales. Mostramos el demo como respaldo.');
       })
       .finally(()=>{if(active)setLoading(false)});
-    return ()=>{active=false};
-  },[onUnreadCountChange,toggles]);
+
+    void refreshUnreadCount().catch(countError=>{
+      console.warn('CONECTA unread notification count refresh failed',countError);
+    });
+
+    return ()=>{active=false;unreadRequestVersion.current+=1};
+  },[refreshUnreadCount]);
 
   const visible=useMemo(()=>items.filter(item=>toggles[item.toggleKey]),[items,toggles]);
 
@@ -97,14 +107,23 @@ export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(c
     if(item.read)return;
     setItems(current=>current.map(entry=>entry.id===item.id?{...entry,read:true}:entry));
     if(!item.backend)return;
-    const unreadBefore=items.filter(entry=>entry.backend&&!entry.read&&toggles[entry.toggleKey]).length;
-    onUnreadCountChange?.(Math.max(0,unreadBefore-1));
-    void markBackendNotificationRead(item.id).catch(markError=>{
-      console.warn('CONECTA notification read sync failed',markError);
-      setItems(current=>current.map(entry=>entry.id===item.id?{...entry,read:false}:entry));
-      onUnreadCountChange?.(unreadBefore);
-      setError('No se ha podido marcar la notificación como leída.');
-    });
+
+    void (async()=>{
+      try{
+        await markBackendNotificationRead(item.id);
+        setError('');
+      }catch(markError){
+        console.warn('CONECTA notification read sync failed',markError);
+        setItems(current=>current.map(entry=>entry.id===item.id?{...entry,read:false}:entry));
+        setError('No se ha podido marcar la notificación como leída.');
+      }finally{
+        try{
+          await refreshUnreadCount();
+        }catch(countError){
+          console.warn('CONECTA unread notification count refresh failed',countError);
+        }
+      }
+    })();
   };
 
   return <div className="page notifications-page">

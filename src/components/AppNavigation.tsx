@@ -23,7 +23,7 @@ export function Sidebar({view,setView}:{view:View,setView:(v:View)=>void}){
   </aside>
 }
 
-export function Header({view,setView}:{view:View,setView:(v:View)=>void}){
+export function Header({view,setView,unreadNotifications=0}:{view:View;setView:(v:View)=>void;unreadNotifications?:number}){
   const isHome=view==='Inicio';
   const [profileName,setProfileName]=useState(demoAccount.name);
   const [profileAvatar,setProfileAvatar]=useState(demoAvatar);
@@ -47,6 +47,6 @@ export function Header({view,setView}:{view:View,setView:(v:View)=>void}){
   return <header className={`topbar ${isHome?'topbar-home':'topbar-compact'}`}>
     {isHome&&<div className="mobile-brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div>}
     <div className="desktop-search"><Search/><input readOnly value="" placeholder="¿Qué te apetece hacer hoy?" aria-label="Abrir búsqueda de planes" onFocus={openSearch} onClick={openSearch} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openSearch()}}}/></div>
-    <div className="top-actions"><button type="button" aria-label="Abrir notificaciones" onClick={()=>setView('Notificaciones')}><Bell/><i/></button><button type="button" className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src={profileAvatar} alt={profileName}/></button></div>
+    <div className="top-actions"><button type="button" aria-label={unreadNotifications?`Abrir notificaciones, ${unreadNotifications} sin leer`:'Abrir notificaciones'} onClick={()=>setView('Notificaciones')}><Bell/>{unreadNotifications>0&&<i/>}</button><button type="button" className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src={profileAvatar} alt={profileName}/></button></div>
   </header>
 }

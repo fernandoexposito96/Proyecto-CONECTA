@@ -9,6 +9,7 @@ const chat=read('src/views/ChatView.tsx');
 const profile=read('src/views/ProfileView.tsx');
 const settings=read('src/views/SettingsView.tsx');
 const navigation=read('src/components/AppNavigation.tsx');
+const auth=read('src/components/AuthGate.tsx');
 const chatBackend=read('src/lib/chatBackend.ts');
 const cloud=read('src/lib/cloud.ts');
 const identity=read('src/lib/identity.ts');
@@ -28,6 +29,7 @@ const checks=[
   ['Persistencia de ajustes existe',()=>assert.match(storage,/settingsAccount:/)],
   ['Perfil lee la identidad autenticada',()=>assert.match(profile,/accountFromUser\(data\.user,stored\)/)],
   ['Perfil no mantiene Fernando escrito en el h1',()=>assert.doesNotMatch(profile,/<h1>Fernando/)],
+  ['Perfil permite persistir una bio vacía',()=>assert.match(profile,/saveStored\(storageKeys\.profileBio,bio\)/)],
   ['Ajustes leen el usuario autenticado',()=>assert.match(settings,/supabase\.auth\.getUser\(\)/)],
   ['Cerrar sesiones usa Supabase real',()=>assert.match(settings,/supabase\.auth\.signOut\(\{scope:'global'\}\)/)],
   ['El botón de sesiones ya no es un flash demo',()=>assert.doesNotMatch(settings,/Sesiones demo cerradas/)],
@@ -39,7 +41,11 @@ const checks=[
   ['Chat conserva fallback local',()=>assert.match(chat,/demo fallback kept/)],
   ['Chat tiene puente de mensajes reales',()=>assert.match(chatBackend,/sendBackendMessage/)],
   ['Conversaciones reales vacías no sustituyen el demo',()=>assert.match(chatBackend,/if\(!latest\)return \[\]/)],
+  ['Chat evita actualizaciones de estado durante render',()=>assert.doesNotMatch(chat,/if\(!item\)\{setActiveChat/)],
+  ['Chat bloquea envíos duplicados',()=>assert.match(chat,/if\(!text\|\|sending\)return/)],
   ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
+  ['Auth sale del arranque aunque falle la sesión',()=>assert.match(auth,/session bootstrap failed/)],
+  ['Auth y cambio de contraseña usan mínimo de 8 caracteres',()=>{assert.match(auth,/password\.length<8/);assert.match(auth,/minLength=\{8\}/)}],
 ];
 
 for(const [name,check] of checks){

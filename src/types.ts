@@ -10,6 +10,7 @@ export type Plan = {
   distance: string;
   spots: string;
   category: string;
+  visibility?: 'Todos' | 'Solo conexiones';
 };
 
 export type PeopleFilter = 'near' | 'match' | 'age' | 'interests';

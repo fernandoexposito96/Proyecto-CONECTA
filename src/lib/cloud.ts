@@ -77,6 +77,14 @@ async function mergeRealProfilePrivacy(state:Record<string,unknown>){
   return state;
 }
 
+export function resetCloudStateQueue(){
+  pendingState={};
+  if(flushTimer!==null){
+    window.clearTimeout(flushTimer);
+    flushTimer=null;
+  }
+}
+
 export async function hydrateCloudState(){
   const {data:{session}}=await supabase.auth.getSession();
   if(!session)return false;
@@ -128,28 +136,38 @@ async function flushCloudState(){
   pendingState={};
   if(!Object.keys(patch).length)return;
 
-  const {data:{session}}=await supabase.auth.getSession();
-  if(!session)return;
+  try{
+    const {data:{session},error:sessionError}=await supabase.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session)return;
 
-  const {data}=await supabase
-    .from('prototype_state')
-    .select('state')
-    .eq('user_id',session.user.id)
-    .maybeSingle();
+    const {data,error:readError}=await supabase
+      .from('prototype_state')
+      .select('state')
+      .eq('user_id',session.user.id)
+      .maybeSingle();
+    if(readError)throw readError;
 
-  const current=data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)
-    ? data.state as Record<string,unknown>
-    : {};
+    const current=data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)
+      ? data.state as Record<string,unknown>
+      : {};
 
-  const {error}=await supabase
-    .from('prototype_state')
-    .upsert({
-      user_id:session.user.id,
-      state:{...current,...patch},
-      updated_at:new Date().toISOString(),
-    },{onConflict:'user_id'});
+    const {error}=await supabase
+      .from('prototype_state')
+      .upsert({
+        user_id:session.user.id,
+        state:{...current,...patch},
+        updated_at:new Date().toISOString(),
+      },{onConflict:'user_id'});
 
-  if(error)console.warn('CONECTA cloud state sync failed',error.message);
+    if(error)throw error;
+  }catch(error){
+    pendingState={...patch,...pendingState};
+    console.warn('CONECTA cloud state sync failed; retry queued',error);
+    if(flushTimer===null&&Object.keys(pendingState).length){
+      flushTimer=window.setTimeout(()=>{void flushCloudState()},1500);
+    }
+  }
 }
 
 export function queueCloudStateSave(key:string,value:unknown){
@@ -194,7 +212,8 @@ export async function fetchSharedPlans():Promise<Plan[]>{
 }
 
 export async function createSharedPlan(plan:Plan){
-  const {data:{session}}=await supabase.auth.getSession();
+  const {data:{session},error:sessionError}=await supabase.auth.getSession();
+  if(sessionError)throw sessionError;
   if(!session)throw new Error('Necesitas iniciar sesión para publicar un plan.');
 
   const {error}=await supabase

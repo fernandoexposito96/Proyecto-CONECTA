@@ -34,7 +34,12 @@ try{
   console.log('✓ CategoryIcon renderiza un icono React');
 
   compile('src/lib/storage.ts','storage.mjs');
-  const planPath=compile('src/components/PlanComponents.tsx','PlanComponents.mjs',code=>code.replace("'../lib/storage'","'./storage.mjs'").replace('"../lib/storage"','"./storage.mjs"'));
+  compile('src/lib/privacy.ts','privacy.mjs',code=>code.replace("'./storage'","'./storage.mjs'").replace('"./storage"','"./storage.mjs"'));
+  const planPath=compile('src/components/PlanComponents.tsx','PlanComponents.mjs',code=>code
+    .replace("'../lib/storage'","'./storage.mjs'")
+    .replace('"../lib/storage"','"./storage.mjs"')
+    .replace("'../lib/privacy'","'./privacy.mjs'")
+    .replace('"../lib/privacy"','"./privacy.mjs"'));
   global.window={
     localStorage:{getItem:()=>null,setItem:()=>{},removeItem:()=>{},clear:()=>{},key:()=>null,length:0},
   };

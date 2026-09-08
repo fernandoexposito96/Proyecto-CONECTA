@@ -15,7 +15,10 @@ export type SocialSummary={
   topCategory:string|null;
   nextPlan:WeeklyPlanSummary|null;
   weekPlans:WeeklyPlanSummary[];
+  upcomingPlans:WeeklyPlanSummary[];
 };
+
+const emptySummary:SocialSummary={attendedThisWeek:0,attendedLast7Days:0,streakWeeks:0,topCategory:null,nextPlan:null,weekPlans:[],upcomingPlans:[]};
 
 function startOfWeek(date:Date){
   const copy=new Date(date);
@@ -32,7 +35,7 @@ function weekKey(date:Date){
 export async function loadSocialSummary():Promise<SocialSummary>{
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
-  if(!user)return {attendedThisWeek:0,attendedLast7Days:0,streakWeeks:0,topCategory:null,nextPlan:null,weekPlans:[]};
+  if(!user)return {...emptySummary};
 
   const {data:memberships,error:membershipError}=await supabase
     .from('plan_members')
@@ -41,7 +44,7 @@ export async function loadSocialSummary():Promise<SocialSummary>{
   if(membershipError)throw membershipError;
 
   const planIds=[...new Set((memberships||[]).map(row=>String(row.plan_id||'')).filter(Boolean))];
-  if(!planIds.length)return {attendedThisWeek:0,attendedLast7Days:0,streakWeeks:0,topCategory:null,nextPlan:null,weekPlans:[]};
+  if(!planIds.length)return {...emptySummary};
 
   const {data:plans,error:planError}=await supabase
     .from('plans')
@@ -82,7 +85,7 @@ export async function loadSocialSummary():Promise<SocialSummary>{
   }
   const topCategory=[...categoryCounts.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0]||null;
 
-  const upcoming=(memberships||[])
+  const upcomingPlans=(memberships||[])
     .filter(row=>['attending','requested','waitlist'].includes(String(row.status||'')))
     .map(row=>planById.get(String(row.plan_id||'')))
     .filter((row):row is NonNullable<typeof row>=>Boolean(row&&typeof row.starts_at==='string'))
@@ -96,7 +99,7 @@ export async function loadSocialSummary():Promise<SocialSummary>{
     .filter(plan=>new Date(plan.startsAt)>now)
     .sort((a,b)=>Date.parse(a.startsAt)-Date.parse(b.startsAt));
 
-  const weekPlans=upcoming.filter(plan=>{
+  const weekPlans=upcomingPlans.filter(plan=>{
     const date=new Date(plan.startsAt);
     return date>=weekStart&&date<nextWeekStart;
   });
@@ -106,7 +109,8 @@ export async function loadSocialSummary():Promise<SocialSummary>{
     attendedLast7Days,
     streakWeeks,
     topCategory,
-    nextPlan:upcoming[0]||null,
+    nextPlan:upcomingPlans[0]||null,
     weekPlans,
+    upcomingPlans,
   };
 }

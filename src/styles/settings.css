@@ -65,7 +65,9 @@
 .settings-empty{padding:18px;text-align:center;color:var(--muted)}
 .settings-account-form{display:grid;gap:12px}
 .settings-account-form label{display:grid;gap:6px;font-weight:700}
-.settings-account-form input{height:44px;border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.settings-account-form input{height:44px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font:inherit}
+.settings-account-form textarea{min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;line-height:1.45}
+.settings-account-form input:focus,.settings-account-form textarea:focus{outline:2px solid rgba(107,77,243,.22);border-color:#7b5cf5}
 .settings-account-form>div{display:flex;gap:8px;flex-wrap:wrap}
 .settings-secondary-action{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;font-weight:700}
 .settings-inline-action:disabled,.settings-secondary-action:disabled,.settings-danger-cta:disabled{opacity:.55;cursor:not-allowed}

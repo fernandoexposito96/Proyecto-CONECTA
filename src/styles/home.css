@@ -28,6 +28,12 @@
 .hero-search-empty{padding:14px;color:#7b8496;font-size:12px}
 .hero-search-results .hero-search-all{display:flex;justify-content:center;gap:4px;border-bottom:0;background:#faf9ff;color:#6045dc;font-weight:800;font-size:12px}
 
+.home-social-summary{padding:18px;border:1px solid rgba(113,72,255,.14);border-radius:24px;background:linear-gradient(145deg,#fff,#f8f5ff);box-shadow:var(--shadow)}
+.wrapped-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wrapped-grid article{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 9px;padding:13px;border:1px solid #ebe7fb;border-radius:16px;background:#fff}
+.wrapped-grid svg{grid-row:1/3;width:25px;color:var(--purple)}.wrapped-grid strong{font-size:19px;color:#1f2f45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wrapped-grid span{font-size:10px;color:var(--muted)}
+.next-plan-widget{width:100%;margin-top:10px;display:grid;grid-template-columns:38px minmax(0,1fr) 22px;align-items:center;gap:10px;padding:13px;border:0;border-radius:16px;background:linear-gradient(135deg,#6650ee,#8269f8);color:#fff;text-align:left}.next-plan-widget>svg{width:23px}.next-plan-widget>span{display:grid;gap:2px}.next-plan-widget small{font-size:9px;font-weight:900;letter-spacing:.11em;opacity:.78}.next-plan-widget strong{font-size:14px}.next-plan-widget em{font-style:normal;font-size:10px;opacity:.82}.next-plan-widget.is-empty{grid-template-columns:38px 1fr;background:#f1eff9;color:#586179}
+
 .category-strip{display:grid;grid-auto-flow:column;grid-auto-columns:145px;gap:12px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
 .category-strip::-webkit-scrollbar{display:none}
 .category-strip button{height:145px;position:relative;overflow:hidden;padding:0;border:1px solid rgba(113,72,255,.15);border-radius:20px;background:#203040;color:#fff;box-shadow:0 10px 28px rgba(45,31,95,.11);transition:transform .18s ease,box-shadow .18s ease}
@@ -83,6 +89,7 @@
   .hero-search-wrap{width:100%}
   .hero-search{border-radius:18px;padding:13px 15px}
   .hero-search-results{top:calc(100% + 6px);border-radius:14px}
+  .wrapped-grid{grid-template-columns:1fr 1fr}.wrapped-grid article:last-child{grid-column:1/-1}.home-social-summary{padding:14px;border-radius:20px}
   .category-strip{grid-auto-columns:132px;gap:9px}
   .category-strip button{height:132px;border-radius:17px}
   .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}

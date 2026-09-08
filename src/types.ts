@@ -16,6 +16,7 @@ export type Plan = {
 export type PeopleFilter = 'near' | 'match' | 'age' | 'interests';
 
 export type Person = {
+  userId?: string;
   name: string;
   age: number;
   distance: string;

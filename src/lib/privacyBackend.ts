@@ -8,9 +8,17 @@ type ProfilePrivacyRow={
 };
 
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+let blockSyncUserId:string|null=null;
+let lastDesiredBlockIds:Set<string>|null=null;
 
 export function isRealUserId(value:string){
   return uuidPattern.test(value);
+}
+
+function prepareBlockSyncUser(userId:string){
+  if(blockSyncUserId===userId)return;
+  blockSyncUserId=userId;
+  lastDesiredBlockIds=null;
 }
 
 function mergeProfilePrivacy(row:ProfilePrivacyRow,current:PrivacySettings):PrivacySettings{
@@ -85,11 +93,13 @@ export async function addBackendBlock(blockedUserId:string){
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
   if(!user||user.id===blockedUserId)return false;
+  prepareBlockSyncUser(user.id);
 
   const {error}=await supabase
     .from('blocks')
     .upsert({blocker_id:user.id,blocked_id:blockedUserId},{onConflict:'blocker_id,blocked_id',ignoreDuplicates:true});
   if(error)throw error;
+  if(lastDesiredBlockIds)lastDesiredBlockIds.add(blockedUserId);
   return true;
 }
 
@@ -98,6 +108,7 @@ export async function removeBackendBlock(blockedUserId:string){
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
   if(!user)return false;
+  prepareBlockSyncUser(user.id);
 
   const {error}=await supabase
     .from('blocks')
@@ -105,6 +116,7 @@ export async function removeBackendBlock(blockedUserId:string){
     .eq('blocker_id',user.id)
     .eq('blocked_id',blockedUserId);
   if(error)throw error;
+  lastDesiredBlockIds?.delete(blockedUserId);
   return true;
 }
 
@@ -112,11 +124,11 @@ export async function syncBackendBlocks(blockedUsers:BlockedUser[]){
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
   if(!user)return false;
+  prepareBlockSyncUser(user.id);
 
-  const desired=[...new Set(blockedUsers
+  const desired=new Set(blockedUsers
     .map(item=>item.userId)
-    .filter(id=>isRealUserId(id)&&id!==user.id))];
-  if(!desired.length)return true;
+    .filter(id=>isRealUserId(id)&&id!==user.id));
 
   const {data,error}=await supabase
     .from('blocks')
@@ -125,12 +137,27 @@ export async function syncBackendBlocks(blockedUsers:BlockedUser[]){
   if(error)throw error;
 
   const existing=new Set((data||[]).map(row=>String(row.blocked_id||'')).filter(Boolean));
-  const toAdd=desired.filter(id=>!existing.has(id));
-  if(!toAdd.length)return true;
+  const toAdd=[...desired].filter(id=>!existing.has(id));
+  const toRemove=lastDesiredBlockIds
+    ? [...lastDesiredBlockIds].filter(id=>!desired.has(id)&&existing.has(id))
+    : [];
 
-  const {error:insertError}=await supabase
-    .from('blocks')
-    .insert(toAdd.map(blockedId=>({blocker_id:user.id,blocked_id:blockedId})));
-  if(insertError)throw insertError;
+  if(toAdd.length){
+    const {error:insertError}=await supabase
+      .from('blocks')
+      .insert(toAdd.map(blockedId=>({blocker_id:user.id,blocked_id:blockedId})));
+    if(insertError)throw insertError;
+  }
+
+  if(toRemove.length){
+    const {error:deleteError}=await supabase
+      .from('blocks')
+      .delete()
+      .eq('blocker_id',user.id)
+      .in('blocked_id',toRemove);
+    if(deleteError)throw deleteError;
+  }
+
+  lastDesiredBlockIds=new Set(desired);
   return true;
 }

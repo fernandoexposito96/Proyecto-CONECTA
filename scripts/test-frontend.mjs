@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const read=(path)=>fs.readFileSync(path,'utf8');
 const app=read('src/App.tsx');
+const main=read('src/main.tsx');
 const home=read('src/views/HomeView.tsx');
 const explore=read('src/views/ExploreView.tsx');
 const profile=read('src/views/ProfileView.tsx');
@@ -11,6 +12,7 @@ const navigation=read('src/components/AppNavigation.tsx');
 const cloud=read('src/lib/cloud.ts');
 const identity=read('src/lib/identity.ts');
 const storage=read('src/lib/storage.ts');
+const socialBackend=read('src/lib/socialBackend.ts');
 
 const checks=[
   ['App transmite categoría a Explora',()=>assert.match(app,/initialCategory=\{exploreCategory\}/)],
@@ -32,6 +34,11 @@ const checks=[
   ['Identidad tiene fallback del demo',()=>assert.match(identity,/demoAccount/)],
   ['Estado local se separa por usuario',()=>assert.match(cloud,/authUserMarker/)],
   ['No se migra el demo a otra cuenta',()=>assert.match(cloud,/localStateBelongsToUser/)],
+  ['Privacidad real conserva fallback demo',()=>assert.match(cloud,/profile privacy sync failed; keeping demo fallback/)],
+  ['Inicio conecta Supabase solo con userId real',()=>assert.match(home,/requestBackendConnection\(person\.userId\)/)],
+  ['Puente social usa la tabla connections',()=>assert.match(socialBackend,/\.from\('connections'\)/)],
+  ['Tema guardado se aplica antes de renderizar',()=>assert.match(main,/initialTheme=loadStored<Theme>/)],
+  ['Idioma guardado se aplica antes de renderizar',()=>assert.match(main,/initialLanguage=loadStored<Language>/)],
 ];
 
 for(const [name,check] of checks){

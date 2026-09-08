@@ -1,5 +1,7 @@
-import type { Plan } from '../types';
+import type { Plan, PrivacySettings } from '../types';
 import { accountFromUser, demoAccount } from './identity';
+import { defaultPrivacySettings } from './privacy';
+import { loadProfilePrivacySettings, syncProfilePrivacySettings } from './privacyBackend';
 import { supabase } from './supabase';
 
 const storagePrefix='conecta-';
@@ -7,6 +9,7 @@ const authUserMarker='conecta-auth-user-v1';
 const accountKey='conecta-settings-account-v1';
 const themeKey='conecta-theme';
 const languageKey='conecta-language';
+const privacyKey='conecta-privacy-settings-v1';
 let pendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
 
@@ -45,6 +48,29 @@ function localStateBelongsToUser(state:Record<string,unknown>,userEmail:string){
   return typeof email==='string'&&email.trim().toLocaleLowerCase('es')===userEmail.trim().toLocaleLowerCase('es');
 }
 
+function isPrivacySettings(value:unknown):value is PrivacySettings{
+  if(!value||typeof value!=='object'||Array.isArray(value))return false;
+  const item=value as Record<string,unknown>;
+  return typeof item.profileVisibility==='string'&&typeof item.planVisibility==='string'&&typeof item.locationSharing==='string'&&typeof item.messagePermission==='string'&&typeof item.connectionRequests==='string';
+}
+
+async function mergeRealProfilePrivacy(state:Record<string,unknown>){
+  const local=isPrivacySettings(state[privacyKey])?state[privacyKey]:defaultPrivacySettings;
+  try{
+    const remote=await loadProfilePrivacySettings(local);
+    if(remote){
+      state[privacyKey]=remote;
+    }else{
+      await syncProfilePrivacySettings(local);
+      state[privacyKey]=local;
+    }
+  }catch(error){
+    console.warn('CONECTA profile privacy sync failed; keeping demo fallback',error);
+    state[privacyKey]=local;
+  }
+  return state;
+}
+
 export async function hydrateCloudState(){
   const {data:{session}}=await supabase.auth.getSession();
   if(!session)return false;
@@ -62,7 +88,8 @@ export async function hydrateCloudState(){
   clearPrototypeState();
 
   if(data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)){
-    writePrototypeState(data.state as Record<string,unknown>);
+    const state=await mergeRealProfilePrivacy({...data.state as Record<string,unknown>});
+    writePrototypeState(state);
     window.localStorage.setItem(authUserMarker,session.user.id);
     return true;
   }
@@ -75,6 +102,7 @@ export async function hydrateCloudState(){
     if(languageKey in previousLocalState)state[languageKey]=previousLocalState[languageKey];
   }
   state[accountKey]=accountFromUser(session.user,canMigrateLocal?(previousLocalState[accountKey] as {name:string;email:string}|undefined):undefined);
+  await mergeRealProfilePrivacy(state);
 
   writePrototypeState(state);
   window.localStorage.setItem(authUserMarker,session.user.id);
@@ -119,6 +147,9 @@ async function flushCloudState(){
 export function queueCloudStateSave(key:string,value:unknown){
   if(!key.startsWith(storagePrefix)||key===authUserMarker)return;
   pendingState[key]=value;
+  if(key===privacyKey&&isPrivacySettings(value)){
+    void syncProfilePrivacySettings(value).catch(error=>console.warn('CONECTA profile privacy write failed; demo state kept',error));
+  }
   if(flushTimer!==null)window.clearTimeout(flushTimer);
   flushTimer=window.setTimeout(()=>{void flushCloudState()},300);
 }
@@ -139,7 +170,6 @@ function isPlan(value:unknown):value is Plan{
 }
 
 export async function fetchSharedPlans():Promise<Plan[]>{
-  const {data:{session}}=await supabase.auth.getSession();
   const {data,error}=await supabase
     .from('prototype_plans')
     .select('id,creator_id,plan,created_at')
@@ -148,11 +178,7 @@ export async function fetchSharedPlans():Promise<Plan[]>{
 
   if(error)throw error;
   return ((data||[]) as PrototypePlanRow[])
-    .filter(row=>{
-      if(!isPlan(row.plan))return false;
-      if(row.plan.visibility!=='Solo conexiones')return true;
-      return Boolean(session&&row.creator_id===session.user.id);
-    })
+    .filter(row=>isPlan(row.plan))
     .map(row=>row.plan as Plan);
 }
 

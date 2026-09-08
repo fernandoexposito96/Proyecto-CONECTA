@@ -15,8 +15,10 @@ export function AuthGate({children}:{children:ReactNode}){
 
   useEffect(()=>{
     let active=true;
+    let prepareVersion=0;
 
     const prepare=async(nextSession:Session|null)=>{
+      const version=++prepareVersion;
       if(!active)return;
       setReady(false);
       setSession(nextSession);
@@ -24,21 +26,37 @@ export function AuthGate({children}:{children:ReactNode}){
       if(nextSession){
         try{
           await hydrateCloudState();
-          setCloudStorageWriter(queueCloudStateSave);
+          if(active&&version===prepareVersion)setCloudStorageWriter(queueCloudStateSave);
         }catch(error){
-          console.warn('CONECTA cloud hydration failed',error);
+          console.warn('CONECTA cloud hydration failed; local state kept',error);
         }
       }
-      if(active)setReady(true);
+      if(active&&version===prepareVersion)setReady(true);
     };
 
-    void supabase.auth.getSession().then(({data})=>prepare(data.session));
+    const initialize=async()=>{
+      try{
+        const {data,error}=await supabase.auth.getSession();
+        if(error)throw error;
+        await prepare(data.session);
+      }catch(error){
+        console.warn('CONECTA session bootstrap failed',error);
+        if(active){
+          setSession(null);
+          setCloudStorageWriter(null);
+          setReady(true);
+        }
+      }
+    };
+
+    void initialize();
     const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,nextSession)=>{
       window.setTimeout(()=>{void prepare(nextSession)},0);
     });
 
     return ()=>{
       active=false;
+      prepareVersion+=1;
       setCloudStorageWriter(null);
       subscription.unsubscribe();
     };

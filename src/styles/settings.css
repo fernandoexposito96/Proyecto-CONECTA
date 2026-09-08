@@ -60,7 +60,7 @@
 .settings-choice-grid button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px}
 .settings-choice-grid button.is-active{background:#6b4df3;color:#fff;border-color:#6b4df3}
 .settings-success{background:#edf9f3;color:#187a50;padding:10px 12px;border-radius:12px}
-.settings-error{margin:0;background:#fff1f2;color:#b4232c!important;border:1px solid #ffd3d7;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.4}
+.settings-info-card .settings-error{margin:0;background:#fff1f2;color:#b4232c;border:1px solid #ffd3d7;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.4}
 .settings-field-hint{color:var(--muted);font-size:12px;line-height:1.45;font-weight:500}
 .settings-empty{padding:18px;text-align:center;color:var(--muted)}
 .settings-account-form{display:grid;gap:12px}

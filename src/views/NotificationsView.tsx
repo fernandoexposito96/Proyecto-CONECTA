@@ -48,7 +48,7 @@ function relativeTime(value:string){
   return new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short'}).format(new Date(timestamp));
 }
 
-export function NotificationsView(){
+export function NotificationsView({onUnreadCountChange}:{onUnreadCountChange?:(count:number)=>void}){
   const toggles=loadStored<Record<ToggleKey,boolean>>(storageKeys.notificationToggles,defaultToggles);
   const [items,setItems]=useState<NotificationItem[]>(demoNotifications);
   const [usingDemo,setUsingDemo]=useState(true);
@@ -61,7 +61,7 @@ export function NotificationsView(){
       .then(rows=>{
         if(!active)return;
         if(rows.length){
-          setItems(rows.map(row=>({
+          const mapped=rows.map(row=>({
             id:row.id,
             toggleKey:toggleForType(row.type),
             title:row.title,
@@ -69,11 +69,14 @@ export function NotificationsView(){
             time:relativeTime(row.createdAt),
             read:row.read,
             backend:true,
-          })));
+          } satisfies NotificationItem));
+          setItems(mapped);
           setUsingDemo(false);
+          onUnreadCountChange?.(mapped.filter(item=>!item.read&&toggles[item.toggleKey]).length);
         }else{
           setItems(demoNotifications);
           setUsingDemo(true);
+          onUnreadCountChange?.(0);
         }
         setError('');
       })
@@ -86,7 +89,7 @@ export function NotificationsView(){
       })
       .finally(()=>{if(active)setLoading(false)});
     return ()=>{active=false};
-  },[]);
+  },[onUnreadCountChange,toggles]);
 
   const visible=useMemo(()=>items.filter(item=>toggles[item.toggleKey]),[items,toggles]);
 
@@ -94,9 +97,11 @@ export function NotificationsView(){
     if(item.read)return;
     setItems(current=>current.map(entry=>entry.id===item.id?{...entry,read:true}:entry));
     if(!item.backend)return;
+    onUnreadCountChange?.(Math.max(0,items.filter(entry=>entry.backend&&!entry.read&&toggles[entry.toggleKey]).length-1));
     void markBackendNotificationRead(item.id).catch(markError=>{
       console.warn('CONECTA notification read sync failed',markError);
       setItems(current=>current.map(entry=>entry.id===item.id?{...entry,read:false}:entry));
+      onUnreadCountChange?.(items.filter(entry=>entry.backend&&!entry.read&&toggles[entry.toggleKey]).length);
       setError('No se ha podido marcar la notificación como leída.');
     });
   };

@@ -116,11 +116,6 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     </section>
 
     <section className="home-target-section">
-      <div className="home-target-head home-target-head-sub"><div><h2>Personas compatibles</h2><p>Gente con tus mismos intereses</p></div><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div>
-      <div className="home-target-people">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div>
-    </section>
-
-    <section className="home-target-section">
       <div className="home-target-head home-target-head-sub"><div><h2>Escapadas y eventos</h2><p>Planes más allá de tu ciudad</p></div><button onClick={()=>openExplore('weekend')}>Ver todas <ChevronRight/></button></div>
       <div className="home-target-escapes">{homeEscapes.map(item=><article key={item.title} role="button" tabIndex={0} onClick={()=>openEscape(item)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEscape(item)}}}><img src={item.image} alt={item.title}/><span className="home-target-card-shade"/><Heart className="home-target-heart"/><div><strong>{item.title}</strong><span><MapPin/>{item.subtitle}</span></div></article>)}</div>
     </section>
@@ -128,6 +123,11 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     <section className="section now-section"><div className="section-head"><div><small>AHORA</small><h2>{locationAllowed?'Qué hacer cerca de ti':'Qué hacer hoy'}</h2></div><button onClick={()=>openExplore(locationAllowed?'near':'all')}>Explorar <ChevronRight/></button></div><div className="quick-grid"><button onClick={()=>openExplore('today')}><Sparkles/><strong>Ahora mismo</strong><span>Planes de hoy</span></button><button onClick={()=>openExplore('afternoon')}><Coffee/><strong>Esta tarde</strong><span>Planes de tarde</span></button><button onClick={()=>openExplore('tonight')}><Music2/><strong>Esta noche</strong><span>Planes nocturnos</span></button><button onClick={()=>openExplore('weekend')}><CalendarDays/><strong>Este finde</strong><span>Planes del finde</span></button></div></section>
 
     <section className="section home-more"><div className="section-head"><div><small>MÁS IDEAS</small><h2>Sigue descubriendo</h2></div><button onClick={()=>openExplore('all')}>Explorar <ChevronRight/></button></div><PlanCards items={plans.slice(5)} onPlan={onPlan}/></section>
+
+    <section className="home-target-section">
+      <div className="home-target-head home-target-head-sub"><div><h2>Personas compatibles</h2><p>Gente con tus mismos intereses</p></div><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div>
+      <div className="home-target-people">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div>
+    </section>
 
     <footer className="home-footer-note"><span>CONECTA PREMIUM</span><span>Planes verificados</span><span>Gente compatible</span><span>Más seguridad</span></footer>
 

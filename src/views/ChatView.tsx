@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Search, Send, X } from 'lucide-react';
 import { chats, people } from '../data/demoData';
-import { blockedNames } from '../lib/privacy';
+import { backendCurrentUserId, loadBackendChats, loadBackendMessages, sendBackendMessage, type BackendChatMessage, type BackendChatPreview } from '../lib/chatBackend';
+import { blockedNames, loadBlockedUsers } from '../lib/privacy';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { ChatItem, ChatTab } from '../types';
 
@@ -15,28 +16,78 @@ const fallbackAvatars=[
   './assets/images/photo-1544005313-94ddf0286df2.jpg',
 ];
 const avatarFor=(name:string,index=0)=>people.find(person=>person.name===name)?.image||fallbackAvatars[index%fallbackAvatars.length];
+const chatKey=(item:ChatItem)=>item.conversationId||item.name;
 
 export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [blocked]=useState<Set<string>>(()=>blockedNames());
+  const [blockedIds]=useState<Set<string>>(()=>new Set(loadBlockedUsers().map(user=>user.userId)));
   const [tab,setTab]=useState<ChatTab>('Todos');
   const [searchOpen,setSearchOpen]=useState(false);
   const [query,setQuery]=useState('');
   const [activeChat,setActiveChat]=useState<string|null>(()=>initialContact&&!blocked.has(initialContact)?initialContact:null);
   const [draft,setDraft]=useState('');
   const [sent,setSent]=useState<Record<string,string[]>>(()=>loadStored(storageKeys.chatMessages,{}));
+  const [backendChats,setBackendChats]=useState<BackendChatPreview[]>([]);
+  const [backendThreads,setBackendThreads]=useState<Record<string,BackendChatMessage[]>>({});
+  const [backendUserId,setBackendUserId]=useState<string|null>(null);
 
   useEffect(()=>{saveStored(storageKeys.chatMessages,sent)},[sent]);
   useEffect(()=>{if(initialContact&&!blocked.has(initialContact))setActiveChat(initialContact)},[initialContact,blocked]);
+  useEffect(()=>{
+    let active=true;
+    void Promise.all([loadBackendChats(),backendCurrentUserId()])
+      .then(([realChats,userId])=>{
+        if(!active)return;
+        setBackendChats(realChats);
+        setBackendUserId(userId);
+      })
+      .catch(error=>console.warn('CONECTA real chat unavailable; demo fallback kept',error));
+    return ()=>{active=false};
+  },[]);
 
   const items=useMemo<ChatItem[]>(()=>{
     const base:ChatItem[]=chats
       .map(([name,msg,count],i)=>({name,msg,count,isGroup:groupNames.has(name),avatar:avatarFor(name,i)}))
       .filter(item=>item.isGroup||!blocked.has(item.name));
+
+    for(const real of backendChats){
+      if((real.userId&&blockedIds.has(real.userId))||(!real.isGroup&&blocked.has(real.name)))continue;
+      const match=base.find(item=>item.name===real.name&&item.isGroup===real.isGroup);
+      if(match){
+        match.msg=real.message;
+        match.conversationId=real.conversationId;
+        match.userId=real.userId;
+        if(real.avatar)match.avatar=real.avatar;
+      }else{
+        base.push({
+          name:real.name,
+          msg:real.message,
+          count:'',
+          isGroup:real.isGroup,
+          avatar:real.avatar||avatarFor(real.name,base.length),
+          conversationId:real.conversationId,
+          userId:real.userId,
+        });
+      }
+    }
+
     if(initialContact&&!blocked.has(initialContact)&&!base.some(item=>item.name===initialContact)){
       base.unshift({name:initialContact,msg:'Nueva conversación',count:'',isGroup:false,avatar:avatarFor(initialContact)});
     }
     return base;
-  },[initialContact,blocked]);
+  },[initialContact,blocked,blockedIds,backendChats]);
+
+  const activeItem=useMemo(()=>activeChat?items.find(item=>chatKey(item)===activeChat||item.name===activeChat):undefined,[activeChat,items]);
+
+  useEffect(()=>{
+    const conversationId=activeItem?.conversationId;
+    if(!conversationId)return;
+    let active=true;
+    void loadBackendMessages(conversationId)
+      .then(messages=>{if(active)setBackendThreads(current=>({...current,[conversationId]:messages}))})
+      .catch(error=>console.warn('CONECTA real thread unavailable; demo fallback kept',error));
+    return ()=>{active=false};
+  },[activeItem?.conversationId]);
 
   const visible=useMemo(()=>items.filter(item=>{
     if(tab==='Grupos'&&!item.isGroup)return false;
@@ -46,13 +97,31 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   }),[items,tab,query]);
 
   if(activeChat){
-    const item=items.find(candidate=>candidate.name===activeChat);
+    const item=activeItem;
     if(!item){setActiveChat(null);return null;}
-    const messages=[item.msg,...(sent[activeChat]||[])];
-    const send=()=>{const text=draft.trim();if(!text)return;setSent(v=>({...v,[activeChat]:[...(v[activeChat]||[]),text]}));setDraft('');};
-    return <div className="page chat-page"><div className="chat-thread-head"><button aria-label="Volver a chats" onClick={()=>setActiveChat(null)}><ChevronLeft/></button><img src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>Conversación</span></div></div><div className="chat-thread"><div className="message received">{item.msg}</div>{messages.slice(1).map((m,i)=><div className="message sent" key={`${m}-${i}`}>{m}</div>)}</div><div className="chat-composer"><input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')send();}} placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje"/><button onClick={send} aria-label="Enviar mensaje"><Send/></button></div></div>;
+    const localMessages=sent[item.name]||[];
+    const realMessages=item.conversationId?backendThreads[item.conversationId]||[]:[];
+    const send=async()=>{
+      const text=draft.trim();
+      if(!text)return;
+      setDraft('');
+      if(item.conversationId){
+        try{
+          const sentReal=await sendBackendMessage(item.conversationId,text);
+          if(sentReal){
+            const refreshed=await loadBackendMessages(item.conversationId);
+            setBackendThreads(current=>({...current,[item.conversationId as string]:refreshed}));
+            return;
+          }
+        }catch(error){
+          console.warn('CONECTA real message send failed; demo fallback kept',error);
+        }
+      }
+      setSent(value=>({...value,[item.name]:[...(value[item.name]||[]),text]}));
+    };
+    return <div className="page chat-page"><div className="chat-thread-head"><button aria-label="Volver a chats" onClick={()=>setActiveChat(null)}><ChevronLeft/></button><img src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>Conversación</span></div></div><div className="chat-thread">{realMessages.length?realMessages.map(message=><div className={`message ${message.senderId===backendUserId?'sent':'received'}`} key={message.id}>{message.content}</div>):<div className="message received">{item.msg}</div>}{localMessages.map((message,index)=><div className="message sent" key={`${message}-${index}`}>{message}</div>)}</div><div className="chat-composer"><input value={draft} onChange={event=>setDraft(event.target.value)} onKeyDown={event=>{if(event.key==='Enter')void send();}} placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje"/><button onClick={()=>{void send()}} aria-label="Enviar mensaje"><Send/></button></div></div>;
   }
 
   const blockedAttempt=Boolean(initialContact&&blocked.has(initialContact));
-  return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button aria-label="Buscar conversaciones" onClick={()=>setSearchOpen(v=>!v)}>{searchOpen?<X/>:<Search/>}</button></div>{blockedAttempt&&<div className="empty-state">Este usuario está bloqueado. Puedes gestionarlo desde Ajustes → Privacidad → Usuarios bloqueados.</div>}{searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar conversación" aria-label="Buscar conversación"/></div>}<div className="tabs">{(['Todos','Planes','Grupos'] as ChatTab[]).map(t=><button key={t} className={tab===t?'active':''} onClick={()=>setTab(t)}>{t}</button>)}</div><div className="chat-list">{visible.map((item,i)=><button key={item.name} onClick={()=>setActiveChat(item.name)}><img loading="lazy" decoding="async" src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>{(sent[item.name]?.at(-1))||item.msg}</span></div><small>{i<3?'12:'+(45-i*8):'Ayer'}</small>{item.count&&<b>{item.count}</b>}</button>)}</div></div>
+  return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button aria-label="Buscar conversaciones" onClick={()=>setSearchOpen(value=>!value)}>{searchOpen?<X/>:<Search/>}</button></div>{blockedAttempt&&<div className="empty-state">Este usuario está bloqueado. Puedes gestionarlo desde Ajustes → Privacidad → Usuarios bloqueados.</div>}{searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Buscar conversación" aria-label="Buscar conversación"/></div>}<div className="tabs">{(['Todos','Planes','Grupos'] as ChatTab[]).map(item=><button key={item} className={tab===item?'active':''} onClick={()=>setTab(item)}>{item}</button>)}</div><div className="chat-list">{visible.map((item,index)=><button key={chatKey(item)} onClick={()=>setActiveChat(chatKey(item))}><img loading="lazy" decoding="async" src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>{(sent[item.name]?.at(-1))||item.msg}</span></div><small>{index<3?'12:'+(45-index*8):'Ayer'}</small>{item.count&&<b>{item.count}</b>}</button>)}</div></div>;
 }

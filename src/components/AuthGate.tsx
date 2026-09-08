@@ -65,8 +65,8 @@ export function AuthGate({children}:{children:ReactNode}){
   const submit=async(event:FormEvent)=>{
     event.preventDefault();
     const cleanEmail=email.trim();
-    if(!cleanEmail||password.length<6){
-      setMessage('Escribe un correo válido y una contraseña de al menos 6 caracteres.');
+    if(!cleanEmail||password.length<8){
+      setMessage('Escribe un correo válido y una contraseña de al menos 8 caracteres.');
       return;
     }
     setBusy(true);
@@ -96,7 +96,7 @@ export function AuthGate({children}:{children:ReactNode}){
       <div className="auth-copy"><h1>{mode==='login'?'Bienvenido de nuevo':'Crea tu cuenta'}</h1><p>Tu cuenta sincroniza planes y preferencias entre dispositivos mediante el backend de CONECTA.</p></div>
       <form onSubmit={submit} className="auth-form">
         <label>Correo electrónico<input type="email" autoComplete="email" value={email} onChange={event=>setEmail(event.target.value)} placeholder="tu@email.com" required/></label>
-        <label>Contraseña<input type="password" autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={event=>setPassword(event.target.value)} minLength={6} placeholder="Mínimo 6 caracteres" required/></label>
+        <label>Contraseña<input type="password" autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={event=>setPassword(event.target.value)} minLength={8} placeholder="Mínimo 8 caracteres" required/></label>
         {message&&<div className="auth-message" role="status">{message}</div>}
         <button type="submit" disabled={busy}>{busy?'Procesando…':mode==='login'?'Entrar':'Crear cuenta'}</button>
       </form>

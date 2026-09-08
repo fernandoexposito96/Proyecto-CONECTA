@@ -37,7 +37,7 @@ export function AuthGate({children}:{children:ReactNode}){
 
       try{
         if(nextSession){
-          const hydrated=await hydrateCloudState(nextUserId);
+          const hydrated=await hydrateCloudState(nextUserId||undefined);
           if(!hydrated||!active||version!==prepareVersion)return;
           setCloudStorageWriter(queueCloudStateSave);
         }

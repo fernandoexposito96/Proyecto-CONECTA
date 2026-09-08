@@ -68,6 +68,7 @@ export type SettingsScreen =
   | 'about'
   | 'helpDetail'
   | 'actionDetail'
+  | 'supportForm'
   | 'privacyField'
   | 'blockedUsers'
   | 'changePassword';

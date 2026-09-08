@@ -15,6 +15,8 @@ const plans=read('src/components/PlanComponents.tsx');
 const chatBackend=read('src/lib/chatBackend.ts');
 const cloud=read('src/lib/cloud.ts');
 const identity=read('src/lib/identity.ts');
+const privacyBackend=read('src/lib/privacyBackend.ts');
+const settingsBackend=read('src/lib/settingsBackend.ts');
 const socialBackend=read('src/lib/socialBackend.ts');
 const storage=read('src/lib/storage.ts');
 
@@ -29,6 +31,13 @@ const checks=[
   ['Persistencia de likes de estado existe',()=>assert.match(storage,/storyLikes:/)],
   ['Persistencia de seguimiento existe',()=>assert.match(storage,/organizerFollows:/)],
   ['Persistencia de ajustes existe',()=>assert.match(storage,/settingsAccount:/)],
+  ['Ajustes locales se reflejan también en backend',()=>assert.match(storage,/syncSettingStorageKey\(key,value\)/)],
+  ['Apariencia, idioma y privacidad usan user_settings real',()=>{assert.match(settingsBackend,/from\('user_settings'\)/);assert.match(settingsBackend,/appearance/);assert.match(settingsBackend,/language/);assert.match(settingsBackend,/privacy/)}],
+  ['Notificaciones conservan frecuencia en user_settings',()=>assert.match(settingsBackend,/notifications:\{\.\.\.toggles,frequency:safeFrequency\}/)],
+  ['Soporte dispone de inserción real protegida',()=>{assert.match(settingsBackend,/from\('support_requests'\)\.insert/);assert.match(settingsBackend,/request_type:kind/)}],
+  ['Cuenta guarda identidad real antes de confirmar UI',()=>{assert.match(settings,/await saveAccountIdentity\(next\)/);assert.match(settings,/setAccount\(next\)/)}],
+  ['Soporte técnico se envía dentro de CONECTA',()=>{assert.match(settings,/await submitSupportRequest\(/);assert.doesNotMatch(settings,/mailto:/)}],
+  ['Las pantallas informativas ya no muestran un falso guardar',()=>assert.doesNotMatch(settings,/Cambio guardado en el prototipo|Guardar preferencia/)],
   ['Perfil lee la identidad autenticada',()=>assert.match(profile,/accountFromUser\(data\.user,stored\)/)],
   ['Perfil no mantiene Fernando escrito en el h1',()=>assert.doesNotMatch(profile,/<h1>Fernando/)],
   ['Perfil sincroniza la biografía real',()=>assert.match(profile,/\.from\('profiles'\)\.upsert/)],
@@ -36,6 +45,7 @@ const checks=[
   ['Cerrar sesiones usa Supabase real',()=>assert.match(settings,/supabase\.auth\.signOut\(\{scope:'global'\}\)/)],
   ['El botón de sesiones ya no es un flash demo',()=>assert.doesNotMatch(settings,/Sesiones demo cerradas/)],
   ['Avatar superior usa la sesión real',()=>assert.match(navigation,/avatarFromUser\(data\.user,account\.name\)/)],
+  ['La búsqueda superior abre Explora sin cortar una escritura',()=>{assert.match(navigation,/readOnly value=""/);assert.match(navigation,/openSearch/)}],
   ['Identidad tiene fallback del demo',()=>assert.match(identity,/demoAccount/)],
   ['Estado local se separa por usuario',()=>assert.match(cloud,/authUserMarker/)],
   ['No se migra el demo a otra cuenta',()=>assert.match(cloud,/localStateBelongsToUser/)],
@@ -48,6 +58,8 @@ const checks=[
   ['Chat real no marca como enviado un fallo de red',()=>assert.match(chat,/message not marked as sent/)],
   ['Conversaciones reales vacías siguen visibles',()=>assert.match(chatBackend,/Conversación nueva/)],
   ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
+  ['Sync de bloqueos recuerda solo el estado conocido de la sesión',()=>{assert.match(privacyBackend,/lastDesiredBlockIds/);assert.match(privacyBackend,/prepareBlockSyncUser/)}],
+  ['Sync de bloqueos solo elimina IDs previamente conocidos',()=>assert.match(privacyBackend,/lastDesiredBlockIds[\s\S]*filter\(id=>!desired\.has\(id\)&&existing\.has\(id\)\)/)],
   ['Auth no queda bloqueado si falla la inicialización',()=>assert.match(authGate,/setReady\(true\)/)],
   ['Auth limpia la cola al cambiar de sesión',()=>assert.match(authGate,/resetCloudStateQueue\(\)/)],
   ['Auth usa mínimo de 8 caracteres',()=>{assert.match(authGate,/password\.length<8/);assert.match(authGate,/minLength=\{8\}/)}],

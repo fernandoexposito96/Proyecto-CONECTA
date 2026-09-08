@@ -33,7 +33,10 @@ try{
   assert.match(categoryMarkup,/<svg/);
   console.log('✓ CategoryIcon renderiza un icono React');
 
-  compile('src/lib/storage.ts','storage.mjs');
+  fs.writeFileSync(path.join(tmp,'settingsBackend.mjs'),'export async function syncSettingStorageKey(){ return false; }\n');
+  compile('src/lib/storage.ts','storage.mjs',code=>code
+    .replace("'./settingsBackend'","'./settingsBackend.mjs'")
+    .replace('"./settingsBackend"','"./settingsBackend.mjs"'));
   compile('src/lib/privacy.ts','privacy.mjs',code=>code.replace("'./storage'","'./storage.mjs'").replace('"./storage"','"./storage.mjs"'));
   const planPath=compile('src/components/PlanComponents.tsx','PlanComponents.mjs',code=>code
     .replace("'../lib/storage'","'./storage.mjs'")

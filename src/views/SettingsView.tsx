@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BadgeCheck, ChevronRight, CircleHelp, Database, LockKeyhole, Mail, MessageCircleMore, ShieldCheck } from 'lucide-react';
 import { accountFromUser, demoAccount } from '../lib/identity';
+import { saveAccountIdentity, submitSupportRequest } from '../lib/settingsBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 import type { AccountSettings, ActionItem, BlockedUser, HelpItem, Language, NotificationFrequency, PrivacyFieldKey, PrivacySettings, SettingsScreen, Theme, ToggleKey } from '../types';
@@ -35,6 +36,8 @@ export function SettingsView(){
   const [accountEditing,setAccountEditing]=useState(false);
   const [account,setAccount]=useState<AccountSettings>(()=>loadStored(storageKeys.settingsAccount,demoAccount));
   const [name,setName]=useState(account.name);
+  const [accountSaving,setAccountSaving]=useState(false);
+  const [accountError,setAccountError]=useState('');
   const [signingOut,setSigningOut]=useState(false);
   const [privacy,setPrivacy]=useState<PrivacySettings>(()=>loadStored(storageKeys.privacySettings,defaultPrivacy));
   const [privacyField,setPrivacyField]=useState<PrivacyFieldKey|null>(null);
@@ -43,17 +46,23 @@ export function SettingsView(){
   const [confirmPassword,setConfirmPassword]=useState('');
   const [passwordSaving,setPasswordSaving]=useState(false);
   const [passwordError,setPasswordError]=useState('');
+  const [supportKind,setSupportKind]=useState<'help'|'improvement'>('help');
+  const [supportSubject,setSupportSubject]=useState('');
+  const [supportMessage,setSupportMessage]=useState('');
+  const [supportSaving,setSupportSaving]=useState(false);
+  const [supportError,setSupportError]=useState('');
 
   useEffect(()=>{
     let active=true;
-    void supabase.auth.getUser().then(({data})=>{
+    void supabase.auth.getUser().then(({data,error})=>{
+      if(error)throw error;
       if(!active)return;
       const stored=loadStored<AccountSettings>(storageKeys.settingsAccount,demoAccount);
       const next=accountFromUser(data.user,stored);
       setAccount(next);
       setName(next.name);
       if(next.name!==stored.name||next.email!==stored.email)saveStored(storageKeys.settingsAccount,next);
-    });
+    }).catch(error=>console.warn('CONECTA settings identity unavailable; demo identity kept',error));
     return ()=>{active=false};
   },[]);
 
@@ -78,15 +87,26 @@ export function SettingsView(){
     window.setTimeout(()=>setNotice(''),2200);
   };
   const toggle=(key:ToggleKey)=>setToggles(value=>({...value,[key]:!value[key]}));
-  const saveAccount=()=>{
+  const saveAccount=async()=>{
     const next={name:name.trim()||account.name,email:account.email};
-    setAccount(next);
-    setName(next.name);
-    setAccountEditing(false);
-    flash('Datos guardados');
+    setAccountError('');
+    setAccountSaving(true);
+    try{
+      const saved=await saveAccountIdentity(next);
+      if(!saved)throw new Error('No hay una sesión activa para guardar los datos.');
+      setAccount(next);
+      setName(next.name);
+      setAccountEditing(false);
+      flash('Datos guardados');
+    }catch(error){
+      setAccountError(error instanceof Error?error.message:'No se han podido guardar los datos.');
+    }finally{
+      setAccountSaving(false);
+    }
   };
   const cancelAccount=()=>{
     setName(account.name);
+    setAccountError('');
     setAccountEditing(false);
   };
   const openHelp=(title:string,body:string)=>{
@@ -97,6 +117,27 @@ export function SettingsView(){
     setActionItem({title,body});
     setActionReturnScreen(returnScreen);
     setScreen('actionDetail');
+  };
+  const openSupport=(kind:'help'|'improvement')=>{
+    setSupportKind(kind);
+    setSupportSubject(kind==='help'?'Ayuda con CONECTA':'Sugerencia para CONECTA');
+    setSupportMessage('');
+    setSupportError('');
+    setScreen('supportForm');
+  };
+  const sendSupport=async()=>{
+    setSupportError('');
+    setSupportSaving(true);
+    try{
+      await submitSupportRequest(supportKind,supportSubject,supportMessage,account.email);
+      setSupportMessage('');
+      setScreen('help');
+      flash(supportKind==='help'?'Solicitud enviada a soporte':'Feedback enviado');
+    }catch(error){
+      setSupportError(error instanceof Error?error.message:'No se ha podido enviar la solicitud.');
+    }finally{
+      setSupportSaving(false);
+    }
   };
   const openPrivacyField=(key:PrivacyFieldKey)=>{
     setPrivacyField(key);
@@ -176,10 +217,11 @@ export function SettingsView(){
 
   if(screen==='account')return <SettingsInfoScreen title="Mi cuenta" subtitle="Datos personales y preferencias" onBack={()=>setScreen('root')}>
     {accountEditing?<div className="settings-account-form">
-      <label>Nombre<input value={name} onChange={event=>setName(event.target.value)}/></label>
+      <label>Nombre<input value={name} onChange={event=>setName(event.target.value)} disabled={accountSaving}/></label>
       <label>Email de acceso<input type="email" value={account.email} readOnly aria-readonly="true"/></label>
-      <div><button className="settings-inline-action" onClick={saveAccount}>Guardar</button><button className="settings-secondary-action" onClick={cancelAccount}>Cancelar</button></div>
-    </div>:<><strong>{account.name}</strong><p>{account.email}</p><button className="settings-inline-action" onClick={()=>{setName(account.name);setAccountEditing(true)}}>Editar datos</button></>}
+      {accountError&&<p className="settings-error" role="alert">{accountError}</p>}
+      <div><button className="settings-inline-action" disabled={accountSaving} onClick={()=>{void saveAccount()}}>{accountSaving?'Guardando…':'Guardar'}</button><button className="settings-secondary-action" disabled={accountSaving} onClick={cancelAccount}>Cancelar</button></div>
+    </div>:<><strong>{account.name}</strong><p>{account.email}</p><button className="settings-inline-action" onClick={()=>{setName(account.name);setAccountError('');setAccountEditing(true)}}>Editar datos</button></>}
     {notice&&<p className="settings-success">{notice}</p>}
   </SettingsInfoScreen>;
 
@@ -198,13 +240,23 @@ export function SettingsView(){
 
   if(screen==='helpDetail'&&helpItem)return <SettingsInfoScreen title={helpItem.title} subtitle="Centro de ayuda" onBack={()=>setScreen('help')}><p>{helpItem.body}</p></SettingsInfoScreen>;
 
-  if(screen==='actionDetail'&&actionItem)return <SettingsInfoScreen title={actionItem.title} subtitle="Configuración" onBack={()=>setScreen(actionReturnScreen)}><p>{actionItem.body}</p><button className="settings-inline-action" onClick={()=>flash('Cambio guardado en el prototipo')}>Guardar preferencia</button>{notice&&<p className="settings-success">{notice}</p>}</SettingsInfoScreen>;
+  if(screen==='actionDetail'&&actionItem)return <SettingsInfoScreen title={actionItem.title} subtitle="Información" onBack={()=>setScreen(actionReturnScreen)}><p>{actionItem.body}</p></SettingsInfoScreen>;
+
+  if(screen==='supportForm')return <SettingsInfoScreen title={supportKind==='help'?'Soporte técnico':'Enviar feedback'} subtitle={supportKind==='help'?'Contacta con el equipo de CONECTA':'Ayúdanos a mejorar CONECTA'} onBack={()=>setScreen('help')}>
+    <div className="settings-account-form settings-support-form">
+      <label>Asunto<input value={supportSubject} maxLength={120} disabled={supportSaving} onChange={event=>setSupportSubject(event.target.value)}/></label>
+      <label>Mensaje<textarea value={supportMessage} maxLength={4000} disabled={supportSaving} placeholder="Cuéntanos qué necesitas o qué mejorarías…" onChange={event=>setSupportMessage(event.target.value)}/></label>
+      <small className="settings-field-hint">La solicitud se envía de forma segura desde tu cuenta de CONECTA.</small>
+      {supportError&&<p className="settings-error" role="alert">{supportError}</p>}
+      <div><button className="settings-inline-action" disabled={supportSaving} onClick={()=>{void sendSupport()}}>{supportSaving?'Enviando…':'Enviar'}</button><button className="settings-secondary-action" disabled={supportSaving} onClick={()=>setScreen('help')}>Cancelar</button></div>
+    </div>
+  </SettingsInfoScreen>;
 
   if(screen==='security')return <SecuritySettingsScreen email={account.email} signingOut={signingOut} notice={notice} onBack={()=>setScreen('root')} onChangePassword={openChangePassword} onOpenAction={(title,body)=>openAction(title,body,'security')} onSignOutAll={()=>{void signOutAll()}}/>;
 
   if(screen==='changePassword')return <ChangePasswordScreen newPassword={newPassword} confirmPassword={confirmPassword} saving={passwordSaving} error={passwordError} onBack={()=>setScreen('security')} onNewPassword={setNewPassword} onConfirmPassword={setConfirmPassword} onSave={()=>{void savePassword()}}/>;
 
-  if(screen==='privacy')return <PrivacySettingsScreen privacy={privacy} blockedUsers={blockedUsers} notice={notice} onBack={()=>setScreen('root')} onOpenField={openPrivacyField} onOpenBlocked={()=>setScreen('blockedUsers')} onOpenData={()=>openAction('Datos y actividad','Revisa la información y actividad asociada a tu perfil. La siguiente fase conectará este resumen con los datos persistidos en tu cuenta.','privacy')} onDownload={downloadData} onDelete={()=>openAction('Eliminar cuenta','El borrado definitivo se mantiene protegido mientras terminamos el flujo de confirmación y eliminación segura en backend.','privacy')}/>;
+  if(screen==='privacy')return <PrivacySettingsScreen privacy={privacy} blockedUsers={blockedUsers} notice={notice} onBack={()=>setScreen('root')} onOpenField={openPrivacyField} onOpenBlocked={()=>setScreen('blockedUsers')} onOpenData={()=>openAction('Datos y actividad','Puedes descargar una copia de las preferencias y datos del prototipo desde esta pantalla. Los datos persistidos en Supabase permanecen protegidos por las políticas de tu cuenta.','privacy')} onDownload={downloadData} onDelete={()=>openAction('Eliminar cuenta','El borrado definitivo no está activado todavía. No se realizará ninguna eliminación sin un flujo específico de confirmación y borrado seguro en backend.','privacy')}/>;
 
   if(screen==='privacyField'&&privacyField)return <PrivacyFieldScreen field={privacyField} privacy={privacy} notice={notice} onBack={()=>setScreen('privacy')} onChange={setPrivacyValue}/>;
 
@@ -234,10 +286,11 @@ export function SettingsView(){
       <SettingsRow icon={BadgeCheck} title="Seguridad en la app" subtitle="Consejos y buenas prácticas" onClick={()=>openHelp('Seguridad en la app','Queda siempre en lugares públicos, revisa los perfiles y utiliza las herramientas de bloqueo y reporte si algo no te convence.')}/>
       <SettingsRow icon={LockKeyhole} title="Privacidad" subtitle="Cómo protegemos tus datos" onClick={()=>openHelp('Privacidad','Desde Privacidad puedes controlar quién ve tu perfil, tus planes y quién puede enviarte mensajes.')}/>
       <SettingsRow icon={Database} title="Condiciones de uso" subtitle="Términos y condiciones" onClick={()=>openHelp('Condiciones de uso','Consulta aquí las condiciones que regulan el uso de CONECTA. Este prototipo aún no sustituye los textos legales definitivos.')}/>
-      <SettingsRow icon={Mail} title="Soporte técnico" subtitle="soporte@conectaapp.com" onClick={()=>window.location.href='mailto:soporte@conectaapp.com?subject=Soporte%20CONECTA'}/>
-      <SettingsRow icon={MessageCircleMore} title="Enviar feedback" subtitle="Cuéntanos tu opinión" onClick={()=>window.location.href='mailto:soporte@conectaapp.com?subject=Feedback%20CONECTA'}/>
+      <SettingsRow icon={Mail} title="Soporte técnico" subtitle="Enviar solicitud dentro de CONECTA" onClick={()=>openSupport('help')}/>
+      <SettingsRow icon={MessageCircleMore} title="Enviar feedback" subtitle="Cuéntanos tu opinión" onClick={()=>openSupport('improvement')}/>
     </div>
-    <div className="settings-support-box"><div><strong>¿Necesitas ayuda?</strong><small>Nuestro equipo está aquí para ti.</small></div><button onClick={()=>window.location.href='mailto:soporte@conectaapp.com?subject=Ayuda%20CONECTA'}>Contactar soporte</button></div>
+    <div className="settings-support-box"><div><strong>¿Necesitas ayuda?</strong><small>Nuestro equipo está aquí para ti.</small></div><button onClick={()=>openSupport('help')}>Contactar soporte</button></div>
+    {notice&&<p className="settings-success">{notice}</p>}
   </div></div>;
 
   if(screen==='premium')return <div className="page settings-page"><div className="settings-shell">

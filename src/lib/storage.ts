@@ -1,3 +1,5 @@
+import { syncSettingStorageKey } from './settingsBackend';
+
 type CloudWriter=(key:string,value:unknown)=>void|Promise<void>;
 let cloudWriter:CloudWriter|null=null;
 
@@ -19,6 +21,8 @@ export function saveStored<T>(key:string,value:T){
   try{
     window.localStorage.setItem(key,JSON.stringify(value));
   }catch{}
+
+  void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
 
   if(!cloudWriter)return;
   try{

@@ -34,6 +34,36 @@ export async function loadPrimaryEmergencyContact():Promise<EmergencyContact|nul
   };
 }
 
+export async function savePrimaryEmergencyContact(name:string,phone:string,relationship:string){
+  const cleanName=name.trim();
+  const cleanPhone=phone.trim();
+  const cleanRelationship=relationship.trim();
+  if(cleanName.length<2)throw new Error('Escribe el nombre de tu contacto de emergencia.');
+  if(cleanPhone.length<6)throw new Error('Escribe un teléfono válido.');
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
+  if(!user)throw new Error('Necesitas iniciar sesión para guardar un contacto de emergencia.');
+
+  const current=await loadPrimaryEmergencyContact();
+  if(current){
+    const {error}=await supabase
+      .from('emergency_contacts')
+      .update({name:cleanName,phone:cleanPhone,relationship:cleanRelationship||null,is_primary:true,updated_at:new Date().toISOString()})
+      .eq('id',current.id);
+    if(error)throw error;
+  }else{
+    const {error}=await supabase.from('emergency_contacts').insert({
+      user_id:user.id,
+      name:cleanName,
+      phone:cleanPhone,
+      relationship:cleanRelationship||null,
+      is_primary:true,
+    });
+    if(error)throw error;
+  }
+  return loadPrimaryEmergencyContact();
+}
+
 export async function startSafetySession(planId?:string):Promise<SafetySession>{
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;

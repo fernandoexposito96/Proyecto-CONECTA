@@ -7,6 +7,7 @@ import { fetchUnreadNotificationCount } from './lib/notificationsBackend';
 import { fetchRealPlans } from './lib/realPlansBackend';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
 import type { ExploreFilter, Plan, View } from './types';
+import { CalendarView } from './views/CalendarView';
 import { ChatView } from './views/ChatView';
 import { CreatePlanView } from './views/CreatePlanView';
 import { ExploreView } from './views/ExploreView';
@@ -91,6 +92,7 @@ export default function App(){
     setView('Explora');
   };
   const openChat=(name?:string)=>{
+    setSelected(null);
     setChatTarget(name||null);
     setView('Chat');
   };
@@ -119,11 +121,12 @@ export default function App(){
         {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
         {view==='Ajustes'&&<SettingsView/>}
-        {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications}/>} 
+        {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications} onOpenPlanChat={openChat}/>} 
         {view==='Crear'&&<CreatePlanView setView={setView} onCreate={addCreatedPlan}/>} 
+        {view==='Calendario'&&<CalendarView setView={setView}/>} 
       </div>
     </main>
     <BottomNav view={view} setView={setView}/>
-    {selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)}/>} 
+    {selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)} onOpenChat={openChat}/>} 
   </div>
 }

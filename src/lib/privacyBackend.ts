@@ -31,7 +31,8 @@ function profilePayload(settings:PrivacySettings){
 }
 
 export async function loadProfilePrivacySettings(current:PrivacySettings):Promise<PrivacySettings|null>{
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
   if(!user)return null;
 
   const {data,error}=await supabase
@@ -46,7 +47,8 @@ export async function loadProfilePrivacySettings(current:PrivacySettings):Promis
 }
 
 export async function syncProfilePrivacySettings(settings:PrivacySettings){
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
   if(!user)return false;
 
   const {error}=await supabase
@@ -67,7 +69,8 @@ export async function saveProfilePrivacySetting<K extends PrivacyFieldKey>(key:K
   const patch=profilePatch(key,value);
   if(!patch)return false;
 
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
   if(!user)return false;
 
   const {error}=await supabase
@@ -79,7 +82,8 @@ export async function saveProfilePrivacySetting<K extends PrivacyFieldKey>(key:K
 
 export async function addBackendBlock(blockedUserId:string){
   if(!isRealUserId(blockedUserId))return false;
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
   if(!user||user.id===blockedUserId)return false;
 
   const {error}=await supabase
@@ -91,7 +95,8 @@ export async function addBackendBlock(blockedUserId:string){
 
 export async function removeBackendBlock(blockedUserId:string){
   if(!isRealUserId(blockedUserId))return false;
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
   if(!user)return false;
 
   const {error}=await supabase
@@ -104,12 +109,14 @@ export async function removeBackendBlock(blockedUserId:string){
 }
 
 export async function syncBackendBlocks(blockedUsers:BlockedUser[]){
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError)throw userError;
   if(!user)return false;
 
-  const desired=new Set(blockedUsers
+  const desired=[...new Set(blockedUsers
     .map(item=>item.userId)
-    .filter(id=>isRealUserId(id)&&id!==user.id));
+    .filter(id=>isRealUserId(id)&&id!==user.id))];
+  if(!desired.length)return true;
 
   const {data,error}=await supabase
     .from('blocks')
@@ -118,20 +125,12 @@ export async function syncBackendBlocks(blockedUsers:BlockedUser[]){
   if(error)throw error;
 
   const existing=new Set((data||[]).map(row=>String(row.blocked_id||'')).filter(Boolean));
-  const toAdd=[...desired].filter(id=>!existing.has(id));
-  const toRemove=[...existing].filter(id=>!desired.has(id));
+  const toAdd=desired.filter(id=>!existing.has(id));
+  if(!toAdd.length)return true;
 
-  if(toAdd.length){
-    const {error:insertError}=await supabase.from('blocks').insert(toAdd.map(blockedId=>({blocker_id:user.id,blocked_id:blockedId})));
-    if(insertError)throw insertError;
-  }
-  if(toRemove.length){
-    const {error:deleteError}=await supabase
-      .from('blocks')
-      .delete()
-      .eq('blocker_id',user.id)
-      .in('blocked_id',toRemove);
-    if(deleteError)throw deleteError;
-  }
+  const {error:insertError}=await supabase
+    .from('blocks')
+    .insert(toAdd.map(blockedId=>({blocker_id:user.id,blocked_id:blockedId})));
+  if(insertError)throw insertError;
   return true;
 }

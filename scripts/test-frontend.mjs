@@ -8,6 +8,7 @@ const home=read('src/views/HomeView.tsx');
 const explore=read('src/views/ExploreView.tsx');
 const createPlan=read('src/views/CreatePlanView.tsx');
 const chat=read('src/views/ChatView.tsx');
+const notifications=read('src/views/NotificationsView.tsx');
 const profile=read('src/views/ProfileView.tsx');
 const settings=read('src/views/SettingsView.tsx');
 const navigation=read('src/components/AppNavigation.tsx');
@@ -15,6 +16,7 @@ const plans=read('src/components/PlanComponents.tsx');
 const chatBackend=read('src/lib/chatBackend.ts');
 const cloud=read('src/lib/cloud.ts');
 const identity=read('src/lib/identity.ts');
+const notificationsBackend=read('src/lib/notificationsBackend.ts');
 const privacyBackend=read('src/lib/privacyBackend.ts');
 const settingsBackend=read('src/lib/settingsBackend.ts');
 const socialBackend=read('src/lib/socialBackend.ts');
@@ -41,11 +43,18 @@ const checks=[
   ['Perfil lee la identidad autenticada',()=>assert.match(profile,/accountFromUser\(data\.user,stored\)/)],
   ['Perfil no mantiene Fernando escrito en el h1',()=>assert.doesNotMatch(profile,/<h1>Fernando/)],
   ['Perfil sincroniza la biografía real',()=>assert.match(profile,/\.from\('profiles'\)\.upsert/)],
+  ['Los fallos de perfil tienen semántica de error',()=>{assert.match(profile,/className="profile-error" role="alert"/);assert.doesNotMatch(profile,/profileError&&<p className="settings-success"/)}],
   ['Ajustes leen el usuario autenticado',()=>assert.match(settings,/supabase\.auth\.getUser\(\)/)],
   ['Cerrar sesiones usa Supabase real',()=>assert.match(settings,/supabase\.auth\.signOut\(\{scope:'global'\}\)/)],
   ['El botón de sesiones ya no es un flash demo',()=>assert.doesNotMatch(settings,/Sesiones demo cerradas/)],
   ['Avatar superior usa la sesión real',()=>assert.match(navigation,/avatarFromUser\(data\.user,account\.name\)/)],
   ['La búsqueda superior abre Explora sin cortar una escritura',()=>{assert.match(navigation,/readOnly value=""/);assert.match(navigation,/openSearch/)}],
+  ['Campana solo muestra indicador si hay no leídas reales',()=>assert.match(navigation,/unreadNotifications>0&&<i\/>/)],
+  ['App centraliza el contador de no leídas',()=>{assert.match(app,/setUnreadNotifications/);assert.match(app,/fetchUnreadNotificationCount\(\)/);assert.match(app,/onUnreadCountChange=\{setUnreadNotifications\}/)}],
+  ['Notificaciones leen el backend real',()=>assert.match(notificationsBackend,/from\('notifications'\)[\s\S]*order\('created_at'/)],
+  ['Notificaciones permiten marcar como leído en backend',()=>assert.match(notificationsBackend,/update\(\{read:true\}\)/)],
+  ['Pantalla de notificaciones conserva fallback demo explícito',()=>{assert.match(notifications,/fetchBackendNotifications\(\)/);assert.match(notifications,/demo fallback kept/);assert.match(notifications,/Aún no tienes notificaciones reales/)}],
+  ['Preferencias de notificación quedan estables durante la pantalla',()=>assert.match(notifications,/const \[toggles\]=useState/)],
   ['Identidad tiene fallback del demo',()=>assert.match(identity,/demoAccount/)],
   ['Estado local se separa por usuario',()=>assert.match(cloud,/authUserMarker/)],
   ['No se migra el demo a otra cuenta',()=>assert.match(cloud,/localStateBelongsToUser/)],

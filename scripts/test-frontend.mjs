@@ -3,12 +3,15 @@ import assert from 'node:assert/strict';
 
 const read=(path)=>fs.readFileSync(path,'utf8');
 const app=read('src/App.tsx');
+const authGate=read('src/components/AuthGate.tsx');
 const home=read('src/views/HomeView.tsx');
 const explore=read('src/views/ExploreView.tsx');
+const createPlan=read('src/views/CreatePlanView.tsx');
 const chat=read('src/views/ChatView.tsx');
 const profile=read('src/views/ProfileView.tsx');
 const settings=read('src/views/SettingsView.tsx');
 const navigation=read('src/components/AppNavigation.tsx');
+const plans=read('src/components/PlanComponents.tsx');
 const chatBackend=read('src/lib/chatBackend.ts');
 const cloud=read('src/lib/cloud.ts');
 const identity=read('src/lib/identity.ts');
@@ -28,6 +31,7 @@ const checks=[
   ['Persistencia de ajustes existe',()=>assert.match(storage,/settingsAccount:/)],
   ['Perfil lee la identidad autenticada',()=>assert.match(profile,/accountFromUser\(data\.user,stored\)/)],
   ['Perfil no mantiene Fernando escrito en el h1',()=>assert.doesNotMatch(profile,/<h1>Fernando/)],
+  ['Perfil sincroniza la biografía real',()=>assert.match(profile,/\.from\('profiles'\)\.upsert/)],
   ['Ajustes leen el usuario autenticado',()=>assert.match(settings,/supabase\.auth\.getUser\(\)/)],
   ['Cerrar sesiones usa Supabase real',()=>assert.match(settings,/supabase\.auth\.signOut\(\{scope:'global'\}\)/)],
   ['El botón de sesiones ya no es un flash demo',()=>assert.doesNotMatch(settings,/Sesiones demo cerradas/)],
@@ -35,11 +39,16 @@ const checks=[
   ['Identidad tiene fallback del demo',()=>assert.match(identity,/demoAccount/)],
   ['Estado local se separa por usuario',()=>assert.match(cloud,/authUserMarker/)],
   ['No se migra el demo a otra cuenta',()=>assert.match(cloud,/localStateBelongsToUser/)],
+  ['Sincronización cloud reintenta sin perder el parche',()=>assert.match(cloud,/pendingState=\{\.\.\.patch,\.\.\.pendingState\}/)],
   ['Conexiones reales tienen puente Supabase',()=>assert.match(socialBackend,/requestBackendConnection/)],
   ['Chat conserva fallback local',()=>assert.match(chat,/demo fallback kept/)],
   ['Chat tiene puente de mensajes reales',()=>assert.match(chatBackend,/sendBackendMessage/)],
-  ['Conversaciones reales vacías no sustituyen el demo',()=>assert.match(chatBackend,/if\(!latest\)return \[\]/)],
+  ['Chat real no marca como enviado un fallo de red',()=>assert.match(chat,/message not marked as sent/)],
+  ['Conversaciones reales vacías siguen visibles',()=>assert.match(chatBackend,/Conversación nueva/)],
   ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
+  ['Auth no queda bloqueado si falla la inicialización',()=>assert.match(authGate,/setReady\(true\)/)],
+  ['Crear plan espera el resultado de sincronización',()=>assert.match(createPlan,/await onCreate\(plan\)/)],
+  ['Tarjetas de plan tienen navegación por teclado',()=>assert.match(plans,/tabIndex=\{0\}/)],
 ];
 
 for(const [name,check] of checks){

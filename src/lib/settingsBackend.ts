@@ -1,4 +1,4 @@
-import type { Language, NotificationFrequency, PrivacySettings, Theme, ToggleKey } from '../types';
+import type { AccountSettings, Language, NotificationFrequency, PrivacySettings, Theme, ToggleKey } from '../types';
 import { supabase } from './supabase';
 
 export type NotificationToggles=Record<ToggleKey,boolean>;
@@ -93,19 +93,55 @@ function loadLocalJson(key:string):unknown{
   }
 }
 
-async function syncNotificationsToUserSettings(){
+async function syncNotifications(){
   const toggles=loadLocalJson(notificationTogglesKey);
   const frequency=loadLocalJson(notificationFrequencyKey);
   if(!isNotificationToggles(toggles))return false;
   const safeFrequency=isFrequency(frequency)?frequency:'daily';
-  return upsertUserSettings({notifications:{...toggles,frequency:safeFrequency}});
+  const user=await currentUser();
+  if(!user)return false;
+
+  const [{error:settingsError},{error:preferencesError}]=await Promise.all([
+    supabase.from('user_settings').upsert({
+      user_id:user.id,
+      notifications:{...toggles,frequency:safeFrequency},
+      updated_at:new Date().toISOString(),
+    },{onConflict:'user_id'}),
+    supabase.from('notification_preferences').upsert({
+      user_id:user.id,
+      messages:toggles.messages,
+      connections:toggles.requests,
+      plans:toggles.planUpdates||toggles.reminders,
+      events:toggles.planUpdates||toggles.reminders,
+      communities:toggles.news,
+      updated_at:new Date().toISOString(),
+    },{onConflict:'user_id'}),
+  ]);
+  if(settingsError)throw settingsError;
+  if(preferencesError)throw preferencesError;
+  return true;
+}
+
+export async function saveAccountIdentity(account:AccountSettings){
+  const cleanName=account.name.trim();
+  if(!cleanName)return false;
+  const user=await currentUser();
+  if(!user)return false;
+
+  const {error:authError}=await supabase.auth.updateUser({data:{display_name:cleanName,full_name:cleanName}});
+  if(authError)throw authError;
+  const {error:profileError}=await supabase
+    .from('profiles')
+    .upsert({id:user.id,display_name:cleanName,updated_at:new Date().toISOString()},{onConflict:'id'});
+  if(profileError)throw profileError;
+  return true;
 }
 
 export async function syncSettingStorageKey(key:string,value:unknown){
   if(key===themeKey&&isTheme(value))return upsertUserSettings({appearance:themeToBackend[value]});
   if(key===languageKey&&isLanguage(value))return upsertUserSettings({language:languageToBackend[value]});
   if(key===privacyKey&&isPrivacy(value))return upsertUserSettings({privacy:privacyToBackend(value)});
-  if((key===notificationTogglesKey&&isNotificationToggles(value))||(key===notificationFrequencyKey&&isFrequency(value)))return syncNotificationsToUserSettings();
+  if((key===notificationTogglesKey&&isNotificationToggles(value))||(key===notificationFrequencyKey&&isFrequency(value)))return syncNotifications();
   return false;
 }
 

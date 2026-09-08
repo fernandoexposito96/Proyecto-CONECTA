@@ -22,6 +22,14 @@ function mergeProfilePrivacy(row:ProfilePrivacyRow,current:PrivacySettings):Priv
   };
 }
 
+function profilePayload(settings:PrivacySettings){
+  return {
+    profile_visibility:settings.profileVisibility==='Todos'?'public':'connections',
+    show_location:settings.locationSharing!=='Nunca',
+    allow_messages:settings.messagePermission==='Todos'?'everyone':'connections',
+  };
+}
+
 export async function loadProfilePrivacySettings(current:PrivacySettings):Promise<PrivacySettings|null>{
   const {data:{user}}=await supabase.auth.getUser();
   if(!user)return null;
@@ -35,6 +43,17 @@ export async function loadProfilePrivacySettings(current:PrivacySettings):Promis
   if(error)throw error;
   if(!data)return null;
   return mergeProfilePrivacy(data as ProfilePrivacyRow,current);
+}
+
+export async function syncProfilePrivacySettings(settings:PrivacySettings){
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user)return false;
+
+  const {error}=await supabase
+    .from('profiles')
+    .upsert({id:user.id,...profilePayload(settings),updated_at:new Date().toISOString()},{onConflict:'id'});
+  if(error)throw error;
+  return true;
 }
 
 function profilePatch<K extends PrivacyFieldKey>(key:K,value:PrivacySettings[K]):Record<string,unknown>|null{

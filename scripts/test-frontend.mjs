@@ -40,6 +40,8 @@ const checks=[
   ['Estado local se separa por usuario',()=>assert.match(cloud,/authUserMarker/)],
   ['No se migra el demo a otra cuenta',()=>assert.match(cloud,/localStateBelongsToUser/)],
   ['Sincronización cloud reintenta sin perder el parche',()=>assert.match(cloud,/pendingState=\{\.\.\.patch,\.\.\.pendingState\}/)],
+  ['La cola cloud se invalida al cambiar de sesión',()=>{assert.match(cloud,/resetCloudStateQueue/);assert.match(cloud,/syncGeneration/)}],
+  ['La hidratación cloud queda ligada al usuario esperado',()=>assert.match(cloud,/expectedUserId&&session\.user\.id!==expectedUserId/)],
   ['Conexiones reales tienen puente Supabase',()=>assert.match(socialBackend,/requestBackendConnection/)],
   ['Chat conserva fallback local',()=>assert.match(chat,/demo fallback kept/)],
   ['Chat tiene puente de mensajes reales',()=>assert.match(chatBackend,/sendBackendMessage/)],
@@ -47,6 +49,8 @@ const checks=[
   ['Conversaciones reales vacías siguen visibles',()=>assert.match(chatBackend,/Conversación nueva/)],
   ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
   ['Auth no queda bloqueado si falla la inicialización',()=>assert.match(authGate,/setReady\(true\)/)],
+  ['Auth limpia la cola al cambiar de sesión',()=>assert.match(authGate,/resetCloudStateQueue\(\)/)],
+  ['Auth usa mínimo de 8 caracteres',()=>{assert.match(authGate,/password\.length<8/);assert.match(authGate,/minLength=\{8\}/)}],
   ['Crear plan espera el resultado de sincronización',()=>assert.match(createPlan,/await onCreate\(plan\)/)],
   ['Tarjetas de plan tienen navegación por teclado',()=>assert.match(plans,/tabIndex=\{0\}/)],
 ];

@@ -49,6 +49,14 @@ function isLanguage(value:unknown):value is Language{
   return value==='Español'||value==='Català'||value==='English';
 }
 
+function isBackendTheme(value:unknown):value is 'light'|'dark'|'system'{
+  return value==='light'||value==='dark'||value==='system';
+}
+
+function isBackendLanguage(value:unknown):value is 'es'|'ca'|'en'{
+  return value==='es'||value==='ca'||value==='en';
+}
+
 function isPrivacy(value:unknown):value is PrivacySettings{
   if(!isObject(value))return false;
   return typeof value.profileVisibility==='string'&&typeof value.planVisibility==='string'&&typeof value.locationSharing==='string'&&typeof value.messagePermission==='string'&&typeof value.connectionRequests==='string';
@@ -157,13 +165,19 @@ export async function loadBackendSettings():Promise<BackendSettings|null>{
   if(!data)return null;
 
   const result:BackendSettings={};
-  if(data.appearance==='light'||data.appearance==='dark'||data.appearance==='system')result.theme=backendToTheme[data.appearance];
-  if(data.language==='es'||data.language==='ca'||data.language==='en')result.language=backendToLanguage[data.language];
-  if(isObject(data.notifications)){
-    if(isNotificationToggles(data.notifications))result.notifications=data.notifications;
-    if(isFrequency(data.notifications.frequency))result.frequency=data.notifications.frequency;
+  const appearance:unknown=data.appearance;
+  const language:unknown=data.language;
+  const notifications:unknown=data.notifications;
+  const privacy:unknown=data.privacy;
+
+  if(isBackendTheme(appearance))result.theme=backendToTheme[appearance];
+  if(isBackendLanguage(language))result.language=backendToLanguage[language];
+  if(isObject(notifications)){
+    const storedFrequency=notifications['frequency'];
+    if(isNotificationToggles(notifications))result.notifications=notifications;
+    if(isFrequency(storedFrequency))result.frequency=storedFrequency;
   }
-  result.privacy=privacyFromBackend(data.privacy);
+  result.privacy=privacyFromBackend(privacy);
   return result;
 }
 

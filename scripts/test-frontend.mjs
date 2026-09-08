@@ -21,6 +21,7 @@ const privacyBackend=read('src/lib/privacyBackend.ts');
 const settingsBackend=read('src/lib/settingsBackend.ts');
 const socialBackend=read('src/lib/socialBackend.ts');
 const storage=read('src/lib/storage.ts');
+const theme=read('src/styles/theme.css');
 
 const checks=[
   ['App transmite categoría a Explora',()=>assert.match(app,/initialCategory=\{exploreCategory\}/)],
@@ -53,6 +54,10 @@ const checks=[
   ['App centraliza el contador de no leídas',()=>{assert.match(app,/setUnreadNotifications/);assert.match(app,/fetchUnreadNotificationCount\(\)/);assert.match(app,/onUnreadCountChange=\{setUnreadNotifications\}/)}],
   ['Notificaciones leen el backend real',()=>assert.match(notificationsBackend,/from\('notifications'\)[\s\S]*order\('created_at'/)],
   ['Notificaciones permiten marcar como leído en backend',()=>assert.match(notificationsBackend,/update\(\{read:true\}\)/)],
+  ['Contador de no leídas usa COUNT exacto del backend',()=>{assert.match(notificationsBackend,/count:'exact',head:true/);assert.match(notifications,/fetchUnreadNotificationCount\(\)/);assert.doesNotMatch(notifications,/onUnreadCountChange\?\.\(mapped\.filter/)}],
+  ['Respuestas antiguas del contador no pisan el estado nuevo',()=>{assert.match(notifications,/unreadRequestVersion/);assert.match(notifications,/version===unreadRequestVersion\.current/)}],
+  ['Rollback de lectura vuelve a consultar el contador exacto',()=>{assert.match(notifications,/finally\{[\s\S]*await refreshUnreadCount\(\)/);assert.doesNotMatch(notifications,/unreadBefore/)}],
+  ['Modo oscuro cubre las nuevas tarjetas de notificación',()=>{assert.match(theme,/html\[data-theme='dark'\] \.notification-card/);assert.doesNotMatch(theme,/\.notification-list article/)}],
   ['Pantalla de notificaciones conserva fallback demo explícito',()=>{assert.match(notifications,/fetchBackendNotifications\(\)/);assert.match(notifications,/demo fallback kept/);assert.match(notifications,/Aún no tienes notificaciones reales/)}],
   ['Preferencias de notificación quedan estables durante la pantalla',()=>assert.match(notifications,/const \[toggles\]=useState/)],
   ['Identidad tiene fallback del demo',()=>assert.match(identity,/demoAccount/)],
@@ -71,7 +76,8 @@ const checks=[
   ['Sync de bloqueos solo elimina IDs previamente conocidos',()=>assert.match(privacyBackend,/lastDesiredBlockIds[\s\S]*filter\(id=>!desired\.has\(id\)&&existing\.has\(id\)\)/)],
   ['Auth no queda bloqueado si falla la inicialización',()=>assert.match(authGate,/setReady\(true\)/)],
   ['Auth limpia la cola al cambiar de sesión',()=>assert.match(authGate,/resetCloudStateQueue\(\)/)],
-  ['Auth usa mínimo de 8 caracteres',()=>{assert.match(authGate,/password\.length<8/);assert.match(authGate,/minLength=\{8\}/)}],
+  ['Auth exige 8 caracteres solo al crear cuenta',()=>{assert.match(authGate,/if\(mode==='signup'&&password\.length<8\)/);assert.match(authGate,/minLength=\{mode==='signup'\?8:undefined\}/);assert.doesNotMatch(authGate,/if\(!cleanEmail\|\|password\.length<8\)/)}],
+  ['Login permite que Supabase valide contraseñas legacy',()=>assert.match(authGate,/if\(mode==='login'\)[\s\S]*signInWithPassword/)],
   ['Crear plan espera el resultado de sincronización',()=>assert.match(createPlan,/await onCreate\(plan\)/)],
   ['Tarjetas de plan tienen navegación por teclado',()=>assert.match(plans,/tabIndex=\{0\}/)],
 ];

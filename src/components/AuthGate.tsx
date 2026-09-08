@@ -12,6 +12,7 @@ export function AuthGate({children}:{children:ReactNode}){
   const [password,setPassword]=useState('');
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
+  const invitePending=Boolean(new URL(window.location.href).searchParams.get('invite'));
 
   useEffect(()=>{
     let active=true;
@@ -120,7 +121,7 @@ export function AuthGate({children}:{children:ReactNode}){
   return <main className="auth-page">
     <section className="auth-card">
       <div className="auth-brand"><span>C</span><div><strong>CONECTA</strong><small>Planes reales · gente compatible</small></div></div>
-      <div className="auth-copy"><h1>{mode==='login'?'Bienvenido de nuevo':'Crea tu cuenta'}</h1><p>Tu cuenta sincroniza planes y preferencias entre dispositivos mediante el backend de CONECTA.</p></div>
+      <div className="auth-copy"><h1>{mode==='login'?'Bienvenido de nuevo':'Crea tu cuenta'}</h1><p>Tu cuenta sincroniza planes y preferencias entre dispositivos mediante el backend de CONECTA.</p>{invitePending&&<p><strong>Tienes una invitación a un plan.</strong> Entra o crea tu cuenta y te llevaremos directamente al plan.</p>}</div>
       <form onSubmit={submit} className="auth-form">
         <label>Correo electrónico<input type="email" autoComplete="email" value={email} onChange={event=>setEmail(event.target.value)} placeholder="tu@email.com" required/></label>
         <label>Contraseña<input type="password" autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={event=>setPassword(event.target.value)} minLength={mode==='signup'?8:undefined} placeholder={mode==='signup'?'Mínimo 8 caracteres':'Tu contraseña'} required/></label>

@@ -3,14 +3,17 @@ export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes' | 'Notif
 export type ExploreFilter = 'all' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend';
 
 export type Plan = {
+  backendId?: string;
   title: string;
   image: string;
   time: string;
+  startsAt?: string;
   place: string;
   distance: string;
   spots: string;
   category: string;
   visibility?: 'Todos' | 'Solo conexiones';
+  shareSlug?: string;
 };
 
 export type PeopleFilter = 'near' | 'match' | 'age' | 'interests';

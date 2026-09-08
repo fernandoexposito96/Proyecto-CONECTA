@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, CalendarRange, Check, ChevronRight, Coffee, Crown, Flame, Music2, Plus, Sparkles, Trophy } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, Coffee, Crown, Music2, Plus, Sparkles } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, escapes, people, plans } from '../data/demoData';
@@ -40,6 +40,24 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
 
   const allowedPeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)),[blocked]);
   const visiblePeople=showAllPeople?allowedPeople:allowedPeople.slice(0,4);
+  const featuredPlan:Plan=summaryReady&&summary.nextPlan?{
+    title:summary.nextPlan.title,
+    image:plans[5]?.image||plans[0].image,
+    time:nextPlanDate(summary.nextPlan.startsAt),
+    place:summary.nextPlan.location||'Tarragona',
+    distance:'',
+    spots:'16 personas van',
+    category:'Música'
+  }:{
+    title:'Concierto local en Reus',
+    image:plans[5]?.image||plans[0].image,
+    time:'Hoy · 22:37',
+    place:'Centre de Reus',
+    distance:'12 km',
+    spots:'16 personas van',
+    category:'Música'
+  };
+
   const toggleConnection=(person:Person)=>{
     const name=person.name;
     const wasConnected=connected.has(name);
@@ -63,9 +81,26 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
   const openEscape=(title:string,date:string,image:string,index:number)=>onPlan({title,image,time:date,place:escapePlaces[index]||'Cataluña',distance:escapeDistances[index]||'100 km',spots:'8 plazas',category:'Viajes'});
 
   return <div className="page home-page">
-    <section className="hero home-hero-image"><img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/><div className="hero-overlay"/></section>
+    <section className="hero home-hero-image home-approved-hero">
+      <img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/>
+      <div className="hero-overlay"/>
+      <div className="home-approved-copy">
+        <h1>Vive más<br/>planes <span>juntos</span></h1>
+        <p>Conoce gente, organiza planes y crea experiencias reales.</p>
+        <button type="button" onClick={()=>openExplore('all')}>Explorar planes <ChevronRight/></button>
+      </div>
+    </section>
 
-    <section className="section home-social-summary"><div className="section-head"><div><small>TU SEMANA</small><h2>Tu CONECTA Wrapped</h2></div><button onClick={()=>setView('Calendario')}>Calendario <ChevronRight/></button></div><div className="wrapped-grid"><article><Flame/><strong>{summaryReady?summary.streakWeeks:'—'}</strong><span>semanas de racha</span></article><article><Trophy/><strong>{summaryReady?summary.attendedThisWeek:'—'}</strong><span>planes esta semana</span></article><article><Sparkles/><strong>{summaryReady?(summary.topCategory||'—'):'—'}</strong><span>categoría favorita</span></article></div>{summaryReady&&summary.nextPlan?<button className="next-plan-widget" type="button" onClick={()=>setView('Calendario')}><CalendarRange/><span><small>TU PRÓXIMO PLAN</small><strong>{summary.nextPlan.title}</strong><em>{nextPlanDate(summary.nextPlan.startsAt)} · {summary.nextPlan.location}</em></span><ChevronRight/></button>:summaryReady?<div className="next-plan-widget is-empty"><CalendarRange/><span><small>TU PRÓXIMO PLAN</small><strong>Aún no tienes uno confirmado</strong><em>Apúntate a un plan real y aparecerá aquí.</em></span></div>:null}</section>
+    <button className="home-approved-next" type="button" onClick={()=>onPlan(featuredPlan)}>
+      <img src={featuredPlan.image} alt={featuredPlan.title} decoding="async"/>
+      <span className="home-approved-next-copy">
+        <small>TU PRÓXIMO PLAN</small>
+        <strong>{featuredPlan.title}</strong>
+        <span><CalendarDays/>{featuredPlan.time} · {featuredPlan.place}</span>
+        <em>{featuredPlan.spots}</em>
+      </span>
+      <ChevronRight/>
+    </button>
 
     <section className="section home-discover"><div className="section-head"><h2>Descubre</h2><button onClick={()=>openExplore('all')}>Ver todo <ChevronRight/></button></div><div className="category-strip">{categories.slice(0,12).map(([name,image])=><button key={name} onClick={()=>openExplore('all',name)}><img loading="lazy" decoding="async" src={image} alt={name}/><span className="shade"/><b><CategoryIcon name={name}/>{name}</b></button>)}</div></section>
 

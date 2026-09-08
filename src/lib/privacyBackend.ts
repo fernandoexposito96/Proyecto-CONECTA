@@ -1,4 +1,4 @@
-import type { PrivacyFieldKey, PrivacySettings } from '../types';
+import type { BlockedUser, PrivacyFieldKey, PrivacySettings } from '../types';
 import { supabase } from './supabase';
 
 type ProfilePrivacyRow={
@@ -100,5 +100,38 @@ export async function removeBackendBlock(blockedUserId:string){
     .eq('blocker_id',user.id)
     .eq('blocked_id',blockedUserId);
   if(error)throw error;
+  return true;
+}
+
+export async function syncBackendBlocks(blockedUsers:BlockedUser[]){
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user)return false;
+
+  const desired=new Set(blockedUsers
+    .map(item=>item.userId)
+    .filter(id=>isRealUserId(id)&&id!==user.id));
+
+  const {data,error}=await supabase
+    .from('blocks')
+    .select('blocked_id')
+    .eq('blocker_id',user.id);
+  if(error)throw error;
+
+  const existing=new Set((data||[]).map(row=>String(row.blocked_id||'')).filter(Boolean));
+  const toAdd=[...desired].filter(id=>!existing.has(id));
+  const toRemove=[...existing].filter(id=>!desired.has(id));
+
+  if(toAdd.length){
+    const {error:insertError}=await supabase.from('blocks').insert(toAdd.map(blockedId=>({blocker_id:user.id,blocked_id:blockedId})));
+    if(insertError)throw insertError;
+  }
+  if(toRemove.length){
+    const {error:deleteError}=await supabase
+      .from('blocks')
+      .delete()
+      .eq('blocker_id',user.id)
+      .in('blocked_id',toRemove);
+    if(deleteError)throw deleteError;
+  }
   return true;
 }

@@ -16,10 +16,10 @@ avoid a cached build silently replacing the application under test.
 
 Current coverage: navigation across the main demo views, image decoding and
 fallback detection, viewport overflow, category navigation, profile editing
-and persistence, and serious/critical accessibility checks on Home. This runs
+and persistence, cross-view blocking, people filters and likes, and serious/critical accessibility checks on Home. This runs
 on desktop Chromium, mobile Chromium and iPhone WebKit. Screenshots and traces
 are available in the HTML report and CI's `browser-evidence` artifact.
 
 Coverage still to add: the full responsive width matrix, nested settings,
-creation, privacy/blocking, chat interactions, authentication failure paths,
+creation, privacy preferences/unblocking, chat interactions, authentication failure paths,
 and PWA behavior. This suite must not be presented as exhaustive functional QA.

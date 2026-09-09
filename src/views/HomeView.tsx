@@ -65,7 +65,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     {name:'Sergio',age:28,match:'88%',tags:['Deporte','Naturaleza'],image:allowedPeople.find(person=>person.name==='Javi')?.image||people[1].image},
     {name:'Marta',age:24,match:'86%',tags:['Música','Planes'],image:allowedPeople.find(person=>person.name==='Marta')?.image||people[0].image},
     {name:'Álex',age:27,match:'84%',tags:['Comida','Viajes'],image:allowedPeople.find(person=>person.name==='Álex')?.image||people[5].image}
-  ];
+  ].filter(person=>!blocked.has(person.name));
 
   const homeEscapes=[
     {title:'Costa Brava',subtitle:'Escapada de fin de semana',image:'./assets/images/photo-1500530855697-b586d89ba3ee.jpg',place:'Costa Brava'},

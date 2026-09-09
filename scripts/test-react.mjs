@@ -39,7 +39,12 @@ try{
     .replace("'./settingsBackend'","'./settingsBackend.mjs'")
     .replace('"./settingsBackend"','"./settingsBackend.mjs"'));
   compile('src/lib/privacy.ts','privacy.mjs',code=>code.replace("'./storage'","'./storage.mjs'").replace('"./storage"','"./storage.mjs"'));
+  compile('src/hooks/usePlanFavorites.ts','usePlanFavorites.mjs',code=>code
+    .replace("'../lib/storage'","'./storage.mjs'")
+    .replace('"../lib/storage"','"./storage.mjs"'));
   const planPath=compile('src/components/PlanComponents.tsx','PlanComponents.mjs',code=>code
+    .replace("'../hooks/usePlanFavorites'","'./usePlanFavorites.mjs'")
+    .replace('"../hooks/usePlanFavorites"','"./usePlanFavorites.mjs"')
     .replace("'../lib/storage'","'./storage.mjs'")
     .replace('"../lib/storage"','"./storage.mjs"')
     .replace("'../lib/privacy'","'./privacy.mjs'")

@@ -16,7 +16,8 @@ avoid a cached build silently replacing the application under test.
 
 Current coverage: navigation across the main demo views, image decoding and
 fallback detection, viewport overflow, category navigation, profile editing
-and persistence, cross-view blocking, people filters and likes, and serious/critical accessibility checks on Home. This runs
+and persistence, cross-view blocking, people filters and likes, synchronized plan
+favorites, and serious/critical accessibility checks on Home. This runs
 on desktop Chromium, mobile Chromium and iPhone WebKit. Screenshots and traces
 are available in the HTML report and CI's `browser-evidence` artifact.
 

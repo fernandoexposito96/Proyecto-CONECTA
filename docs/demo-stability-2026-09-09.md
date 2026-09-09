@@ -48,7 +48,24 @@ No demuestran el funcionamiento del backend real ni que la aplicación publicada
   de varias pantallas en una sola prueba WebKit. Se separaron las capturas por pantalla,
   conservando la prueba de navegación continua. Sin aumentar límites ni reducir aserciones.
 - Resultado posterior: lint, estructura, 85 comprobaciones existentes, TypeScript, build
-  y **27 E2E correctos** en los tres motores/perfiles. CI de este bloque pendiente de publicar.
+  y **27 E2E correctos** en los tres motores/perfiles. CI correcto: `34328319535`.
+
+## Bloque 4 — Favoritos coherentes entre tarjeta y detalle
+
+- Archivos: `src/lib/storage.ts`, `src/hooks/usePlanFavorites.ts`,
+  `src/components/PlanComponents.tsx`, `scripts/test-react.mjs`,
+  `tests/e2e/plans.spec.ts`, `tests/e2e/README.md` y este informe.
+- Corregido: el favorito modificado en el detalle no actualizaba su tarjeta y podía quedar
+  sobrescrito por otra copia del estado. Una suscripción compartida reemplaza ambas copias.
+- No se guardan de nuevo favoritos simplemente por montar una tarjeta o abrir un detalle.
+  Los listeners se retiran al desmontar; también se escuchan cambios de otras pestañas.
+- La prueba reproduce el fallo antes de corregirlo y comprueba ambos sentidos después.
+  El smoke React compila el hook real, sin sustituirlo por un mock.
+- Validación: lint, estructura, 85 comprobaciones existentes, TypeScript, build y 30 E2E correctos.
+  Comparación de las 8 capturas iniciales: 0 píxeles diferentes. CSS e imágenes intactos.
+- Riesgos: los identificadores históricos de favoritos siguen siendo títulos; migrarlos a IDs
+  estables requiere un bloque específico que preserve los favoritos existentes.
+- CI de este bloque pendiente de publicar. Nora sin ejecutor/puntuación disponible en este main.
 
 ## Estado real y límites
 

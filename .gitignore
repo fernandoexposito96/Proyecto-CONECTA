@@ -1,0 +1,9 @@
+node_modules/
+dist/
+playwright-report/
+test-results/
+scripts/.react-test-tmp/
+scripts/.logic-test-tmp/
+.env
+.env.*
+!.env.example

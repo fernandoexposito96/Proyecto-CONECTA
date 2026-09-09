@@ -91,7 +91,7 @@ const cssImports = [];
 for (const file of sourceFiles.filter(file => /\.(ts|tsx)$/.test(file))) {
   const text = fs.readFileSync(file, 'utf8');
   for (const match of text.matchAll(/import\s+['"]([^'"]+\.css)['"]/g)) {
-    cssImports.push({ file: path.relative(root, file), target: match[1] });
+    cssImports.push({ file: path.relative(root, file).split(path.sep).join('/'), target: match[1] });
   }
 }
 if (cssImports.length !== 1 || cssImports[0].file !== 'src/main.tsx' || cssImports[0].target !== './styles/index.css') {

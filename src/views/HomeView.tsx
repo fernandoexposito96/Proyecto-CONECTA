@@ -32,7 +32,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     return ()=>{active=false};
   },[]);
 
-  const homeCategories=useMemo(()=>categoryOrder.map(name=>categories.find(([category])=>category===name)).filter(Boolean) as (readonly [string,string])[],[]);
+  const homeCategories=useMemo(()=>categoryOrder.map(name=>categories.find(([category])=>category===name)).filter(Boolean) as Array<(typeof categories)[number]>,[]);
   const allowedPeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)),[blocked]);
   const imageFor=(name:string,fallback:string)=>categories.find(([category])=>category===name)?.[1]||fallback;
 

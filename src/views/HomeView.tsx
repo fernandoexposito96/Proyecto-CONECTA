@@ -32,7 +32,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     return ()=>{active=false};
   },[]);
 
-  const homeCategories=useMemo(()=>categoryOrder.map(name=>categories.find(([category])=>category===name)).filter(Boolean) as (readonly [string,string])[],[]);
+  const homeCategories=useMemo(()=>categoryOrder.map(name=>categories.find(([category])=>category===name)).filter(Boolean) as Array<(typeof categories)[number]>,[]);
   const allowedPeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)),[blocked]);
   const imageFor=(name:string,fallback:string)=>categories.find(([category])=>category===name)?.[1]||fallback;
 
@@ -65,7 +65,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
     {name:'Sergio',age:28,match:'88%',tags:['Deporte','Naturaleza'],image:allowedPeople.find(person=>person.name==='Javi')?.image||people[1].image},
     {name:'Marta',age:24,match:'86%',tags:['Música','Planes'],image:allowedPeople.find(person=>person.name==='Marta')?.image||people[0].image},
     {name:'Álex',age:27,match:'84%',tags:['Comida','Viajes'],image:allowedPeople.find(person=>person.name==='Álex')?.image||people[5].image}
-  ];
+  ].filter(person=>!blocked.has(person.name));
 
   const homeEscapes=[
     {title:'Costa Brava',subtitle:'Escapada de fin de semana',image:'./assets/images/photo-1500530855697-b586d89ba3ee.jpg',place:'Costa Brava'},
@@ -126,7 +126,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
 
     <section className="home-target-section">
       <div className="home-target-head home-target-head-sub"><div><h2>Personas compatibles</h2><p>Gente con tus mismos intereses</p></div><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div>
-      <div className="home-target-people">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div>
+      <div className="home-target-people" tabIndex={0} role="region" aria-label="Personas compatibles">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div>
     </section>
 
     <footer className="home-footer-note"><span>CONECTA PREMIUM</span><span>Planes verificados</span><span>Gente compatible</span><span>Más seguridad</span></footer>

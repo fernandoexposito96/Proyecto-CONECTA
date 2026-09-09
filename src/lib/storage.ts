@@ -2,6 +2,22 @@ import { syncSettingStorageKey } from './settingsBackend';
 
 type CloudWriter=(key:string,value:unknown)=>void|Promise<void>;
 let cloudWriter:CloudWriter|null=null;
+const storedValueChanged='conecta:stored-value-changed';
+
+export function storedSnapshot(key:string):string|null{
+  try{return window.localStorage.getItem(key)}catch{return null}
+}
+
+export function subscribeStored(key:string,onChange:()=>void){
+  const onLocalChange=(event:Event)=>{if((event as CustomEvent<string>).detail===key)onChange()};
+  const onStorage=(event:StorageEvent)=>{if(event.key===null||event.key===key)onChange()};
+  window.addEventListener(storedValueChanged,onLocalChange);
+  window.addEventListener('storage',onStorage);
+  return ()=>{
+    window.removeEventListener(storedValueChanged,onLocalChange);
+    window.removeEventListener('storage',onStorage);
+  };
+}
 
 export function setCloudStorageWriter(writer:CloudWriter|null){
   cloudWriter=writer;
@@ -19,15 +35,19 @@ export function loadStored<T>(key:string,fallback:T):T{
 
 export function saveStored<T>(key:string,value:T){
   try{
-    window.localStorage.setItem(key,JSON.stringify(value));
-  }catch{}
+    const serialized=JSON.stringify(value);
+    if(window.localStorage.getItem(key)!==serialized){
+      window.localStorage.setItem(key,serialized);
+      window.dispatchEvent(new CustomEvent(storedValueChanged,{detail:key}));
+    }
+  }catch(error){console.warn('CONECTA local storage write failed',error)}
 
   void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
 
   if(!cloudWriter)return;
   try{
-    void Promise.resolve(cloudWriter(key,value)).catch(()=>{});
-  }catch{}
+    void Promise.resolve(cloudWriter(key,value)).catch(error=>console.warn('CONECTA cloud writer failed',error));
+  }catch(error){console.warn('CONECTA cloud writer failed',error)}
 }
 
 export const storageKeys={

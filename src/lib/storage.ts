@@ -20,14 +20,14 @@ export function loadStored<T>(key:string,fallback:T):T{
 export function saveStored<T>(key:string,value:T){
   try{
     window.localStorage.setItem(key,JSON.stringify(value));
-  }catch{}
+  }catch(error){console.warn('CONECTA local storage write failed',error)}
 
   void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
 
   if(!cloudWriter)return;
   try{
-    void Promise.resolve(cloudWriter(key,value)).catch(()=>{});
-  }catch{}
+    void Promise.resolve(cloudWriter(key,value)).catch(error=>console.warn('CONECTA cloud writer failed',error));
+  }catch(error){console.warn('CONECTA cloud writer failed',error)}
 }
 
 export const storageKeys={

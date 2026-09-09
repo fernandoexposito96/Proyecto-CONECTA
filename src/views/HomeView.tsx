@@ -126,7 +126,7 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
 
     <section className="home-target-section">
       <div className="home-target-head home-target-head-sub"><div><h2>Personas compatibles</h2><p>Gente con tus mismos intereses</p></div><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div>
-      <div className="home-target-people">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div>
+      <div className="home-target-people" tabIndex={0} role="region" aria-label="Personas compatibles">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div>
     </section>
 
     <footer className="home-footer-note"><span>CONECTA PREMIUM</span><span>Planes verificados</span><span>Gente compatible</span><span>Más seguridad</span></footer>

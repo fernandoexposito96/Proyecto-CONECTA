@@ -59,8 +59,8 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
     return list.sort((a,b)=>parseFloat(a.distance)-parseFloat(b.distance));
   },[peopleFilter,socialPeople,locationAllowed]);
 
-  const toggleLike=(name:string)=>setLiked(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
-  const toggleStoryLike=(name:string)=>setStoryLikes(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
+  const toggleLike=(name:string)=>setLiked(prev=>{const next=new Set(prev);if(next.has(name))next.delete(name);else next.add(name);return next});
+  const toggleStoryLike=(name:string)=>setStoryLikes(prev=>{const next=new Set(prev);if(next.has(name))next.delete(name);else next.add(name);return next});
   const cyclePeopleFilter=()=>setPeopleFilter(current=>{
     const sequence:PeopleFilter[]=locationAllowed?['near','age','interests','match']:['match','age','interests'];
     const index=sequence.indexOf(current);

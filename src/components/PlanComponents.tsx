@@ -9,8 +9,8 @@ export function PlanCards({items,onPlan}:{items:Plan[],onPlan:(p:Plan)=>void}){
   const [favorites,setFavorites]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.planFavorites,[])));
   const [locationAllowed]=useState(()=>canUseLocation(loadPrivacySettings()));
   useEffect(()=>{saveStored(storageKeys.planFavorites,[...favorites])},[favorites]);
-  const toggleFavorite=(title:string)=>setFavorites(prev=>{const next=new Set(prev);next.has(title)?next.delete(title):next.add(title);return next});
-  return <div className="plan-grid">{items.map((p)=><article className="plan-card" key={p.backendId||`${p.title}|${p.time}|${p.place}`} role="button" tabIndex={0} onClick={()=>onPlan(p)} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==='Enter'||e.key===' '){e.preventDefault();onPlan(p)}}}><div className="plan-image"><img loading="lazy" decoding="async" src={p.image} alt={p.title}/><button type="button" className={favorites.has(p.title)?'is-favorite':''} aria-label={favorites.has(p.title)?'Quitar de favoritos':'Añadir a favoritos'} onClick={e=>{e.stopPropagation();toggleFavorite(p.title)}}><Heart fill={favorites.has(p.title)?'currentColor':'none'}/></button><span>{p.category}</span></div><div className="plan-body"><h3>{p.title}</h3><p>{p.time}</p><p>{locationAllowed?`${p.distance} · `:''}{p.spots}</p><div className="avatars"><img loading="lazy" decoding="async" src="./assets/images/photo-1492562080023-ab3db95bfbce.jpg" alt="Participante"/><img loading="lazy" decoding="async" src="./assets/images/photo-1494790108377-be9c29b29330.jpg" alt="Participante"/><img loading="lazy" decoding="async" src="./assets/images/photo-1500648767791-00dcc994a43e.jpg" alt="Participante"/><span>+3</span></div></div></article>)}</div>
+  const toggleFavorite=(title:string)=>setFavorites(prev=>{const next=new Set(prev);if(next.has(title))next.delete(title);else next.add(title);return next});
+  return <div className="plan-grid">{items.map((p)=><article className="plan-card" key={p.backendId||`${p.title}|${p.time}|${p.place}`} role="group" aria-label={p.title} onClick={()=>onPlan(p)}><div className="plan-image"><img loading="lazy" decoding="async" src={p.image} alt={p.title}/><button type="button" className={favorites.has(p.title)?'is-favorite':''} aria-label={favorites.has(p.title)?'Quitar de favoritos':'Añadir a favoritos'} onClick={e=>{e.stopPropagation();toggleFavorite(p.title)}}><Heart fill={favorites.has(p.title)?'currentColor':'none'}/></button><span>{p.category}</span></div><div className="plan-body"><h3 role="button" tabIndex={0} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onPlan(p)}}}>{p.title}</h3><p>{p.time}</p><p>{locationAllowed?`${p.distance} · `:''}{p.spots}</p><div className="avatars"><img loading="lazy" decoding="async" src="./assets/images/photo-1492562080023-ab3db95bfbce.jpg" alt="Participante"/><img loading="lazy" decoding="async" src="./assets/images/photo-1494790108377-be9c29b29330.jpg" alt="Participante"/><img loading="lazy" decoding="async" src="./assets/images/photo-1500648767791-00dcc994a43e.jpg" alt="Participante"/><span>+3</span></div></div></article>)}</div>
 }
 
 export function PlanDetail({plan,onClose,onOpenChat}:{plan:Plan,onClose:()=>void,onOpenChat?:(name:string)=>void}){
@@ -30,17 +30,17 @@ export function PlanDetail({plan,onClose,onOpenChat}:{plan:Plan,onClose:()=>void
   },[onClose]);
   useEffect(()=>{
     const current=new Set(loadStored<string[]>(storageKeys.planFavorites,[]));
-    favorite?current.add(plan.title):current.delete(plan.title);
+    if(favorite)current.add(plan.title);else current.delete(plan.title);
     saveStored(storageKeys.planFavorites,[...current]);
   },[favorite,plan.title]);
   useEffect(()=>{
     const current=new Set(loadStored<string[]>(storageKeys.joinedPlans,[]));
-    joined?current.add(plan.title):current.delete(plan.title);
+    if(joined)current.add(plan.title);else current.delete(plan.title);
     saveStored(storageKeys.joinedPlans,[...current]);
   },[joined,plan.title]);
   useEffect(()=>{
     const current=new Set(loadStored<string[]>(storageKeys.organizerFollows,[]));
-    following?current.add(organizer):current.delete(organizer);
+    if(following)current.add(organizer);else current.delete(organizer);
     saveStored(storageKeys.organizerFollows,[...current]);
   },[following]);
 

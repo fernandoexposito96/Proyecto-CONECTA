@@ -35,6 +35,8 @@ try{
 
   fs.writeFileSync(path.join(tmp,'settingsBackend.mjs'),'export async function syncSettingStorageKey(){ return false; }\n');
   fs.writeFileSync(path.join(tmp,'PlanFeatureTools.mjs'),'export function PlanFeatureTools(){ return null; }\n');
+  fs.writeFileSync(path.join(tmp,'planLogic.mjs'),"export function planIdentityKey(plan){ return plan.backendId?`backend:${plan.backendId}`:`${plan.title}|${plan.time}|${plan.place}`; }\n");
+  fs.writeFileSync(path.join(tmp,'attendanceBackend.mjs'),"export async function joinPlan(){}\nexport async function leavePlan(){}\nexport async function isPlanJoined(){ return false; }\n");
   compile('src/lib/storage.ts','storage.mjs',code=>code
     .replace("'./settingsBackend'","'./settingsBackend.mjs'")
     .replace('"./settingsBackend"','"./settingsBackend.mjs"'));
@@ -44,6 +46,10 @@ try{
     .replace('"../lib/storage"','"./storage.mjs"')
     .replace("'../lib/privacy'","'./privacy.mjs'")
     .replace('"../lib/privacy"','"./privacy.mjs"')
+    .replace("'../lib/planLogic'","'./planLogic.mjs'")
+    .replace('"../lib/planLogic"','"./planLogic.mjs"')
+    .replace("'../lib/attendanceBackend'","'./attendanceBackend.mjs'")
+    .replace('"../lib/attendanceBackend"','"./attendanceBackend.mjs"')
     .replace("'./PlanFeatureTools'","'./PlanFeatureTools.mjs'")
     .replace('"./PlanFeatureTools"','"./PlanFeatureTools.mjs"'));
   global.window={

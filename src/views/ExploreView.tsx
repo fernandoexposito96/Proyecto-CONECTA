@@ -5,6 +5,8 @@ import { PlanCards } from '../components/PlanComponents';
 import { categories, people, plans } from '../data/demoData';
 import { filterExplorePlans } from '../lib/planLogic';
 import { blockedNames, canUseLocation, distanceCopy, loadBlockedUsers, loadPrivacySettings } from '../lib/privacy';
+import { isRealUserId } from '../lib/privacyBackend';
+import { removeBackendConnection, requestBackendConnection } from '../lib/socialBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { ExploreFilter, PeopleFilter, Person, Plan, Story } from '../types';
 
@@ -59,7 +61,23 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
     return list.sort((a,b)=>parseFloat(a.distance)-parseFloat(b.distance));
   },[peopleFilter,socialPeople,locationAllowed]);
 
-  const toggleLike=(name:string)=>setLiked(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
+  const likePerson=(person:Person)=>{
+    if(liked.has(person.name))return;
+    setLiked(prev=>{const next=new Set(prev);next.add(person.name);return next});
+    if(person.userId&&isRealUserId(person.userId)){
+      void requestBackendConnection(person.userId).catch(error=>console.warn('CONECTA connection request failed; local like kept',error));
+    }
+  };
+  const toggleLike=(person:Person)=>{
+    if(liked.has(person.name)){
+      setLiked(prev=>{const next=new Set(prev);next.delete(person.name);return next});
+      if(person.userId&&isRealUserId(person.userId)){
+        void removeBackendConnection(person.userId).catch(error=>console.warn('CONECTA connection removal failed; local like kept',error));
+      }
+      return;
+    }
+    likePerson(person);
+  };
   const toggleStoryLike=(name:string)=>setStoryLikes(prev=>{const next=new Set(prev);next.has(name)?next.delete(name):next.add(name);return next});
   const cyclePeopleFilter=()=>setPeopleFilter(current=>{
     const sequence:PeopleFilter[]=locationAllowed?['near','age','interests','match']:['match','age','interests'];
@@ -70,16 +88,20 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
   const advancePerson=(like=false)=>{
     const person=socialPeople[personIndex];
     if(!person)return;
-    if(like)setLiked(prev=>{const next=new Set(prev);next.add(person.name);return next});
+    if(like)likePerson(person);
     setPersonIndex(i=>i+1);
   };
   const blockPerson=(person:Person)=>{
     const current=loadBlockedUsers();
-    if(!current.some(user=>user.name===person.name)){
-      saveStored(storageKeys.blockedUsers,[...current,{userId:demoUserId(person.name),name:person.name,avatar:person.image}]);
+    const userId=person.userId&&isRealUserId(person.userId)?person.userId:demoUserId(person.name);
+    if(!current.some(user=>user.userId===userId||user.name===person.name)){
+      saveStored(storageKeys.blockedUsers,[...current,{userId,name:person.name,avatar:person.image}]);
     }
     setBlocked(previous=>new Set(previous).add(person.name));
     setLiked(previous=>{const next=new Set(previous);next.delete(person.name);return next});
+    if(person.userId&&isRealUserId(person.userId)){
+      void removeBackendConnection(person.userId).catch(error=>console.warn('CONECTA connection removal after block failed',error));
+    }
     setPersonDetail(null);
   };
   const sendStoryReply=()=>{
@@ -108,7 +130,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
     return <div className="page explore-page people-grid-page">
       <div className="people-swipe-head"><button aria-label="Volver a Explora" onClick={()=>setPeopleGridOpen(false)}><ChevronLeft/></button><div className="people-swipe-title"><h1>Personas para ti</h1><p>Conoce gente afín a tus gustos</p></div><button aria-label="Cambiar filtro de personas" onClick={cyclePeopleFilter}><SlidersHorizontal/></button></div>
       <div className="swipe-filter-row people-grid-filters"><button disabled={!locationAllowed} className={peopleFilter==='near'?'active':''} onClick={()=>setPeopleFilter('near')}>Cerca de mí</button><button className={peopleFilter==='age'?'active':''} onClick={()=>setPeopleFilter('age')}>Edad</button><button className={peopleFilter==='interests'?'active':''} onClick={()=>setPeopleFilter('interests')}>Intereses</button><button className={peopleFilter==='match'?'active':''} onClick={()=>setPeopleFilter('match')}>Afinidad</button></div>
-      <div className="people-browser-grid">{gridPeople.map(person=>{const index=socialPeople.findIndex(p=>p.name===person.name);return <article key={person.name} className="people-browser-card" role="button" tabIndex={0} onClick={()=>openPerson(index)} onKeyDown={e=>{if(e.key==='Enter')openPerson(index)}}><div className="people-browser-photo"><img src={person.image} alt={`${person.name}, ${person.age} años`}/><button className={liked.has(person.name)?'is-liked':''} aria-label={liked.has(person.name)?`Quitar me gusta a ${person.name}`:`Dar me gusta a ${person.name}`} onClick={e=>{e.stopPropagation();toggleLike(person.name)}}><Heart fill={liked.has(person.name)?'currentColor':'none'}/></button></div><div className="people-browser-copy"><strong>{person.name}, {person.age}</strong><span><MapPin/> {distanceCopy(person.distance,privacy)}</span><p>{person.tags.slice(0,3).join(', ')}</p><small>{person.match} afinidad</small></div></article>})}</div>
+      <div className="people-browser-grid">{gridPeople.map(person=>{const index=socialPeople.findIndex(p=>p.name===person.name);return <article key={person.name} className="people-browser-card" role="button" tabIndex={0} onClick={()=>openPerson(index)} onKeyDown={e=>{if(e.key==='Enter')openPerson(index)}}><div className="people-browser-photo"><img src={person.image} alt={`${person.name}, ${person.age} años`}/><button className={liked.has(person.name)?'is-liked':''} aria-label={liked.has(person.name)?`Quitar me gusta a ${person.name}`:`Dar me gusta a ${person.name}`} onClick={e=>{e.stopPropagation();toggleLike(person)}}><Heart fill={liked.has(person.name)?'currentColor':'none'}/></button></div><div className="people-browser-copy"><strong>{person.name}, {person.age}</strong><span><MapPin/> {distanceCopy(person.distance,privacy)}</span><p>{person.tags.slice(0,3).join(', ')}</p><small>{person.match} afinidad</small></div></article>})}</div>
     </div>;
   }
 
@@ -120,7 +142,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
 
     <section className="explore-social-block"><div className="explore-social-head"><h2>Estados</h2><button disabled={!stories.length} onClick={()=>setStoryIndex(0)}>Ver todos</button></div><div className="story-strip"><button className={`story-chip story-add ${storyAdded?'is-added':''}`} onClick={()=>setStoryCreateOpen(true)}><span className="story-ring"><Plus/></span><strong>Tu estado</strong><small>{storyAdded?'Ahora':'Añadir'}</small></button>{stories.map((story,i)=><button key={story.name} className="story-chip" onClick={()=>setStoryIndex(i)}><span className="story-ring"><img src={story.avatar} alt={story.name}/></span><strong>{story.name}</strong><small>{story.time}</small></button>)}</div></section>
 
-    <section className="explore-social-block"><div className="explore-social-head"><h2>Personas para ti</h2><button disabled={!socialPeople.length} onClick={()=>setPeopleGridOpen(true)}>Ver más</button></div>{socialPeople.length?<div className="people-discovery-strip">{socialPeople.slice(0,5).map((person,i)=><article key={person.name} className="discover-person-card" role="button" tabIndex={0} onClick={()=>openPerson(i)} onKeyDown={e=>{if(e.key==='Enter')openPerson(i)}}><img src={person.image} alt={person.name}/><button className={`discover-person-heart ${liked.has(person.name)?'is-liked':''}`} aria-label={liked.has(person.name)?`Quitar me gusta a ${person.name}`:`Dar me gusta a ${person.name}`} onClick={e=>{e.stopPropagation();toggleLike(person.name)}}><Heart fill={liked.has(person.name)?'currentColor':'none'}/></button><div className="discover-person-copy"><strong>{person.name}, {person.age}</strong><span>{person.match} afinidad</span><small>● {distanceCopy(person.distance,privacy)}</small></div></article>)}</div>:<div className="empty-state">No hay personas disponibles con tus filtros de privacidad actuales.</div>}</section>
+    <section className="explore-social-block"><div className="explore-social-head"><h2>Personas para ti</h2><button disabled={!socialPeople.length} onClick={()=>setPeopleGridOpen(true)}>Ver más</button></div>{socialPeople.length?<div className="people-discovery-strip">{socialPeople.slice(0,5).map((person,i)=><article key={person.name} className="discover-person-card" role="button" tabIndex={0} onClick={()=>openPerson(i)} onKeyDown={e=>{if(e.key==='Enter')openPerson(i)}}><img src={person.image} alt={person.name}/><button className={`discover-person-heart ${liked.has(person.name)?'is-liked':''}`} aria-label={liked.has(person.name)?`Quitar me gusta a ${person.name}`:`Dar me gusta a ${person.name}`} onClick={e=>{e.stopPropagation();toggleLike(person)}}><Heart fill={liked.has(person.name)?'currentColor':'none'}/></button><div className="discover-person-copy"><strong>{person.name}, {person.age}</strong><span>{person.match} afinidad</span><small>● {distanceCopy(person.distance,privacy)}</small></div></article>)}</div>:<div className="empty-state">No hay personas disponibles con tus filtros de privacidad actuales.</div>}</section>
 
     <div className="explore-category-title"><h2>Categorías</h2><span>Elige lo que te apetece</span></div><div className="category-grid">{categories.map(([name,image])=><button key={name} className={category===name?'active':''} onClick={()=>setCategory(v=>v===name?null:name)} aria-pressed={category===name}><img loading="lazy" decoding="async" src={image} alt={name}/><span/><b><CategoryIcon name={name}/>{name}</b></button>)}</div>
     <section className="section noframe"><div className="section-head"><h2>{category||'Recomendados'}</h2>{category&&<button onClick={()=>setCategory(null)}>Ver todos</button>}</div>{visible.length?<PlanCards items={visible} onPlan={onPlan}/>:<div className="empty-state">No hay planes que coincidan con estos filtros.</div>}</section>

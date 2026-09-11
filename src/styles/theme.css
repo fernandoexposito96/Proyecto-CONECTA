@@ -1,22 +1,45 @@
-/* Tema oscuro: única capa temática, cargada al final. */
-html[data-theme='dark']{color-scheme:dark;--page-bg:#0f1722;--surface:#182230;--surface-soft:#222f3e;--line:#334155;--muted:#aeb9c6}
+/* Tema oscuro: capa temática única. Mantiene la estructura y elimina marcos/blancos residuales. */
+html[data-theme='dark']{
+  color-scheme:dark;
+  --page-bg:#0b1118;
+  --surface:#121a24;
+  --surface-soft:#18222f;
+  --line:#263342;
+  --muted:#9aa8b8;
+  --text-strong:#eef3f8;
+  --text-muted-strong:#b7c1cd;
+  --accent-muted:#b6a5ff;
+  --shadow:0 14px 38px rgba(0,0,0,.22);
+  --shadow-strong:0 24px 60px rgba(0,0,0,.32);
+}
+
+html[data-theme='dark'],
 html[data-theme='dark'] body,
 html[data-theme='dark'] #app,
-html[data-theme='dark'] .app-shell{background:#0f1722;color:#edf2f7}
+html[data-theme='dark'] .app-shell,
+html[data-theme='dark'] main,
+html[data-theme='dark'] .content{background:#0b1118;color:var(--text-strong)}
 
+html[data-theme='dark'] .app-shell{background:linear-gradient(180deg,#0b1118 0%,#0d141d 46%,#0a1017 100%)}
+
+/* Superficies principales */
 html[data-theme='dark'] .sidebar,
 html[data-theme='dark'] .topbar,
-html[data-theme='dark'] .section,
+html[data-theme='dark'] .bottom-nav,
+html[data-theme='dark'] .section:not(.noframe),
 html[data-theme='dark'] .plan-card,
+html[data-theme='dark'] .detail-card,
 html[data-theme='dark'] .chat-list,
 html[data-theme='dark'] .chat-list>button,
 html[data-theme='dark'] .chat-thread,
 html[data-theme='dark'] .chat-thread-head,
-html[data-theme='dark'] .profile-page,
+html[data-theme='dark'] .profile-shell,
 html[data-theme='dark'] .profile-tab-panel,
+html[data-theme='dark'] .profile-editor,
 html[data-theme='dark'] .settings-list-card,
 html[data-theme='dark'] .settings-block,
 html[data-theme='dark'] .settings-info-card,
+html[data-theme='dark'] .premium-benefits-list,
 html[data-theme='dark'] .notification-card,
 html[data-theme='dark'] .notification-status,
 html[data-theme='dark'] .create-plan-card,
@@ -27,38 +50,123 @@ html[data-theme='dark'] .people-swipe-head>button,
 html[data-theme='dark'] .swipe-filter-row button,
 html[data-theme='dark'] .swipe-empty,
 html[data-theme='dark'] .person-detail-card,
-html[data-theme='dark'] .story-create-card{background:#182230;color:#edf2f7;border-color:#2a3848}
+html[data-theme='dark'] .story-create-card,
+html[data-theme='dark'] .settings-support-box{
+  background:#121a24;
+  color:var(--text-strong);
+  border-color:#263342;
+  box-shadow:0 12px 30px rgba(0,0,0,.20);
+}
 
+/* El perfil tenía un fondo claro propio que creaba un marco grande. */
+html[data-theme='dark'] .profile-page{
+  background:radial-gradient(circle at 10% 0%,rgba(113,72,255,.13),transparent 28%),linear-gradient(180deg,#0e151f,#0b1118);
+  color:var(--text-strong);
+}
+html[data-theme='dark'] .profile-avatar{border-color:#121a24}
+html[data-theme='dark'] .profile-online-dot{border-color:#121a24}
+html[data-theme='dark'] .profile-more-btn{background:#18222f;color:#c8d1dc;border-color:#2b3949}
+html[data-theme='dark'] .profile-bio{color:#b7c1cd}
+html[data-theme='dark'] .profile-interests span{background:#18222f;color:#c8d1dc;border-color:#2b3949}
+html[data-theme='dark'] .profile-stats button{background:#151f2b!important;color:#eef3f8;border-color:#293747;box-shadow:none}
+html[data-theme='dark'] .profile-stat-icon{background:#1d2937;box-shadow:none}
+html[data-theme='dark'] .profile-tabs{border-color:#283545}
+html[data-theme='dark'] .profile-tabs button{color:#aab6c4}
+html[data-theme='dark'] .profile-tabs button.active{color:#b7a5ff}
+
+/* Controles: sin cuadros blancos aislados. */
 html[data-theme='dark'] .desktop-search,
 html[data-theme='dark'] .explore-search,
 html[data-theme='dark'] .filter-row button,
 html[data-theme='dark'] .tabs,
 html[data-theme='dark'] .tabs button,
+html[data-theme='dark'] .settings-search,
 html[data-theme='dark'] .settings-choice-grid button,
 html[data-theme='dark'] .settings-secondary-action,
 html[data-theme='dark'] .settings-row,
 html[data-theme='dark'] .settings-toggle-row,
-html[data-theme='dark'] .settings-frequency-option{background:#222f3e;color:#edf2f7;border-color:#334155}
+html[data-theme='dark'] .settings-frequency-option,
+html[data-theme='dark'] .settings-back,
+html[data-theme='dark'] .story-create-actions button{
+  background:#18222f;
+  color:#e6edf4;
+  border-color:#2b3949;
+  box-shadow:none;
+}
+html[data-theme='dark'] .filter-row button.active,
+html[data-theme='dark'] .tabs button.active,
+html[data-theme='dark'] .settings-choice-grid button.is-active{background:linear-gradient(135deg,#6b4df3,#8c6bff);color:#fff;border-color:transparent}
 
 html[data-theme='dark'] input,
-html[data-theme='dark'] textarea{color:#edf2f7}
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] select{
+  background:#0f1721;
+  color:#edf3f8;
+  border-color:#2b3949;
+}
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder{color:#7f8c9b}
+
+/* Tipografía y divisores */
 html[data-theme='dark'] .mobile-brand strong,
 html[data-theme='dark'] .section-head h2,
 html[data-theme='dark'] .page-title h1,
 html[data-theme='dark'] .profile-main h1,
-html[data-theme='dark'] .stats strong,
-html[data-theme='dark'] .people-browser-copy strong{color:#edf2f7}
+html[data-theme='dark'] .profile-stats strong,
+html[data-theme='dark'] .profile-tab-panel strong,
+html[data-theme='dark'] .people-browser-copy strong,
+html[data-theme='dark'] .settings-header-copy h1,
+html[data-theme='dark'] .settings-row-copy strong,
+html[data-theme='dark'] .settings-toggle-copy strong,
+html[data-theme='dark'] .settings-frequency-copy strong,
+html[data-theme='dark'] .settings-support-box strong,
+html[data-theme='dark'] .premium-benefit-row strong{color:#eef3f8}
+
 html[data-theme='dark'] .mobile-brand span,
 html[data-theme='dark'] .story-chip small,
 html[data-theme='dark'] .person-detail-body p,
 html[data-theme='dark'] .people-browser-copy p,
-html[data-theme='dark'] .people-browser-copy span{color:#aeb9c6}
+html[data-theme='dark'] .people-browser-copy span,
 html[data-theme='dark'] .notification-copy>span,
 html[data-theme='dark'] .notification-copy small,
-html[data-theme='dark'] .notification-status{color:#aeb9c6}
-html[data-theme='dark'] .message{background:#263445;color:#edf2f7}
+html[data-theme='dark'] .notification-status,
+html[data-theme='dark'] .settings-header-copy p,
+html[data-theme='dark'] .settings-row-copy small,
+html[data-theme='dark'] .settings-toggle-copy small,
+html[data-theme='dark'] .settings-frequency-copy small,
+html[data-theme='dark'] .settings-support-box small,
+html[data-theme='dark'] .premium-benefit-row small,
+html[data-theme='dark'] .profile-tab-panel span{color:#9eabb9}
+
+html[data-theme='dark'] .settings-row,
+html[data-theme='dark'] .settings-toggle-row,
+html[data-theme='dark'] .settings-frequency-option,
+html[data-theme='dark'] .premium-benefit-row{border-color:#243140}
+
+/* Mensajes y capas */
+html[data-theme='dark'] .message{background:#1b2735;color:#edf2f7}
 html[data-theme='dark'] .message.sent{background:#6b4df3;color:#fff}
+html[data-theme='dark'] .detail-overlay,
+html[data-theme='dark'] .person-detail-overlay,
+html[data-theme='dark'] .story-viewer{background:rgba(3,7,12,.72)}
 html[data-theme='dark'] .story-chip{color:#edf2f7}
-html[data-theme='dark'] .story-add .story-ring{background:#222f3e}
-html[data-theme='dark'] .story-create-actions button{background:#222f3e;color:#edf2f7;border-color:#334155}
-html[data-theme='dark'] .story-create-actions button.primary{background:#6c4cf5;border-color:#6c4cf5}
+html[data-theme='dark'] .story-add .story-ring{background:#18222f}
+html[data-theme='dark'] .story-create-actions button.primary{background:#6c4cf5;border-color:#6c4cf5;color:#fff}
+
+/* Premium mantiene personalidad sin parecer una tarjeta blanca pegada. */
+html[data-theme='dark'] .settings-premium-entry,
+html[data-theme='dark'] .premium-hero-card{background:linear-gradient(180deg,#201b12,#17140f);border-color:#5a4824;box-shadow:none}
+html[data-theme='dark'] .settings-premium-entry-copy strong,
+html[data-theme='dark'] .premium-hero-copy h2{color:#f3e7c2}
+html[data-theme='dark'] .settings-premium-entry-copy small,
+html[data-theme='dark'] .premium-hero-copy p{color:#bcae86}
+
+/* Estados de error/éxito adaptados al fondo oscuro. */
+html[data-theme='dark'] .profile-error,
+html[data-theme='dark'] .settings-info-card .settings-error{background:#2a171b;color:#ffb8c0;border-color:#5d2a33}
+html[data-theme='dark'] .settings-success{background:#13271f;color:#91e1bd}
+
+@media(max-width:760px){
+  html[data-theme='dark'] .bottom-nav{background:rgba(15,23,33,.94);border-color:#263342;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  html[data-theme='dark'] .profile-page{padding:7px}
+}

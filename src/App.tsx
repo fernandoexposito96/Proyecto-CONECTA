@@ -4,7 +4,7 @@ import { PlanDetail } from './components/PlanComponents';
 import { createSharedPlan, fetchSharedPlans } from './lib/cloud';
 import { acceptPlanInvite, clearInviteFromUrl, inviteCodeFromUrl } from './lib/inviteBackend';
 import { fetchUnreadNotificationCount } from './lib/notificationsBackend';
-import { fetchRealPlans } from './lib/realPlansBackend';
+import { createRealPlan, fetchRealPlans } from './lib/realPlansBackend';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
 import type { ExploreFilter, Plan, View } from './types';
 import { CalendarView } from './views/CalendarView';
@@ -97,16 +97,22 @@ export default function App(){
     setView('Chat');
   };
   const addCreatedPlan=async(plan:Plan):Promise<boolean>=>{
-    setCreatedPlans(prev=>mergePlans([plan],prev));
     setExploreFilter('all');
     setExploreCategory(null);
     try{
-      await createSharedPlan(plan);
-      const shared=await fetchSharedPlans();
-      setCreatedPlans(local=>mergePlans(shared,local));
+      const real=await createRealPlan(plan);
+      setCreatedPlans(prev=>mergePlans([real],prev.filter(item=>planKey(item)!==planKey(plan))));
       return true;
     }catch(error){
-      console.warn('CONECTA shared plan publish failed; local copy kept',error);
+      console.warn('CONECTA real plan publish unavailable; keeping prototype fallback',error);
+      setCreatedPlans(prev=>mergePlans([plan],prev));
+      try{
+        await createSharedPlan(plan);
+        const shared=await fetchSharedPlans();
+        setCreatedPlans(local=>mergePlans(shared,local));
+      }catch(fallbackError){
+        console.warn('CONECTA prototype plan publish failed; local copy kept',fallbackError);
+      }
       return false;
     }
   };

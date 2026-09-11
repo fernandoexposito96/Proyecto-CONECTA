@@ -37,13 +37,15 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
   const imageFor=(name:string,fallback:string)=>categories.find(([category])=>category===name)?.[1]||fallback;
 
   const featuredPlan:Plan=summaryReady&&summary.nextPlan?{
+    backendId:summary.nextPlan.id,
     title:summary.nextPlan.title,
     image:plans[5]?.image||plans[0].image,
     time:nextPlanDate(summary.nextPlan.startsAt),
+    startsAt:summary.nextPlan.startsAt,
     place:summary.nextPlan.location||'Centre de Reus',
     distance:'',
-    spots:'16 personas van',
-    category:'Música'
+    spots:'Plan confirmado',
+    category:summary.nextPlan.category||'Plan'
   }:{
     title:'Concierto local en Reus',
     image:plans[5]?.image||plans[0].image,
@@ -77,60 +79,15 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
   const openEscape=(item:(typeof homeEscapes)[number])=>onPlan({title:item.title,image:item.image,time:'Próximo fin de semana',place:item.place,distance:'',spots:'8 plazas',category:'Viajes'});
 
   return <div className="page home-page home-target">
-    <section className="home-target-hero">
-      <img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/>
-      <div className="home-target-hero-shade"/>
-      <div className="home-target-copy">
-        <h1>Vive más<br/>planes <span>juntos</span></h1>
-        <p>Conoce gente, organiza planes<br/>y crea experiencias reales.</p>
-        <button type="button" onClick={()=>openExplore('all')}>Explorar planes <ChevronRight/></button>
-      </div>
-      <div className="home-target-note">Buenas<br/>compañías<br/>mejores historias</div>
-    </section>
-
-    <button className="home-target-next" type="button" onClick={()=>onPlan(featuredPlan)}>
-      <img src={featuredPlan.image} alt={featuredPlan.title} decoding="async"/>
-      <span className="home-target-next-copy">
-        <small>TU PRÓXIMO PLAN</small>
-        <strong>{featuredPlan.title}</strong>
-        <span className="home-target-meta"><CalendarDays/>{featuredPlan.time}<i/><MapPin/>{featuredPlan.place}</span>
-        <span className="home-target-attendees">
-          <span className="home-target-avatars"><img src={people[0].image} alt="Participante"/><img src={people[2].image} alt="Participante"/><img src={people[1].image} alt="Participante"/><b>+12</b></span>
-          <em>{featuredPlan.spots}</em>
-        </span>
-      </span>
-      <span className="home-target-next-arrow"><ChevronRight/></span>
-    </button>
-
-    <section className="home-target-section">
-      <div className="home-target-head"><h2>Explora por categorías</h2><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div>
-      <div className="home-target-categories">{homeCategories.map(([name,image])=><button key={name} onClick={()=>openExplore('all',name)}><img src={image} alt={name}/><span/><b><CategoryIcon name={name}/>{name}</b></button>)}</div>
-    </section>
-
-    <section className="home-target-section">
-      <div className="home-target-head"><h2>Descubre planes cerca de ti</h2><button onClick={()=>openExplore(locationAllowed?'near':'all')}>Ver todo <ChevronRight/></button></div>
-      <div className="home-target-plans">{nearbyPlans.map(plan=><article key={plan.title} role="button" tabIndex={0} onClick={()=>onPlan(plan)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onPlan(plan)}}}>
-        <img src={plan.image} alt={plan.title}/><span className="home-target-card-shade"/><Heart className="home-target-heart"/>
-        <div><small>{plan.time}</small><strong>{plan.title}</strong><span><MapPin/>{plan.place}</span><b>{plan.spots}</b></div>
-      </article>)}</div>
-    </section>
-
-    <section className="home-target-section">
-      <div className="home-target-head home-target-head-sub"><div><h2>Escapadas y eventos</h2><p>Planes más allá de tu ciudad</p></div><button onClick={()=>openExplore('weekend')}>Ver todas <ChevronRight/></button></div>
-      <div className="home-target-escapes">{homeEscapes.map(item=><article key={item.title} role="button" tabIndex={0} onClick={()=>openEscape(item)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEscape(item)}}}><img src={item.image} alt={item.title}/><span className="home-target-card-shade"/><Heart className="home-target-heart"/><div><strong>{item.title}</strong><span><MapPin/>{item.subtitle}</span></div></article>)}</div>
-    </section>
-
+    <section className="home-target-hero"><img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/><div className="home-target-hero-shade"/><div className="home-target-copy"><h1>Vive más<br/>planes <span>juntos</span></h1><p>Conoce gente, organiza planes<br/>y crea experiencias reales.</p><button type="button" onClick={()=>openExplore('all')}>Explorar planes <ChevronRight/></button></div><div className="home-target-note">Buenas<br/>compañías<br/>mejores historias</div></section>
+    <button className="home-target-next" type="button" onClick={()=>onPlan(featuredPlan)}><img src={featuredPlan.image} alt={featuredPlan.title} decoding="async"/><span className="home-target-next-copy"><small>TU PRÓXIMO PLAN</small><strong>{featuredPlan.title}</strong><span className="home-target-meta"><CalendarDays/>{featuredPlan.time}<i/><MapPin/>{featuredPlan.place}</span><span className="home-target-attendees"><span className="home-target-avatars"><img src={people[0].image} alt="Participante"/><img src={people[2].image} alt="Participante"/><img src={people[1].image} alt="Participante"/><b>+12</b></span><em>{featuredPlan.spots}</em></span></span><span className="home-target-next-arrow"><ChevronRight/></span></button>
+    <section className="home-target-section"><div className="home-target-head"><h2>Explora por categorías</h2><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div><div className="home-target-categories">{homeCategories.map(([name,image])=><button key={name} onClick={()=>openExplore('all',name)}><img src={image} alt={name}/><span/><b><CategoryIcon name={name}/>{name}</b></button>)}</div></section>
+    <section className="home-target-section"><div className="home-target-head"><h2>Descubre planes cerca de ti</h2><button onClick={()=>openExplore(locationAllowed?'near':'all')}>Ver todo <ChevronRight/></button></div><div className="home-target-plans">{nearbyPlans.map(plan=><article key={plan.title} role="button" tabIndex={0} onClick={()=>onPlan(plan)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onPlan(plan)}}}><img src={plan.image} alt={plan.title}/><span className="home-target-card-shade"/><Heart className="home-target-heart"/><div><small>{plan.time}</small><strong>{plan.title}</strong><span><MapPin/>{plan.place}</span><b>{plan.spots}</b></div></article>)}</div></section>
+    <section className="home-target-section"><div className="home-target-head home-target-head-sub"><div><h2>Escapadas y eventos</h2><p>Planes más allá de tu ciudad</p></div><button onClick={()=>openExplore('weekend')}>Ver todas <ChevronRight/></button></div><div className="home-target-escapes">{homeEscapes.map(item=><article key={item.title} role="button" tabIndex={0} onClick={()=>openEscape(item)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEscape(item)}}}><img src={item.image} alt={item.title}/><span className="home-target-card-shade"/><Heart className="home-target-heart"/><div><strong>{item.title}</strong><span><MapPin/>{item.subtitle}</span></div></article>)}</div></section>
     <section className="section now-section"><div className="section-head"><div><small>AHORA</small><h2>{locationAllowed?'Qué hacer cerca de ti':'Qué hacer hoy'}</h2></div><button onClick={()=>openExplore(locationAllowed?'near':'all')}>Explorar <ChevronRight/></button></div><div className="quick-grid"><button onClick={()=>openExplore('today')}><Sparkles/><strong>Ahora mismo</strong><span>Planes de hoy</span></button><button onClick={()=>openExplore('afternoon')}><Coffee/><strong>Esta tarde</strong><span>Planes de tarde</span></button><button onClick={()=>openExplore('tonight')}><Music2/><strong>Esta noche</strong><span>Planes nocturnos</span></button><button onClick={()=>openExplore('weekend')}><CalendarDays/><strong>Este finde</strong><span>Planes del finde</span></button></div></section>
-
     <section className="section home-more"><div className="section-head"><div><small>MÁS IDEAS</small><h2>Sigue descubriendo</h2></div><button onClick={()=>openExplore('all')}>Explorar <ChevronRight/></button></div><PlanCards items={plans.slice(5)} onPlan={onPlan}/></section>
-
-    <section className="home-target-section">
-      <div className="home-target-head home-target-head-sub"><div><h2>Personas compatibles</h2><p>Gente con tus mismos intereses</p></div><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div>
-      <div className="home-target-people">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div>
-    </section>
-
+    <section className="home-target-section"><div className="home-target-head home-target-head-sub"><div><h2>Personas compatibles</h2><p>Gente con tus mismos intereses</p></div><button onClick={()=>openExplore('all')}>Ver todas <ChevronRight/></button></div><div className="home-target-people">{compatiblePeople.map(person=><article key={person.name}><div className="home-target-person-photo"><img src={person.image} alt={person.name}/><b>{person.match}</b></div><strong><i/>{person.name}, {person.age}</strong><span>{person.tags.join(' · ')}</span></article>)}</div></section>
     <footer className="home-footer-note"><span>CONECTA PREMIUM</span><span>Planes verificados</span><span>Gente compatible</span><span>Más seguridad</span></footer>
-
     <section className="premium-banner"><div><CreditCard/><span>PREMIUM</span></div><h2>Haz que cada semana tenga algo que esperar</h2><p>Más visibilidad, recomendaciones avanzadas y acceso prioritario a experiencias seleccionadas.</p><button onClick={()=>setView('Ajustes')}>Ver CONECTA Premium <ChevronRight/></button></section>
   </div>
 }

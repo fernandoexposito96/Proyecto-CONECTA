@@ -35,14 +35,25 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
   const conversationIds=[...new Set((ownMemberships||[]).map(row=>String(row.conversation_id||'')).filter(Boolean))];
   if(!conversationIds.length)return [];
 
-  const [{data:conversations,error:conversationError},{data:members,error:membersError},{data:messages,error:messagesError}]=await Promise.all([
+  const [{data:conversations,error:conversationError},{data:members,error:membersError}]=await Promise.all([
     supabase.from('conversations').select('id,type,title,created_at').in('id',conversationIds),
     supabase.from('conversation_members').select('conversation_id,user_id').in('conversation_id',conversationIds),
-    supabase.from('messages').select('id,conversation_id,sender_id,content,created_at').in('conversation_id',conversationIds).order('created_at',{ascending:false}).limit(300),
   ]);
   if(conversationError)throw conversationError;
   if(membersError)throw membersError;
-  if(messagesError)throw messagesError;
+
+  const latestEntries=await Promise.all(conversationIds.map(async conversationId=>{
+    const {data,error}=await supabase
+      .from('messages')
+      .select('content,created_at')
+      .eq('conversation_id',conversationId)
+      .order('created_at',{ascending:false})
+      .limit(1)
+      .maybeSingle();
+    if(error)throw error;
+    return [conversationId,data?{content:String(data.content||''),createdAt:String(data.created_at||'')}:null] as const;
+  }));
+  const latestByConversation=new Map(latestEntries);
 
   const otherUserIds=[...new Set((members||[])
     .map(row=>String(row.user_id||''))
@@ -65,15 +76,9 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
     }
   }
 
-  const latestByConversation=new Map<string,string>();
-  for(const message of messages||[]){
-    const conversationId=String(message.conversation_id||'');
-    if(conversationId&&!latestByConversation.has(conversationId))latestByConversation.set(conversationId,String(message.content||''));
-  }
-
-  return (conversations||[]).map(conversation=>{
+  const rows=(conversations||[]).map(conversation=>{
     const conversationId=String(conversation.id||'');
-    const latest=latestByConversation.get(conversationId)||'Conversación nueva';
+    const latest=latestByConversation.get(conversationId);
     const isGroup=String(conversation.type||'direct')!=='direct';
     const memberIds=(members||[])
       .filter(member=>String(member.conversation_id||'')===conversationId)
@@ -81,14 +86,21 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
     const otherId=memberIds.find(id=>id&&id!==userId);
     const profile=otherId?profilesById.get(otherId):undefined;
     return {
-      conversationId,
-      userId:otherId||undefined,
-      name:isGroup?String(conversation.title||'Grupo CONECTA'):(profile?.name||'Conversación'),
-      avatar:profile?.avatar,
-      message:latest,
-      isGroup,
+      preview:{
+        conversationId,
+        userId:otherId||undefined,
+        name:isGroup?String(conversation.title||'Grupo CONECTA'):(profile?.name||'Conversación'),
+        avatar:profile?.avatar,
+        message:latest?.content||'Conversación nueva',
+        isGroup,
+      } satisfies BackendChatPreview,
+      activityAt:latest?.createdAt||String(conversation.created_at||''),
     };
   });
+
+  return rows
+    .sort((a,b)=>Date.parse(b.activityAt||'')-Date.parse(a.activityAt||''))
+    .map(row=>row.preview);
 }
 
 export async function loadBackendMessages(conversationId:string):Promise<BackendChatMessage[]>{

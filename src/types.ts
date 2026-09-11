@@ -4,6 +4,13 @@ export type ExploreFilter = 'all' | 'near' | 'today' | 'afternoon' | 'tonight' |
 
 export type Plan = {
   backendId?: string;
+  creatorId?: string;
+  organizerName?: string;
+  organizerAvatar?: string;
+  organizerVerified?: boolean;
+  participantNames?: string[];
+  participantAvatars?: string[];
+  participantCount?: number;
   title: string;
   image: string;
   time: string;

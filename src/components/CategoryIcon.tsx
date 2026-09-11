@@ -1,4 +1,4 @@
-import { BookOpen, Camera, Coffee, Dumbbell, Film, Gamepad2, GraduationCap, Languages, Mountain, Music2, Palmtree, PartyPopper, PawPrint, Plane, UsersRound, Utensils } from 'lucide-react';
+import { BookOpen, Camera, Coffee, Dumbbell, Film, Gamepad2, GraduationCap, Languages, Mountain, Music2, Palmtree, PartyPopper, PawPrint, Plane, Sparkles, UsersRound, Utensils } from 'lucide-react';
 
 const iconMap = {
   Deporte:Dumbbell,
@@ -19,7 +19,7 @@ const iconMap = {
   Mascotas:PawPrint,
 } as const;
 
-export function CategoryIcon({name}:{name:keyof typeof iconMap}){
-  const Icon = iconMap[name];
+export function CategoryIcon({name}:{name:string}){
+  const Icon = iconMap[name as keyof typeof iconMap] ?? Sparkles;
   return <Icon/>;
 }

@@ -86,3 +86,7 @@ export function filterExplorePlans(items:Plan[],options:ExplorePlanOptions):Plan
   const descending=options.timeFilter==='all'&&!options.sortAsc;
   return [...filtered].sort((a,b)=>descending?distanceValue(b.distance)-distanceValue(a.distance):distanceValue(a.distance)-distanceValue(b.distance));
 }
+
+export function planIdentityKey(plan:{backendId?:string;title:string;time:string;place:string}):string{
+  return plan.backendId?`backend:${plan.backendId}`:`${plan.title}|${plan.time}|${plan.place}`;
+}

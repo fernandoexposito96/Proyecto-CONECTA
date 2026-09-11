@@ -25,13 +25,20 @@ export function normalizeSpots(value:string){
 export function createPlanFromDraft(draft:PlanDraft):Plan|null{
   const title=draft.title.trim();
   const place=draft.place.trim();
-  const time=draft.when.trim();
-  if(!title||!place||!time)return null;
+  const rawWhen=draft.when.trim();
+  if(!title||!place||!rawWhen)return null;
+
+  const parsed=new Date(rawWhen);
+  const startsAt=Number.isNaN(parsed.getTime())?undefined:parsed.toISOString();
+  const time=startsAt
+    ?new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(parsed)
+    :rawWhen;
 
   return {
     title,
     place,
     time,
+    startsAt,
     spots:`${normalizeSpots(draft.spots)} plazas`,
     distance:'0 km',
     category:draft.category,

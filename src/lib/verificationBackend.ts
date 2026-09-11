@@ -8,6 +8,9 @@ export type IdentityVerificationState={
   reviewNote:string|null;
 };
 
+const allowedSelfieTypes=new Set(['image/jpeg','image/png','image/webp','image/heic','image/heif']);
+const extensionForType=(type:string)=>type==='image/png'?'png':type==='image/webp'?'webp':type==='image/heic'?'heic':type==='image/heif'?'heif':'jpg';
+
 export async function loadIdentityVerification():Promise<IdentityVerificationState>{
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
@@ -23,22 +26,19 @@ export async function loadIdentityVerification():Promise<IdentityVerificationSta
   if(!data)return {status:'none',createdAt:null,reviewNote:null};
   const raw=String(data.status||'pending');
   const status:IdentityVerificationStatus=raw==='approved'||raw==='rejected'||raw==='pending'?raw:'pending';
-  return {
-    status,
-    createdAt:typeof data.created_at==='string'?data.created_at:null,
-    reviewNote:typeof data.review_note==='string'?data.review_note:null,
-  };
+  return {status,createdAt:typeof data.created_at==='string'?data.created_at:null,reviewNote:typeof data.review_note==='string'?data.review_note:null};
 }
 
 export async function submitSelfieVerification(file:File){
-  if(file.type!=='image/jpeg')throw new Error('Usa una foto JPEG tomada con la cámara.');
+  if(!allowedSelfieTypes.has(file.type))throw new Error('Usa una foto JPEG, PNG, WEBP, HEIC o HEIF tomada con la cámara.');
   if(file.size>15_000_000)throw new Error('La foto supera el límite de 15 MB.');
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
   if(!user)throw new Error('Necesitas iniciar sesión para verificar tu identidad.');
 
-  const path=`${user.id}/${Date.now()}-${crypto.randomUUID()}.jpg`;
-  const {error:uploadError}=await supabase.storage.from('identity-video').upload(path,file,{upsert:false,contentType:'image/jpeg'});
+  const extension=extensionForType(file.type);
+  const path=`${user.id}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  const {error:uploadError}=await supabase.storage.from('identity-video').upload(path,file,{upsert:false,contentType:file.type});
   if(uploadError)throw uploadError;
 
   const {error:insertError}=await supabase.from('identity_verifications').insert({

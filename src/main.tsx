@@ -13,9 +13,17 @@ if (!root) {
   throw new Error('CONECTA: no se ha encontrado el contenedor #app');
 }
 
-const initialTheme=loadStored<Theme>(storageKeys.theme,'Sistema');
-const initialDark=initialTheme==='Oscuro'||(initialTheme==='Sistema'&&window.matchMedia?.('(prefers-color-scheme: dark)').matches);
-document.documentElement.dataset.theme=initialDark?'dark':'light';
+const systemThemeQuery=window.matchMedia?.('(prefers-color-scheme: dark)');
+const applyStoredTheme=()=>{
+  const selectedTheme=loadStored<Theme>(storageKeys.theme,'Sistema');
+  const dark=selectedTheme==='Oscuro'||(selectedTheme==='Sistema'&&Boolean(systemThemeQuery?.matches));
+  document.documentElement.dataset.theme=dark?'dark':'light';
+};
+applyStoredTheme();
+systemThemeQuery?.addEventListener?.('change',()=>{
+  const selectedTheme=loadStored<Theme>(storageKeys.theme,'Sistema');
+  if(selectedTheme==='Sistema')applyStoredTheme();
+});
 
 const initialLanguage=loadStored<Language>(storageKeys.language,'Español');
 document.documentElement.lang=initialLanguage==='Català'?'ca':initialLanguage==='English'?'en':'es';

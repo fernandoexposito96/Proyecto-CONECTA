@@ -13,12 +13,7 @@ fs.mkdirSync(tmp,{recursive:true});
 const compile=(sourcePath,outName,transform=(code)=>code)=>{
   const source=fs.readFileSync(sourcePath,'utf8');
   const result=ts.transpileModule(source,{
-    compilerOptions:{
-      jsx:ts.JsxEmit.ReactJSX,
-      module:ts.ModuleKind.ESNext,
-      target:ts.ScriptTarget.ES2022,
-      esModuleInterop:true,
-    },
+    compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,esModuleInterop:true},
     fileName:sourcePath,
   });
   const out=path.join(tmp,outName);
@@ -37,9 +32,8 @@ try{
   fs.writeFileSync(path.join(tmp,'PlanFeatureTools.mjs'),'export function PlanFeatureTools(){ return null; }\n');
   fs.writeFileSync(path.join(tmp,'planLogic.mjs'),"export function planIdentityKey(plan){ return plan.backendId?`backend:${plan.backendId}`:`${plan.title}|${plan.time}|${plan.place}`; }\n");
   fs.writeFileSync(path.join(tmp,'attendanceBackend.mjs'),"export async function joinPlan(){}\nexport async function leavePlan(){}\nexport async function isPlanJoined(){ return false; }\n");
-  compile('src/lib/storage.ts','storage.mjs',code=>code
-    .replace("'./settingsBackend'","'./settingsBackend.mjs'")
-    .replace('"./settingsBackend"','"./settingsBackend.mjs"'));
+  fs.writeFileSync(path.join(tmp,'planSocialBackend.mjs'),"export async function loadPlanSocialDetails(){ return {organizer:null,participants:[]}; }\n");
+  compile('src/lib/storage.ts','storage.mjs',code=>code.replace("'./settingsBackend'","'./settingsBackend.mjs'").replace('"./settingsBackend"','"./settingsBackend.mjs"'));
   compile('src/lib/privacy.ts','privacy.mjs',code=>code.replace("'./storage'","'./storage.mjs'").replace('"./storage"','"./storage.mjs"'));
   const planPath=compile('src/components/PlanComponents.tsx','PlanComponents.mjs',code=>code
     .replace("'../lib/storage'","'./storage.mjs'")
@@ -50,18 +44,17 @@ try{
     .replace('"../lib/planLogic"','"./planLogic.mjs"')
     .replace("'../lib/attendanceBackend'","'./attendanceBackend.mjs'")
     .replace('"../lib/attendanceBackend"','"./attendanceBackend.mjs"')
+    .replace("'../lib/planSocialBackend'","'./planSocialBackend.mjs'")
+    .replace('"../lib/planSocialBackend"','"./planSocialBackend.mjs"')
     .replace("'./PlanFeatureTools'","'./PlanFeatureTools.mjs'")
     .replace('"./PlanFeatureTools"','"./PlanFeatureTools.mjs"'));
-  global.window={
-    localStorage:{getItem:()=>null,setItem:()=>{},removeItem:()=>{},clear:()=>{},key:()=>null,length:0},
-  };
+  global.window={localStorage:{getItem:()=>null,setItem:()=>{},removeItem:()=>{},clear:()=>{},key:()=>null,length:0}};
   const {PlanCards}=await import(`${pathToFileURL(planPath).href}?v=1`);
   const sample={title:'Plan de prueba',image:'image-fallback.svg',time:'Hoy · 19:00',place:'Tarragona',distance:'2 km',spots:'6 plazas',category:'Deporte'};
   const markup=renderToStaticMarkup(React.createElement(PlanCards,{items:[sample],onPlan:()=>{}}));
   assert.match(markup,/Plan de prueba/);
   assert.match(markup,/Añadir a favoritos/);
   console.log('✓ PlanCards renderiza datos y acciones del demo');
-
   console.log('React smoke tests: 2/2 OK');
 } finally {
   fs.rmSync(tmp,{recursive:true,force:true});

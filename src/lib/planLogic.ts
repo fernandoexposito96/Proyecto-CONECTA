@@ -34,16 +34,17 @@ export function createPlanFromDraft(draft:PlanDraft):Plan|null{
     ?new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(parsed)
     :rawWhen;
 
-  return {
+  const plan:Plan={
     title,
     place,
     time,
-    startsAt,
     spots:`${normalizeSpots(draft.spots)} plazas`,
     distance:'0 km',
     category:draft.category,
     image:draft.image,
   };
+  if(startsAt)plan.startsAt=startsAt;
+  return plan;
 }
 
 export function hourFromPlanTime(time:string):number|null{

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronRight, Coffee, Crown, Heart, MapPin, Music2, Sparkles } from 'lucide-react';
+import { CalendarDays, ChevronRight, Coffee, CreditCard, Heart, MapPin, Music2, Sparkles } from 'lucide-react';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, people, plans } from '../data/demoData';
@@ -131,6 +131,6 @@ export function HomeView({setView,onPlan,onExplore}:{setView:(v:View)=>void,onPl
 
     <footer className="home-footer-note"><span>CONECTA PREMIUM</span><span>Planes verificados</span><span>Gente compatible</span><span>Más seguridad</span></footer>
 
-    <section className="premium-banner"><div><Crown/><span>PREMIUM</span></div><h2>Haz que cada semana tenga algo que esperar</h2><p>Más visibilidad, recomendaciones avanzadas y acceso prioritario a experiencias seleccionadas.</p><button onClick={()=>setView('Ajustes')}>Ver CONECTA Premium <ChevronRight/></button></section>
+    <section className="premium-banner"><div><CreditCard/><span>PREMIUM</span></div><h2>Haz que cada semana tenga algo que esperar</h2><p>Más visibilidad, recomendaciones avanzadas y acceso prioritario a experiencias seleccionadas.</p><button onClick={()=>setView('Ajustes')}>Ver CONECTA Premium <ChevronRight/></button></section>
   </div>
 }

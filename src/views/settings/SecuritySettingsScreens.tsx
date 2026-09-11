@@ -88,7 +88,7 @@ export function SecuritySettingsScreen({email,signingOut,notice,onBack,onChangeP
       {showSelfie&&<div className="settings-account-form">
         <strong>Verificación de identidad</strong>
         <p>Haz una selfie frontal y nítida. La imagen se guarda en almacenamiento privado y queda pendiente de revisión.</p>
-        {verification.status==='approved'?<p className="settings-success">Tu identidad ya está verificada.</p>:<label>Selfie JPEG<input type="file" accept="image/jpeg" capture="user" disabled={verificationBusy} onChange={event=>{void submitSelfie(event.target.files?.[0]||null);event.currentTarget.value=''}}/></label>}
+        {verification.status==='approved'?<p className="settings-success">Tu identidad ya está verificada.</p>:<label>Selfie<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" capture="user" disabled={verificationBusy} onChange={event=>{void submitSelfie(event.target.files?.[0]||null);event.currentTarget.value=''}}/></label>}
         {verification.status==='pending'&&<p className="settings-field-hint">Solicitud enviada. Estado: pendiente de revisión.</p>}
         {verification.reviewNote&&<p className="settings-field-hint">Revisión: {verification.reviewNote}</p>}
         {verificationError&&<p className="settings-error" role="alert">{verificationError}</p>}
@@ -116,10 +116,7 @@ export function ChangePasswordScreen({newPassword,confirmPassword,saving,error,o
       <label>Confirmar contraseña<input type="password" value={confirmPassword} onChange={e=>onConfirmPassword(e.target.value)} placeholder="Repite la nueva contraseña" autoComplete="new-password"/></label>
       <small className="settings-field-hint">Usa al menos 8 caracteres y evita reutilizar una contraseña de otro servicio.</small>
       {error&&<p className="settings-error" role="alert">{error}</p>}
-      <div>
-        <button className="settings-inline-action" disabled={saving} onClick={onSave}>{saving?'Guardando…':'Guardar contraseña'}</button>
-        <button className="settings-secondary-action" disabled={saving} onClick={onBack}>Cancelar</button>
-      </div>
+      <div><button className="settings-inline-action" disabled={saving} onClick={onSave}>{saving?'Guardando…':'Guardar contraseña'}</button><button className="settings-secondary-action" disabled={saving} onClick={onBack}>Cancelar</button></div>
     </div>
   </SettingsInfoScreen>;
 }

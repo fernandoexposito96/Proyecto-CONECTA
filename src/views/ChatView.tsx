@@ -16,7 +16,7 @@ const fallbackAvatars=[
   './assets/images/photo-1544005313-94ddf0286df2.jpg',
 ];
 const avatarFor=(name:string,index=0)=>people.find(person=>person.name===name)?.image||fallbackAvatars[index%fallbackAvatars.length];
-const chatKey=(item:ChatItem)=>item.conversationId||item.name;
+const chatKey=(item:ChatItem)=>item.conversationId||`demo:${item.name}:${item.isGroup?'group':'direct'}`;
 
 export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [blocked]=useState<Set<string>>(()=>blockedNames());
@@ -49,31 +49,23 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   },[]);
 
   const items=useMemo<ChatItem[]>(()=>{
-    const base:ChatItem[]=chats
+    const realItems:ChatItem[]=backendChats
+      .filter(real=>!((real.userId&&blockedIds.has(real.userId))||(!real.isGroup&&blocked.has(real.name))))
+      .map((real,index)=>({
+        name:real.name,
+        msg:real.message,
+        count:'',
+        isGroup:real.isGroup,
+        avatar:real.avatar||avatarFor(real.name,index),
+        conversationId:real.conversationId,
+        userId:real.userId,
+      }));
+
+    const demoItems:ChatItem[]=chats
       .map(([name,msg,count],i)=>({name,msg,count,isGroup:groupNames.has(name),avatar:avatarFor(name,i)}))
       .filter(item=>item.isGroup||!blocked.has(item.name));
 
-    for(const real of backendChats){
-      if((real.userId&&blockedIds.has(real.userId))||(!real.isGroup&&blocked.has(real.name)))continue;
-      const match=base.find(item=>item.name===real.name&&item.isGroup===real.isGroup);
-      if(match){
-        match.msg=real.message;
-        match.conversationId=real.conversationId;
-        match.userId=real.userId;
-        if(real.avatar)match.avatar=real.avatar;
-      }else{
-        base.push({
-          name:real.name,
-          msg:real.message,
-          count:'',
-          isGroup:real.isGroup,
-          avatar:real.avatar||avatarFor(real.name,base.length),
-          conversationId:real.conversationId,
-          userId:real.userId,
-        });
-      }
-    }
-
+    const base=[...realItems,...demoItems];
     if(initialContact&&!blocked.has(initialContact)&&!base.some(item=>item.name===initialContact)){
       base.unshift({name:initialContact,msg:'Nueva conversación',count:'',isGroup:false,avatar:avatarFor(initialContact)});
     }
@@ -109,7 +101,7 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
     if(!item){
       return <div className="page chat-page"><div className="empty-state"><strong>Esta conversación ya no está disponible.</strong><span>Puede haberse cerrado o haber cambiado tu acceso.</span><button type="button" onClick={()=>setActiveChat(null)}>Volver a chats</button></div></div>;
     }
-    const localMessages=sent[item.name]||[];
+    const localMessages=item.conversationId?[]:(sent[item.name]||[]);
     const realMessages=item.conversationId?backendThreads[item.conversationId]||[]:[];
     const send=async()=>{
       const text=draft.trim();
@@ -123,6 +115,8 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
           if(!sentReal)throw new Error('La conversación no está disponible para envío.');
           const refreshed=await loadBackendMessages(item.conversationId);
           setBackendThreads(current=>({...current,[item.conversationId as string]:refreshed}));
+          const refreshedChats=await loadBackendChats();
+          setBackendChats(refreshedChats);
         }else{
           setSent(value=>({...value,[item.name]:[...(value[item.name]||[]),text]}));
         }
@@ -138,5 +132,5 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   }
 
   const blockedAttempt=Boolean(initialContact&&blocked.has(initialContact));
-  return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button type="button" aria-label="Buscar conversaciones" onClick={()=>setSearchOpen(value=>!value)}>{searchOpen?<X/>:<Search/>}</button></div>{blockedAttempt&&<div className="empty-state">Este usuario está bloqueado. Puedes gestionarlo desde Ajustes → Privacidad → Usuarios bloqueados.</div>}{searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Buscar conversación" aria-label="Buscar conversación"/></div>}<div className="tabs">{(['Todos','Planes','Grupos'] as ChatTab[]).map(item=><button type="button" key={item} className={tab===item?'active':''} onClick={()=>setTab(item)}>{item}</button>)}</div><div className="chat-list">{visible.map((item,index)=><button type="button" key={chatKey(item)} onClick={()=>setActiveChat(chatKey(item))}><img loading="lazy" decoding="async" src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>{(sent[item.name]?.at(-1))||item.msg}</span></div><small>{index<3?'12:'+(45-index*8):'Ayer'}</small>{item.count&&<b>{item.count}</b>}</button>)}</div></div>;
+  return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button type="button" aria-label="Buscar conversaciones" onClick={()=>setSearchOpen(value=>!value)}>{searchOpen?<X/>:<Search/>}</button></div>{blockedAttempt&&<div className="empty-state">Este usuario está bloqueado. Puedes gestionarlo desde Ajustes → Privacidad → Usuarios bloqueados.</div>}{searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Buscar conversación" aria-label="Buscar conversación"/></div>}<div className="tabs">{(['Todos','Planes','Grupos'] as ChatTab[]).map(item=><button type="button" key={item} className={tab===item?'active':''} onClick={()=>setTab(item)}>{item}</button>)}</div><div className="chat-list">{visible.map((item,index)=><button type="button" key={chatKey(item)} onClick={()=>setActiveChat(chatKey(item))}><img loading="lazy" decoding="async" src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>{item.conversationId?item.msg:(sent[item.name]?.at(-1)||item.msg)}</span></div><small>{index<3?'12:'+(45-index*8):'Ayer'}</small>{item.count&&<b>{item.count}</b>}</button>)}</div></div>;
 }

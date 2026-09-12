@@ -62,6 +62,7 @@ export type ChatItem = {
   avatar: string;
   conversationId?: string;
   userId?: string;
+  planId?: string;
 };
 
 export type ProfileTab = 'Fotos' | 'Planes' | 'Conexiones' | 'Valoraciones';

@@ -82,7 +82,7 @@ export default function App(){
   },[]);
 
   useEffect(()=>{
-    setSelected(null);
+    if(view!=='Plan')setSelected(null);
     window.scrollTo({top:0,left:0,behavior:'auto'});
   },[view]);
 
@@ -95,6 +95,14 @@ export default function App(){
     setSelected(null);
     setChatTarget(name||null);
     setView('Chat');
+  };
+  const openHomePlan=(plan:Plan)=>{
+    setSelected(plan);
+    setView('Plan');
+  };
+  const closeHomePlan=()=>{
+    setSelected(null);
+    setView('Inicio');
   };
   const addCreatedPlan=async(plan:Plan):Promise<boolean>=>{
     setExploreFilter('all');
@@ -122,7 +130,7 @@ export default function App(){
     <main>
       <Header view={view} setView={setView} unreadNotifications={unreadNotifications}/>
       <div className="content">
-        {view==='Inicio'&&<HomeView setView={setView} onPlan={setSelected} onExplore={openExplore}/>} 
+        {view==='Inicio'&&<HomeView setView={setView} onPlan={openHomePlan} onExplore={openExplore}/>} 
         {view==='Explora'&&<ExploreView onPlan={setSelected} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} 
         {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
@@ -130,9 +138,10 @@ export default function App(){
         {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications} onOpenPlanChat={openChat}/>} 
         {view==='Crear'&&<CreatePlanView setView={setView} onCreate={addCreatedPlan}/>} 
         {view==='Calendario'&&<CalendarView setView={setView}/>} 
+        {view==='Plan'&&selected&&<PlanDetail plan={selected} onClose={closeHomePlan} onOpenChat={openChat} standalone/>}
       </div>
     </main>
     <BottomNav view={view} setView={setView}/>
-    {selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)} onOpenChat={openChat}/>} 
+    {view!=='Plan'&&selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)} onOpenChat={openChat}/>} 
   </div>
 }

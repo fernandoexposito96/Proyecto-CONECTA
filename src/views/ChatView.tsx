@@ -17,6 +17,7 @@ const fallbackAvatars=[
 ];
 const avatarFor=(name:string,index=0)=>people.find(person=>person.name===name)?.image||fallbackAvatars[index%fallbackAvatars.length];
 const chatKey=(item:ChatItem)=>item.conversationId||`demo:${item.name}:${item.isGroup?'group':'direct'}`;
+const planTargetId=(target:string|null|undefined)=>target?.startsWith('plan:')?target.slice(5):null;
 
 export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [blocked,setBlocked]=useState<Set<string>>(()=>blockedNames());
@@ -24,7 +25,7 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [tab,setTab]=useState<ChatTab>('Todos');
   const [searchOpen,setSearchOpen]=useState(false);
   const [query,setQuery]=useState('');
-  const [activeChat,setActiveChat]=useState<string|null>(()=>initialContact&&!blocked.has(initialContact)?initialContact:null);
+  const [activeChat,setActiveChat]=useState<string|null>(()=>initialContact&&(planTargetId(initialContact)||!blocked.has(initialContact))?initialContact:null);
   const [draft,setDraft]=useState('');
   const [sent,setSent]=useState<Record<string,string[]>>(()=>loadStored(storageKeys.chatMessages,{}));
   const [backendChats,setBackendChats]=useState<BackendChatPreview[]>([]);
@@ -51,7 +52,10 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
       window.removeEventListener('storage',refreshBlocked);
     };
   },[]);
-  useEffect(()=>{if(initialContact&&!blocked.has(initialContact))setActiveChat(initialContact)},[initialContact,blocked]);
+  useEffect(()=>{
+    if(!initialContact)return;
+    if(planTargetId(initialContact)||!blocked.has(initialContact))setActiveChat(initialContact);
+  },[initialContact,blocked]);
   useEffect(()=>{
     let active=true;
     void Promise.all([loadBackendChats(),backendCurrentUserId()])
@@ -75,6 +79,7 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
         avatar:real.avatar||avatarFor(real.name,index),
         conversationId:real.conversationId,
         userId:real.userId,
+        planId:real.planId,
       }));
 
     const demoItems:ChatItem[]=chats
@@ -82,13 +87,13 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
       .filter(item=>item.isGroup||!blocked.has(item.name));
 
     const base=[...realItems,...demoItems];
-    if(initialContact&&!blocked.has(initialContact)&&!base.some(item=>item.name===initialContact)){
+    if(initialContact&&!planTargetId(initialContact)&&!blocked.has(initialContact)&&!base.some(item=>item.name===initialContact)){
       base.unshift({name:initialContact,msg:'Nueva conversación',count:'',isGroup:false,avatar:avatarFor(initialContact)});
     }
     return base;
   },[initialContact,blocked,blockedIds,backendChats]);
 
-  const activeItem=useMemo(()=>activeChat?items.find(item=>chatKey(item)===activeChat||item.name===activeChat):undefined,[activeChat,items]);
+  const activeItem=useMemo(()=>activeChat?items.find(item=>chatKey(item)===activeChat||item.name===activeChat||(item.planId&&`plan:${item.planId}`===activeChat)):undefined,[activeChat,items]);
 
   useEffect(()=>{
     setSendError('');
@@ -147,6 +152,6 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
     return <div className="page chat-page"><div className="chat-thread-head"><button type="button" aria-label="Volver a chats" onClick={()=>setActiveChat(null)}><ChevronLeft/></button><img src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>Conversación</span></div></div><div className="chat-thread">{realMessages.length?realMessages.map(message=><div className={`message ${message.senderId===backendUserId?'sent':'received'}`} key={message.id}>{message.content}</div>):<div className="message received">{item.msg}</div>}{localMessages.map((message,index)=><div className="message sent" key={`${message}-${index}`}>{message}</div>)}</div>{threadError&&<div className="auth-message" role="status">{threadError}</div>}{sendError&&<div className="auth-message" role="alert">{sendError}</div>}<div className="chat-composer"><input value={draft} disabled={sending} onChange={event=>setDraft(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'&&!event.nativeEvent.isComposing){event.preventDefault();void send();}}} placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje"/><button type="button" disabled={sending||!draft.trim()} onClick={()=>{void send()}} aria-label="Enviar mensaje"><Send/></button></div></div>;
   }
 
-  const blockedAttempt=Boolean(initialContact&&blocked.has(initialContact));
+  const blockedAttempt=Boolean(initialContact&&!planTargetId(initialContact)&&blocked.has(initialContact));
   return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button type="button" aria-label="Buscar conversaciones" onClick={()=>setSearchOpen(value=>!value)}>{searchOpen?<X/>:<Search/>}</button></div>{blockedAttempt&&<div className="empty-state">Este usuario está bloqueado. Puedes gestionarlo desde Ajustes → Privacidad → Usuarios bloqueados.</div>}{searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Buscar conversación" aria-label="Buscar conversación"/></div>}<div className="tabs">{(['Todos','Planes','Grupos'] as ChatTab[]).map(item=><button type="button" key={item} className={tab===item?'active':''} onClick={()=>setTab(item)}>{item}</button>)}</div><div className="chat-list">{visible.map((item,index)=><button type="button" key={chatKey(item)} onClick={()=>setActiveChat(chatKey(item))}><img loading="lazy" decoding="async" src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>{item.conversationId?item.msg:(sent[item.name]?.at(-1)||item.msg)}</span></div><small>{index<3?'12:'+(45-index*8):'Ayer'}</small>{item.count&&<b>{item.count}</b>}</button>)}</div></div>;
 }

@@ -1,6 +1,7 @@
-export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes' | 'Notificaciones' | 'Crear' | 'Calendario' | 'Plan';
+export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes' | 'Notificaciones' | 'Crear' | 'Calendario' | 'Plan' | 'HomeBrowse';
 
 export type ExploreFilter = 'all' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend' | 'week';
+export type HomeBrowseMode = 'all' | 'categories' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend' | 'escapes' | 'people';
 
 export type Plan = {
   backendId?: string;

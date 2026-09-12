@@ -31,6 +31,7 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [backendChats,setBackendChats]=useState<BackendChatPreview[]>([]);
   const [backendThreads,setBackendThreads]=useState<Record<string,BackendChatMessage[]>>({});
   const [backendUserId,setBackendUserId]=useState<string|null>(null);
+  const [backendLoaded,setBackendLoaded]=useState(false);
   const [sending,setSending]=useState(false);
   const [sendError,setSendError]=useState('');
   const [threadError,setThreadError]=useState('');
@@ -58,13 +59,15 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   },[initialContact,blocked]);
   useEffect(()=>{
     let active=true;
+    setBackendLoaded(false);
     void Promise.all([loadBackendChats(),backendCurrentUserId()])
       .then(([realChats,userId])=>{
         if(!active)return;
         setBackendChats(realChats);
         setBackendUserId(userId);
       })
-      .catch(error=>console.warn('CONECTA real chat unavailable; demo fallback kept',error));
+      .catch(error=>console.warn('CONECTA real chat unavailable; demo fallback kept',error))
+      .finally(()=>{if(active)setBackendLoaded(true)});
     return ()=>{active=false};
   },[]);
 
@@ -119,6 +122,9 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
 
   if(activeChat){
     const item=activeItem;
+    if(!item&&planTargetId(activeChat)&&!backendLoaded){
+      return <div className="page chat-page"><div className="empty-state"><strong>Cargando conversación del plan…</strong><span>Conectando con el grupo sincronizado.</span></div></div>;
+    }
     if(!item){
       return <div className="page chat-page"><div className="empty-state"><strong>Esta conversación ya no está disponible.</strong><span>Puede haberse cerrado o haber cambiado tu acceso.</span><button type="button" onClick={()=>setActiveChat(null)}>Volver a chats</button></div></div>;
     }

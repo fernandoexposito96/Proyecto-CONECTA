@@ -3,6 +3,7 @@ import { CalendarDays, Camera, ChevronRight, MapPin, MoreHorizontal, Pencil, Shi
 import { countMyPlanMemberships } from '../lib/attendanceBackend';
 import { accountFromUser, avatarFromUser, demoAccount, demoAvatar, isDemoAccount } from '../lib/identity';
 import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
+import { loadBackendConnectionIds } from '../lib/socialBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 import { loadIdentityVerification } from '../lib/verificationBackend';
@@ -30,6 +31,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
   const [interests,setInterests]=useState<string[]>([]);
   const [realJoinedCount,setRealJoinedCount]=useState(0);
   const [realCreatedCount,setRealCreatedCount]=useState(0);
+  const [realConnectionCount,setRealConnectionCount]=useState(0);
   const locationAllowed=canUseLocation(privacy);
 
   useEffect(()=>{
@@ -71,14 +73,17 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
 
   useEffect(()=>{
     let active=true;
-    void Promise.allSettled([loadIdentityVerification(),countMyPlanMemberships()]).then(results=>{
+    void Promise.allSettled([loadIdentityVerification(),countMyPlanMemberships(),loadBackendConnectionIds()]).then(results=>{
       if(!active)return;
       const verification=results[0];
       const memberships=results[1];
+      const connections=results[2];
       if(verification.status==='fulfilled')setVerified(verification.value.status==='approved');
       else console.warn('CONECTA identity verification check failed; badge hidden',verification.reason);
       if(memberships.status==='fulfilled')setRealJoinedCount(memberships.value);
       else console.warn('CONECTA real plan membership count failed',memberships.reason);
+      if(connections.status==='fulfilled')setRealConnectionCount(connections.value.size);
+      else console.warn('CONECTA real connection count failed',connections.reason);
     });
     return ()=>{active=false};
   },[]);
@@ -109,24 +114,25 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
   const demoStats=useMemo(()=>{
     const created=loadStored<Plan[]>(storageKeys.createdPlans,[]);
     const joined=loadStored<string[]>(storageKeys.joinedPlans,[]);
-    const connections=loadStored<string[]>(storageKeys.connections,[]).filter(name=>!blocked.has(name));
+    const localConnections=loadStored<string[]>(storageKeys.connections,[]).filter(name=>!blocked.has(name));
     const favorites=loadStored<string[]>(storageKeys.planFavorites,[]);
     const demo=isDemoAccount(account);
     const localCreatedCount=created.filter(plan=>!plan.backendId).length;
     const localJoinedCount=joined.filter(key=>!key.startsWith('backend:')).length;
     const createdCount=realCreatedCount+localCreatedCount;
     const joinedCount=realJoinedCount+localJoinedCount;
+    const connectionCount=realConnectionCount+localConnections.length;
     return {
       plans:(demo?23:0)+createdCount+joinedCount,
-      connections:(demo?156:0)+connections.length,
+      connections:(demo?156:0)+connectionCount,
       ratings:demo?48:0,
       ratingScore:demo?'4,8':'—',
       created:createdCount,
       joined:joinedCount,
       favorites:favorites.length,
-      newConnections:connections.length,
+      newConnections:connectionCount,
     };
-  },[account,blocked,realCreatedCount,realJoinedCount]);
+  },[account,blocked,realCreatedCount,realJoinedCount,realConnectionCount]);
 
   const visibleInterests=interests.length?interests.slice(0,3):['Viajes','Gastronomía','Naturaleza'];
 
@@ -185,7 +191,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
 
         {tab==='Fotos'&&<div className="photo-grid">{photos.map((id,i)=><img key={id} loading="lazy" decoding="async" src={`./assets/images/${id}.jpg`} alt={`Foto ${i+1} del perfil`}/>)}</div>}
         {tab==='Planes'&&<div className="profile-tab-panel"><strong>{demoStats.plans} planes</strong><span>{demoStats.created} creados · {demoStats.joined} unidos · {demoStats.favorites} favoritos en este dispositivo.</span></div>}
-        {tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones nuevas visibles después de aplicar bloqueos.</span></div>}
+        {tab==='Conexiones'&&<div className="profile-tab-panel"><strong>{demoStats.connections} conexiones</strong><span>{demoStats.newConnections} conexiones reales y locales visibles después de aplicar bloqueos.</span></div>}
         {tab==='Valoraciones'&&<div className="profile-tab-panel"><strong>{demoStats.ratingScore}</strong><span>{demoStats.ratings} valoraciones asociadas a este perfil.</span></div>}
       </div>
     </div>

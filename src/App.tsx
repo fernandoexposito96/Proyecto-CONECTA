@@ -157,6 +157,5 @@ export default function App(){
       </div>
     </main>
     <BottomNav view={view} setView={setView}/>
-    {view!=='Plan'&&selected&&<PlanDetail plan={selected} onClose={()=>setSelected(null)} onOpenChat={openChat}/>} 
   </div>
 }

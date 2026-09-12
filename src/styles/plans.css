@@ -18,6 +18,8 @@
 .avatars span{margin-left:10px;font-size:12px;font-weight:700;color:#6b7582}
 
 .detail-overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:rgba(6,20,36,.56);backdrop-filter:blur(9px)}
+.detail-page-shell{width:100%;display:grid;place-items:start center;padding:8px 0 22px}
+.detail-page-shell .detail-card{max-height:none}
 .detail-card{width:min(560px,100%);max-height:94vh;overflow:auto;background:linear-gradient(180deg,#fbfcff 0%,#f8f7fc 100%);border:1px solid rgba(255,255,255,.75);border-radius:30px;box-shadow:0 30px 80px rgba(0,0,0,.28)}
 .detail-photo{height:290px;position:relative;overflow:hidden;background:#eee9fa}
 .detail-photo::after{content:"";position:absolute;inset:auto 0 0;height:32%;background:linear-gradient(180deg,transparent,rgba(11,15,31,.20));pointer-events:none}
@@ -71,6 +73,8 @@
   .plan-body{padding:12px}
   .plan-body h3{font-size:14px}.plan-body p{font-size:11px}.avatars img{width:25px;height:25px}
   .detail-overlay{padding:0;align-items:end;background:rgba(3,17,29,.55)}
+  .detail-page-shell{margin:0 calc(var(--mobile-gutter) * -1);padding:0 0 8px;place-items:start stretch}
+  .detail-page-shell .detail-card{width:100%;max-height:none;border-radius:0;box-shadow:none;border-left:0;border-right:0}
   .detail-card{width:100%;max-height:96vh;border-radius:28px 28px 0 0;border-left:0;border-right:0;border-bottom:0}
   .detail-photo{height:270px}.detail-body{padding:18px}.detail-title h1{font-size:27px}
   .plan-tools-head{align-items:flex-start}.plan-tools-actions{flex-direction:column}.plan-tools-actions button{padding:8px}

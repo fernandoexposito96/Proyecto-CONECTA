@@ -61,6 +61,25 @@ function distanceValue(distance:string){
   return Number.isFinite(parsed)?parsed:Number.POSITIVE_INFINITY;
 }
 
+function compareByDistance(a:Plan,b:Plan,descending:boolean){
+  const aDistance=distanceValue(a.distance);
+  const bDistance=distanceValue(b.distance);
+  const aUnknown=!Number.isFinite(aDistance);
+  const bUnknown=!Number.isFinite(bDistance);
+
+  if(aUnknown||bUnknown){
+    if(aUnknown&&bUnknown){
+      if(Boolean(a.backendId)!==Boolean(b.backendId))return a.backendId?-1:1;
+      return 0;
+    }
+    if(aUnknown&&a.backendId)return -1;
+    if(bUnknown&&b.backendId)return 1;
+    return aUnknown?1:-1;
+  }
+
+  return descending?bDistance-aDistance:aDistance-bDistance;
+}
+
 function isThisWeek(plan:Plan){
   if(plan.startsAt){
     const date=new Date(plan.startsAt);
@@ -92,7 +111,7 @@ export function filterExplorePlans(items:Plan[],options:ExplorePlanOptions):Plan
   });
 
   const descending=options.timeFilter==='all'&&!options.sortAsc;
-  return [...filtered].sort((a,b)=>descending?distanceValue(b.distance)-distanceValue(a.distance):distanceValue(a.distance)-distanceValue(b.distance));
+  return [...filtered].sort((a,b)=>compareByDistance(a,b,descending));
 }
 
 export function planIdentityKey(plan:{backendId?:string;title:string;time:string;place:string}):string{

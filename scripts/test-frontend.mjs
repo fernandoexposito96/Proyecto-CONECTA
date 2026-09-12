@@ -74,6 +74,7 @@ const checks=[
   ['Chat tiene puente de mensajes reales',()=>assert.match(chatBackend,/sendBackendMessage/)],
   ['Chat real no marca como enviado un fallo de red',()=>assert.match(chat,/message not marked as sent/)],
   ['Conversaciones reales vacías siguen visibles',()=>assert.match(chatBackend,/Conversación nueva/)],
+  ['Chat real filtra bloqueos por ID y no por nombre',()=>assert.match(chat,/filter\(real=>real\.userId\?!blockedIds\.has\(real\.userId\):\(real\.isGroup\|\|!blocked\.has\(real\.name\)\)\)/)],
   ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
   ['Sync de bloqueos recuerda solo el estado conocido de la sesión',()=>{assert.match(privacyBackend,/lastDesiredBlockIds/);assert.match(privacyBackend,/prepareBlockSyncUser/)}],
   ['Sync de bloqueos solo elimina IDs previamente conocidos',()=>assert.match(privacyBackend,/lastDesiredBlockIds[\s\S]*filter\(id=>!desired\.has\(id\)&&existing\.has\(id\)\)/)],

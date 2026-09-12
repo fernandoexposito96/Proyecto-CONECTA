@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 export type BackendChatPreview={
   conversationId:string;
   userId?:string;
+  planId?:string;
   name:string;
   avatar?:string;
   message:string;
@@ -82,7 +83,7 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
   if(!conversationIds.length)return [];
 
   const [{data:conversations,error:conversationError},{data:members,error:membersError},latestByConversation]=await Promise.all([
-    supabase.from('conversations').select('id,type,title,created_at').in('id',conversationIds),
+    supabase.from('conversations').select('id,type,title,plan_id,created_at').in('id',conversationIds),
     supabase.from('conversation_members').select('conversation_id,user_id').in('conversation_id',conversationIds),
     loadLatestMessages(conversationIds),
   ]);
@@ -127,10 +128,12 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
     const memberIds=membersByConversation.get(conversationId)||[];
     const otherId=memberIds.find(id=>id&&id!==userId);
     const profile=otherId?profilesById.get(otherId):undefined;
+    const planId=typeof conversation.plan_id==='string'&&conversation.plan_id?conversation.plan_id:undefined;
     return {
       preview:{
         conversationId,
         userId:otherId||undefined,
+        planId,
         name:isGroup?String(conversation.title||'Grupo CONECTA'):(profile?.name||'Conversación'),
         avatar:profile?.avatar,
         message:latest?.content||'Conversación nueva',

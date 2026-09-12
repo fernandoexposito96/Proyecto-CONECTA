@@ -1,0 +1,87 @@
+/* CONECTA — endurecimiento visual y responsive.
+   Corrige desbordes, alturas rígidas, imágenes y solapes sin cambiar la arquitectura. */
+
+/* Contenido largo: nunca debe romper tarjetas o empujar la app fuera de pantalla. */
+:where(.page,.section,.profile-shell,.chat-page,.explore-page,.home-page) :where(h1,h2,h3,p,strong,span,small,label){
+  overflow-wrap:anywhere;
+}
+
+:where(input,textarea,select,button){max-width:100%}
+:where(input,textarea,select){min-width:0}
+
+/* Medios: elimina huecos, deformaciones y fondos blancos cuando una foto tarda en cargar. */
+:where(.home-page,.explore-page,.profile-page,.chat-page) img{
+  background:#ece8f7;
+}
+:where(.home-target-hero,.home-target-plans article,.home-target-escapes article,.discover-person-card,.people-browser-photo,.swipe-card,.person-detail-hero,.profile-cover,.photo-grid) img{
+  object-fit:cover;
+}
+
+/* Overlays y pantallas de altura completa: usar viewport dinámico en móviles. */
+.person-detail-overlay,.story-viewer{min-height:100dvh}
+.story-stage{height:100dvh;max-height:100dvh}
+.person-detail-card{max-height:calc(100dvh - 24px)}
+
+/* Evita que el chat crezca fuera de pantallas bajas. */
+@media(max-width:760px){
+  .chat-thread{min-height:clamp(300px,calc(100dvh - 260px),620px)}
+  .chat-composer{position:relative;z-index:2}
+}
+
+/* Explorar: la tarjeta swipe tenía un mínimo de 500px que no cabía bien en móviles bajos. */
+@media(max-width:760px){
+  .swipe-card{height:clamp(360px,62dvh,610px);min-height:0}
+  .person-detail-hero{height:clamp(300px,52dvh,440px)}
+  .story-caption{font-size:clamp(20px,7vw,29px)}
+}
+
+/* Perfil: evita solapes entre nombre, acciones y avatar en anchos estrechos. */
+@media(max-width:430px){
+  .profile-main h1{white-space:normal;max-width:100%;padding-right:0}
+  .profile-heading{min-width:0}
+  .profile-identity{min-width:0;max-width:100%}
+}
+@media(max-width:380px){
+  .profile-actions{position:static;margin-top:10px;justify-content:flex-start;flex-wrap:wrap}
+  .profile-edit-btn{max-width:100%}
+  .profile-stats{grid-template-columns:1fr}
+  .profile-stats button{grid-template-columns:36px minmax(0,1fr) 14px;min-height:58px;padding:8px 10px}
+  .profile-stat-icon{width:36px;height:36px}
+  .profile-tabs{justify-content:flex-start;gap:4px;overflow-x:auto}
+}
+
+/* Inicio: evita choque de copy y nota decorativa en teléfonos pequeños. */
+@media(max-width:430px){
+  .home-target-copy{max-width:62%}
+  .home-target-note{max-width:30%;right:10px}
+  .home-target-next-copy>strong{font-size:clamp(15px,4.6vw,20px)}
+}
+@media(max-width:360px){
+  .home-target-note{display:none}
+  .home-target-copy{max-width:82%}
+}
+
+/* Carruseles: el primer/último elemento no debe quedar pegado o cortado. */
+:where(.home-target-categories,.home-target-plans,.home-target-people,.home-target-escapes,.story-strip,.people-discovery-strip,.filter-row,.tabs,.swipe-filter-row){
+  scroll-padding-inline:2px;
+}
+
+/* Botones táctiles muy pequeños: conservamos el diseño, pero aseguramos área usable cuando sea posible. */
+@media(pointer:coarse){
+  :where(.profile-tabs button,.filter-row button,.tabs button,.swipe-filter-row button){min-height:40px}
+}
+
+/* Pantallas grandes: evita contenido excesivamente estirado y mantiene lectura cómoda. */
+@media(min-width:1600px){
+  .content{width:min(1440px,100%)}
+  .profile-page{max-width:1020px}
+  .chat-page{max-width:1040px}
+}
+
+/* Orientación horizontal en móviles/tablets: prioriza contenido y reduce alturas decorativas. */
+@media(max-height:560px) and (orientation:landscape){
+  .home-target-hero{height:210px}
+  .profile-cover{height:180px}
+  .swipe-card{height:calc(100dvh - 170px);min-height:300px}
+  .person-detail-hero{height:300px}
+}

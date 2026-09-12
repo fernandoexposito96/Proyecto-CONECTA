@@ -139,8 +139,10 @@ export default function App(){
     }
   };
 
+  const navigationView=view==='Plan'?planReturnView:view;
+
   return <div className="app-shell">
-    <Sidebar view={view} setView={setView}/>
+    <Sidebar view={view} activeView={navigationView} setView={setView}/>
     <main>
       <Header view={view} setView={setView} unreadNotifications={unreadNotifications}/>
       <div className="content">
@@ -156,6 +158,6 @@ export default function App(){
         {view==='Plan'&&selected&&<PlanDetail plan={selected} onClose={closePlan} onOpenChat={openChat} standalone/>}
       </div>
     </main>
-    <BottomNav view={view} setView={setView}/>
+    <BottomNav view={view} activeView={navigationView} setView={setView}/>
   </div>
 }

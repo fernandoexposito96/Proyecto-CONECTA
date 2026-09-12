@@ -5,7 +5,7 @@ import { PlanCards } from '../components/PlanComponents';
 import { categories, people, plans } from '../data/demoData';
 import { filterExplorePlans } from '../lib/planLogic';
 import { blockedNames, canUseLocation, distanceCopy, loadBlockedUsers, loadPrivacySettings } from '../lib/privacy';
-import { isRealUserId } from '../lib/privacyBackend';
+import { addBackendBlock, isRealUserId } from '../lib/privacyBackend';
 import { removeBackendConnection, requestBackendConnection } from '../lib/socialBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { ExploreFilter, PeopleFilter, Person, Plan, Story } from '../types';
@@ -100,6 +100,7 @@ export function ExploreView({onPlan,extraPlans=[],initialFilter='near',initialCa
     setBlocked(previous=>new Set(previous).add(person.name));
     setLiked(previous=>{const next=new Set(previous);next.delete(person.name);return next});
     if(person.userId&&isRealUserId(person.userId)){
+      void addBackendBlock(person.userId).catch(error=>console.warn('CONECTA backend block failed; local block kept',error));
       void removeBackendConnection(person.userId).catch(error=>console.warn('CONECTA connection removal after block failed',error));
     }
     setPersonDetail(null);

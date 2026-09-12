@@ -9,7 +9,8 @@ type ConnectionRow={
 };
 
 async function currentUserId(){
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error}=await supabase.auth.getUser();
+  if(error)throw error;
   return user?.id||null;
 }
 
@@ -74,7 +75,8 @@ export async function loadBackendConnectionIds(){
   const {data,error}=await supabase
     .from('connections')
     .select('requester_id,receiver_id,status')
-    .eq('status','accepted');
+    .eq('status','accepted')
+    .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`);
   if(error)throw error;
 
   const ids=new Set<string>();

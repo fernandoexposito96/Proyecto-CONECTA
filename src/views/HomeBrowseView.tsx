@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ChevronLeft, MapPin } from 'lucide-react';
 import { PlanCards } from '../components/PlanComponents';
 import { categories, escapes, people, plans } from '../data/demoData';
@@ -25,6 +26,12 @@ function plansFor(mode:HomeBrowseMode,category:string|null):Plan[]{
   return plans;
 }
 
+function cleanMatch(value:string){
+  const parsed=Number.parseInt(value.replace(/[^0-9]/g,''),10);
+  if(Number.isNaN(parsed))return value;
+  return `${Math.min(100,Math.max(0,parsed))}%`;
+}
+
 export function HomeBrowseView({mode,category,onBack,onPlan,onBrowse}:{
   mode:HomeBrowseMode;
   category:string|null;
@@ -34,14 +41,30 @@ export function HomeBrowseView({mode,category,onBack,onPlan,onBrowse}:{
 }){
   const title=category?category:modeTitle[mode];
 
+  useEffect(()=>{
+    window.scrollTo({top:0,behavior:'auto'});
+  },[mode,category]);
+
   return <div className="page home-browse-page">
-    <div className="page-title home-browse-title"><div><h1>{title}</h1><p>Descubre opciones desde Inicio</p></div><button type="button" aria-label="Volver a Inicio" onClick={onBack}><ChevronLeft/></button></div>
+    <header className="home-browse-header">
+      <div className="home-browse-heading">
+        <h1>{title}</h1>
+        <p>Descubre opciones desde Inicio</p>
+      </div>
+      <button className="home-browse-back" type="button" aria-label="Volver a Inicio" onClick={onBack}><ChevronLeft/></button>
+    </header>
 
-    {mode==='categories'&&!category&&<section className="home-browse-grid home-browse-categories">{categories.map(([name,image])=><button type="button" key={name} onClick={()=>onBrowse('categories',name)}><img loading="lazy" decoding="async" src={image} alt={name}/><span>{name}</span></button>)}</section>}
+    {mode==='categories'&&!category&&<section className="home-browse-grid home-browse-categories" aria-label="Categorías">{categories.map(([name,image])=><button type="button" key={name} onClick={()=>onBrowse('categories',name)}><img loading="lazy" decoding="async" src={image} alt=""/><span>{name}</span></button>)}</section>}
 
-    {mode==='escapes'&&<section className="home-browse-grid home-browse-escapes">{escapes.map(([name,date,image])=><article key={name} role="button" tabIndex={0} onClick={()=>onPlan({title:name,image,time:date,place:name,distance:'',spots:'8 plazas',category:'Viajes'})} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onPlan({title:name,image,time:date,place:name,distance:'',spots:'8 plazas',category:'Viajes'})}}}><img loading="lazy" decoding="async" src={image} alt={name}/><div><strong>{name}</strong><span><MapPin/>{date}</span></div></article>)}</section>}
+    {mode==='escapes'&&<section className="home-browse-grid home-browse-escapes" aria-label="Escapadas y eventos">{escapes.map(([name,date,image])=><article key={name} role="button" tabIndex={0} onClick={()=>onPlan({title:name,image,time:date,place:name,distance:'',spots:'8 plazas',category:'Viajes'})} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onPlan({title:name,image,time:date,place:name,distance:'',spots:'8 plazas',category:'Viajes'})}}}><img loading="lazy" decoding="async" src={image} alt=""/><div><strong>{name}</strong><span><MapPin/>{date}</span></div></article>)}</section>}
 
-    {mode==='people'&&<section className="home-browse-grid home-browse-people">{people.map(person=><article key={person.name}><img loading="lazy" decoding="async" src={person.image} alt={person.name}/><div><strong>{person.name}, {person.age}</strong><span>{person.match} compatible · {person.distance}</span><small>{person.tags.slice(0,3).join(' · ')}</small></div></article>)}</section>}
+    {mode==='people'&&<section className="home-browse-grid home-browse-people" aria-label="Personas compatibles">{people.map(person=><article className="home-browse-person" key={person.name}>
+      <div className="home-browse-person-photo"><img loading="lazy" decoding="async" src={person.image} alt={`Foto de ${person.name}`}/><span>{cleanMatch(person.match)} compatible</span></div>
+      <div className="home-browse-person-body">
+        <div className="home-browse-person-main"><strong>{person.name}, {person.age}</strong><span>{person.distance}</span></div>
+        <p>{person.tags.slice(0,3).join(' · ')}</p>
+      </div>
+    </article>)}</section>}
 
     {mode!=='categories'&&mode!=='escapes'&&mode!=='people'&&<PlanCards items={plansFor(mode,category)} onPlan={onPlan}/>} 
     {mode==='categories'&&category&&<PlanCards items={plansFor(mode,category)} onPlan={onPlan}/>} 

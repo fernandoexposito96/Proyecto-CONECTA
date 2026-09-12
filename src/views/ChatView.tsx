@@ -114,8 +114,14 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   },[activeItem?.conversationId]);
 
   const visible=useMemo(()=>items.filter(item=>{
-    if(tab==='Grupos'&&!item.isGroup)return false;
-    if(tab==='Planes'&&item.isGroup)return false;
+    if(tab==='Grupos'){
+      if(!item.isGroup)return false;
+      if(item.conversationId&&item.planId)return false;
+    }
+    if(tab==='Planes'){
+      if(item.conversationId&&!item.planId)return false;
+      if(!item.conversationId&&item.isGroup)return false;
+    }
     const q=query.trim().toLocaleLowerCase('es');
     return !q||`${item.name} ${item.msg}`.toLocaleLowerCase('es').includes(q);
   }),[items,tab,query]);

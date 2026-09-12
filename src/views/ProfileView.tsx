@@ -4,7 +4,7 @@ import { countMyPlanMemberships } from '../lib/attendanceBackend';
 import { accountFromUser, avatarFromUser, demoAccount, demoAvatar, isDemoAccount } from '../lib/identity';
 import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { loadBackendConnectionIds } from '../lib/socialBackend';
-import { loadStored, saveStored, storageKeys } from '../lib/storage';
+import { loadStored, saveStored, storageChangeEvent, storageKeys } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 import { loadIdentityVerification } from '../lib/verificationBackend';
 import type { AccountSettings, Plan, ProfileTab, View } from '../types';
@@ -16,7 +16,7 @@ const emptyBio='Añade una biografía desde Editar perfil.';
 
 export function ProfileView({setView}:{setView:(v:View)=>void}){
   const [privacy]=useState(loadPrivacySettings);
-  const [blocked]=useState<Set<string>>(()=>blockedNames());
+  const [blocked,setBlocked]=useState<Set<string>>(()=>blockedNames());
   const [tab,setTab]=useState<ProfileTab>('Fotos');
   const [editing,setEditing]=useState(false);
   const [account,setAccount]=useState<AccountSettings>(()=>loadStored(storageKeys.settingsAccount,demoAccount));
@@ -32,6 +32,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
   const [realJoinedCount,setRealJoinedCount]=useState(0);
   const [realCreatedCount,setRealCreatedCount]=useState(0);
   const [realConnectionCount,setRealConnectionCount]=useState(0);
+  const [statsRevision,setStatsRevision]=useState(0);
   const locationAllowed=canUseLocation(privacy);
 
   useEffect(()=>{
@@ -88,6 +89,41 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
     return ()=>{active=false};
   },[]);
 
+  useEffect(()=>{
+    const localStatKeys=new Set<string>([
+      storageKeys.createdPlans,
+      storageKeys.joinedPlans,
+      storageKeys.connections,
+      storageKeys.planFavorites,
+      storageKeys.blockedUsers,
+    ]);
+    const refreshLocal=()=>{
+      setBlocked(blockedNames());
+      setStatsRevision(value=>value+1);
+    };
+    const refreshReal=()=>{
+      void Promise.allSettled([countMyPlanMemberships(),loadBackendConnectionIds()]).then(results=>{
+        const memberships=results[0];
+        const connections=results[1];
+        if(memberships.status==='fulfilled')setRealJoinedCount(memberships.value);
+        if(connections.status==='fulfilled')setRealConnectionCount(connections.value.size);
+      });
+    };
+    const onStorageChange=(event:Event)=>{
+      const detail=(event as CustomEvent<{key?:string}>).detail;
+      if(detail?.key&&localStatKeys.has(detail.key))refreshLocal();
+    };
+    const onFocus=()=>refreshReal();
+    window.addEventListener(storageChangeEvent,onStorageChange);
+    window.addEventListener('storage',refreshLocal);
+    window.addEventListener('focus',onFocus);
+    return ()=>{
+      window.removeEventListener(storageChangeEvent,onStorageChange);
+      window.removeEventListener('storage',refreshLocal);
+      window.removeEventListener('focus',onFocus);
+    };
+  },[]);
+
   useEffect(()=>{saveStored(storageKeys.profileBio,bio)},[bio]);
 
   const displayBio=bio||(isDemoAccount(account)?demoBio:emptyBio);
@@ -132,7 +168,7 @@ export function ProfileView({setView}:{setView:(v:View)=>void}){
       favorites:favorites.length,
       newConnections:connectionCount,
     };
-  },[account,blocked,realCreatedCount,realJoinedCount,realConnectionCount]);
+  },[account,blocked,realCreatedCount,realJoinedCount,realConnectionCount,statsRevision]);
 
   const visibleInterests=interests.length?interests.slice(0,3):['Viajes','Gastronomía','Naturaleza'];
 

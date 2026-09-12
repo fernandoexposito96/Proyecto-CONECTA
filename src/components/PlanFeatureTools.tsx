@@ -8,7 +8,7 @@ function errorMessage(error:unknown){
   return error instanceof Error?error.message:'No se ha podido completar la acción.';
 }
 
-export function PlanFeatureTools({plan,onOpenChat}:{plan:Plan;onOpenChat?:(name:string)=>void}){
+export function PlanFeatureTools({plan,onOpenChat}:{plan:Plan;onOpenChat?:(name:string,planId?:string)=>void}){
   const planId=plan.backendId||'';
   const [polls,setPolls]=useState<PlanPoll[]>([]);
   const [pollLoading,setPollLoading]=useState(Boolean(planId));
@@ -122,7 +122,7 @@ export function PlanFeatureTools({plan,onOpenChat}:{plan:Plan;onOpenChat?:(name:
   if(!planId)return <div className="plan-tools plan-tools-demo"><strong>Herramientas del plan</strong><p>Encuestas, invitaciones y check-in se activan en planes sincronizados con CONECTA. Este plan sigue siendo parte del demo actual.</p></div>;
 
   return <section className="plan-tools" aria-label="Herramientas del plan">
-    <div className="plan-tools-head"><div><small>GRUPO</small><strong>Herramientas del plan</strong></div><div className="plan-tools-actions"><button type="button" disabled={busy} onClick={()=>{void shareInvite()}}><Link2/> Invitar</button>{onOpenChat&&<button type="button" onClick={()=>onOpenChat(plan.title)}><MessageCircle/> Chat</button>}</div></div>
+    <div className="plan-tools-head"><div><small>GRUPO</small><strong>Herramientas del plan</strong></div><div className="plan-tools-actions"><button type="button" disabled={busy} onClick={()=>{void shareInvite()}}><Link2/> Invitar</button>{onOpenChat&&<button type="button" onClick={()=>onOpenChat(plan.title,planId)}><MessageCircle/> Chat</button>}</div></div>
 
     <div className="plan-tool-card">
       <div className="plan-tool-title"><Vote/><div><strong>Encuesta de grupo</strong><span>Decidid sitio u hora antes de confirmar.</span></div><button type="button" disabled={busy} onClick={()=>setShowPollForm(value=>!value)}>{showPollForm?'Cerrar':'+ Nueva'}</button></div>

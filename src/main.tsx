@@ -46,3 +46,13 @@ createRoot(root).render(
     </ErrorBoundary>
   </StrictMode>,
 );
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    if(!import.meta.env.PROD)return;
+    const serviceWorkerUrl=new URL('sw.js',document.baseURI);
+    void navigator.serviceWorker.register(serviceWorkerUrl,{updateViaCache:'none'})
+      .then(registration=>registration.update())
+      .catch(error=>console.warn('CONECTA: no se pudo registrar el service worker',error));
+  });
+}

@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite",
     "verify": "node scripts/verify-structure.mjs",
+    "lint": "node scripts/lint.mjs",
     "test:frontend": "node scripts/test-frontend.mjs",
     "test:features": "node scripts/test-feature-round.mjs",
     "test:react": "node scripts/test-react.mjs",
     "test:logic": "node scripts/test-logic.mjs",
-    "check": "npm run verify && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && tsc --noEmit",
+    "check": "npm run verify && npm run lint && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview"
   },

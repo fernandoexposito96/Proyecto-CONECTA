@@ -17,6 +17,14 @@
   object-fit:cover;
 }
 
+/* Reduce trabajo de render de bloques que aún están fuera de pantalla sin alterar el layout. */
+@supports (content-visibility:auto){
+  :where(.home-target-section,.home-page>.section,.premium-banner,.explore-social-block,.category-grid,.plan-grid,.photo-grid){
+    content-visibility:auto;
+    contain-intrinsic-size:auto 320px;
+  }
+}
+
 /* Overlays y pantallas de altura completa: usar viewport dinámico en móviles. */
 .person-detail-overlay,.story-viewer{min-height:100dvh}
 .story-stage{height:100dvh;max-height:100dvh}

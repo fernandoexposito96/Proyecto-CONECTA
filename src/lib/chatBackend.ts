@@ -16,10 +16,56 @@ export type BackendChatMessage={
   createdAt:string;
 };
 
+type LatestMessage={content:string;createdAt:string};
+
 export async function backendCurrentUserId(){
   const {data:{user},error}=await supabase.auth.getUser();
   if(error)throw error;
   return user?.id||null;
+}
+
+async function loadLatestMessages(conversationIds:string[]){
+  const latestByConversation=new Map<string,LatestMessage|null>();
+  if(!conversationIds.length)return latestByConversation;
+
+  const batchLimit=Math.min(2000,Math.max(100,conversationIds.length*20));
+  const {data:recentMessages,error:recentError}=await supabase
+    .from('messages')
+    .select('conversation_id,content,created_at')
+    .in('conversation_id',conversationIds)
+    .order('created_at',{ascending:false})
+    .limit(batchLimit);
+  if(recentError)throw recentError;
+
+  for(const message of recentMessages||[]){
+    const conversationId=String(message.conversation_id||'');
+    if(!conversationId||latestByConversation.has(conversationId))continue;
+    latestByConversation.set(conversationId,{
+      content:String(message.content||''),
+      createdAt:String(message.created_at||''),
+    });
+  }
+
+  const missingIds=conversationIds.filter(id=>!latestByConversation.has(id));
+  if(missingIds.length){
+    const fallbackEntries=await Promise.all(missingIds.map(async conversationId=>{
+      const {data,error}=await supabase
+        .from('messages')
+        .select('content,created_at')
+        .eq('conversation_id',conversationId)
+        .order('created_at',{ascending:false})
+        .limit(1)
+        .maybeSingle();
+      if(error)throw error;
+      return [conversationId,data?{
+        content:String(data.content||''),
+        createdAt:String(data.created_at||''),
+      }:null] as const;
+    }));
+    for(const [conversationId,latest] of fallbackEntries)latestByConversation.set(conversationId,latest);
+  }
+
+  return latestByConversation;
 }
 
 export async function loadBackendChats():Promise<BackendChatPreview[]>{
@@ -35,25 +81,23 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
   const conversationIds=[...new Set((ownMemberships||[]).map(row=>String(row.conversation_id||'')).filter(Boolean))];
   if(!conversationIds.length)return [];
 
-  const [{data:conversations,error:conversationError},{data:members,error:membersError}]=await Promise.all([
+  const [{data:conversations,error:conversationError},{data:members,error:membersError},latestByConversation]=await Promise.all([
     supabase.from('conversations').select('id,type,title,created_at').in('id',conversationIds),
     supabase.from('conversation_members').select('conversation_id,user_id').in('conversation_id',conversationIds),
+    loadLatestMessages(conversationIds),
   ]);
   if(conversationError)throw conversationError;
   if(membersError)throw membersError;
 
-  const latestEntries=await Promise.all(conversationIds.map(async conversationId=>{
-    const {data,error}=await supabase
-      .from('messages')
-      .select('content,created_at')
-      .eq('conversation_id',conversationId)
-      .order('created_at',{ascending:false})
-      .limit(1)
-      .maybeSingle();
-    if(error)throw error;
-    return [conversationId,data?{content:String(data.content||''),createdAt:String(data.created_at||'')}:null] as const;
-  }));
-  const latestByConversation=new Map(latestEntries);
+  const membersByConversation=new Map<string,string[]>();
+  for(const member of members||[]){
+    const conversationId=String(member.conversation_id||'');
+    const memberId=String(member.user_id||'');
+    if(!conversationId||!memberId)continue;
+    const list=membersByConversation.get(conversationId)||[];
+    list.push(memberId);
+    membersByConversation.set(conversationId,list);
+  }
 
   const otherUserIds=[...new Set((members||[])
     .map(row=>String(row.user_id||''))
@@ -80,9 +124,7 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
     const conversationId=String(conversation.id||'');
     const latest=latestByConversation.get(conversationId);
     const isGroup=String(conversation.type||'direct')!=='direct';
-    const memberIds=(members||[])
-      .filter(member=>String(member.conversation_id||'')===conversationId)
-      .map(member=>String(member.user_id||''));
+    const memberIds=membersByConversation.get(conversationId)||[];
     const otherId=memberIds.find(id=>id&&id!==userId);
     const profile=otherId?profilesById.get(otherId):undefined;
     return {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, CheckCircle2, MessageCircle } from 'lucide-react';
 import { fetchBackendNotifications, markBackendNotificationRead } from '../lib/notificationsBackend';
-import { loadStored, storageKeys } from '../lib/storage';
+import { loadStored, storageChangeEvent, storageKeys } from '../lib/storage';
 import type { ToggleKey } from '../types';
 
 const defaultToggles:Record<ToggleKey,boolean>={messages:true,requests:true,planUpdates:true,reminders:true,news:true,offers:true};
@@ -52,7 +52,7 @@ function relativeTime(value:string){
 }
 
 export function NotificationsView({onUnreadCountChange,onOpenPlanChat}:{onUnreadCountChange?:(count:number)=>void;onOpenPlanChat?:(planTitle:string)=>void}){
-  const [toggles]=useState<Record<ToggleKey,boolean>>(()=>loadStored(storageKeys.notificationToggles,defaultToggles));
+  const [toggles,setToggles]=useState<Record<ToggleKey,boolean>>(()=>loadStored(storageKeys.notificationToggles,defaultToggles));
   const [items,setItems]=useState<NotificationItem[]>(demoNotifications);
   const [usingDemo,setUsingDemo]=useState(true);
   const [loading,setLoading]=useState(true);
@@ -65,6 +65,20 @@ export function NotificationsView({onUnreadCountChange,onOpenPlanChat}:{onUnread
     const count=rows.filter(row=>!row.read&&toggles[toggleForType(row.type)]).length;
     if(version===unreadRequestVersion.current)onUnreadCountChange?.(count);
   },[onUnreadCountChange,toggles]);
+
+  useEffect(()=>{
+    const refreshToggles=()=>setToggles(loadStored(storageKeys.notificationToggles,defaultToggles));
+    const onStorageChange=(event:Event)=>{
+      const detail=(event as CustomEvent<{key?:string}>).detail;
+      if(detail?.key===storageKeys.notificationToggles)refreshToggles();
+    };
+    window.addEventListener(storageChangeEvent,onStorageChange);
+    window.addEventListener('storage',refreshToggles);
+    return ()=>{
+      window.removeEventListener(storageChangeEvent,onStorageChange);
+      window.removeEventListener('storage',refreshToggles);
+    };
+  },[]);
 
   useEffect(()=>{
     let active=true;

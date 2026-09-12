@@ -66,7 +66,7 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
 
   const items=useMemo<ChatItem[]>(()=>{
     const realItems:ChatItem[]=backendChats
-      .filter(real=>!((real.userId&&blockedIds.has(real.userId))||(!real.isGroup&&blocked.has(real.name))))
+      .filter(real=>real.userId?!blockedIds.has(real.userId):(real.isGroup||!blocked.has(real.name)))
       .map((real,index)=>({
         name:real.name,
         msg:real.message,

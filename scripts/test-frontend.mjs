@@ -85,7 +85,7 @@ const checks=[
   ['Crear plan espera el resultado de sincronización',()=>assert.match(createPlan,/await onCreate\(plan\)/)],
   ['Tarjetas de plan tienen navegación por teclado',()=>assert.match(plans,/tabIndex=\{0\}/)],
   ['Explora abre los planes como pantalla dedicada',()=>{assert.match(app,/const openExplorePlan=\(plan:Plan\)=>openPlan\(plan,'Explora'\)/);assert.match(app,/onPlan=\{openExplorePlan\}/);assert.doesNotMatch(app,/view!==['"]Plan['"]&&selected/)}],
-  ['Seguimiento del organizador se recalcula por organizador real',()=>{assert.match(plans,/setFollowing\(current\.has\(organizerName\)\)/);assert.match(plans,/const toggleFollowing=/);assert.match(plans,/onClick=\{toggleFollowing\}/)}],
+  ['Seguimiento del organizador usa identidad única en usuarios reales',()=>{assert.match(plans,/const organizerFollowKey=social\?\.organizer\?\.id\?`user:\$\{social\.organizer\.id\}`:organizerName/);assert.match(plans,/setFollowing\(current\.has\(organizerFollowKey\)\)/);assert.match(plans,/next\?current\.add\(organizerFollowKey\):current\.delete\(organizerFollowKey\)/);assert.match(plans,/onClick=\{toggleFollowing\}/)}],
 ];
 
 for(const [name,check] of checks){

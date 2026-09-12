@@ -43,16 +43,17 @@ export function PlanDetail({plan,onClose,onOpenChat,standalone=false}:{plan:Plan
 
   const organizerName=social?.organizer?.name||demoOrganizer;
   const organizerAvatar=social?.organizer?.avatar||'./assets/images/photo-1494790108377-be9c29b29330.jpg';
+  const organizerFollowKey=social?.organizer?.id?`user:${social.organizer.id}`:organizerName;
 
   useEffect(()=>{
     const current=new Set(loadStored<string[]>(storageKeys.organizerFollows,[]));
-    setFollowing(current.has(organizerName));
-  },[organizerName]);
+    setFollowing(current.has(organizerFollowKey));
+  },[organizerFollowKey]);
 
   const toggleFollowing=()=>{
     const next=!following;
     const current=new Set(loadStored<string[]>(storageKeys.organizerFollows,[]));
-    next?current.add(organizerName):current.delete(organizerName);
+    next?current.add(organizerFollowKey):current.delete(organizerFollowKey);
     saveStored(storageKeys.organizerFollows,[...current]);
     setFollowing(next);
   };

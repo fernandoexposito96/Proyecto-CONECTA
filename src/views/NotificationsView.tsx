@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, CheckCircle2, MessageCircle } from 'lucide-react';
-import { fetchBackendNotifications, fetchUnreadNotificationCount, markBackendNotificationRead } from '../lib/notificationsBackend';
+import { fetchBackendNotifications, markBackendNotificationRead } from '../lib/notificationsBackend';
 import { loadStored, storageKeys } from '../lib/storage';
 import type { ToggleKey } from '../types';
 
@@ -61,9 +61,10 @@ export function NotificationsView({onUnreadCountChange,onOpenPlanChat}:{onUnread
 
   const refreshUnreadCount=useCallback(async()=>{
     const version=++unreadRequestVersion.current;
-    const count=await fetchUnreadNotificationCount();
+    const rows=await fetchBackendNotifications(200);
+    const count=rows.filter(row=>!row.read&&toggles[toggleForType(row.type)]).length;
     if(version===unreadRequestVersion.current)onUnreadCountChange?.(count);
-  },[onUnreadCountChange]);
+  },[onUnreadCountChange,toggles]);
 
   useEffect(()=>{
     let active=true;

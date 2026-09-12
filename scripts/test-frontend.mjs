@@ -78,6 +78,7 @@ const checks=[
   ['Sync de bloqueos recuerda solo el estado conocido de la sesión',()=>{assert.match(privacyBackend,/lastDesiredBlockIds/);assert.match(privacyBackend,/prepareBlockSyncUser/)}],
   ['Sync de bloqueos solo elimina IDs previamente conocidos',()=>assert.match(privacyBackend,/lastDesiredBlockIds[\s\S]*filter\(id=>!desired\.has\(id\)&&existing\.has\(id\)\)/)],
   ['Auth no queda bloqueado si falla la inicialización',()=>assert.match(authGate,/setReady\(true\)/)],
+  ['Auth conserva sincronización cloud si falla la hidratación',()=>assert.match(authGate,/catch\(error\)[\s\S]*if\(nextSession\)setCloudStorageWriter\(queueCloudStateSave\)/)],
   ['Auth limpia la cola al cambiar de sesión',()=>assert.match(authGate,/resetCloudStateQueue\(\)/)],
   ['Auth exige 8 caracteres solo al crear cuenta',()=>{assert.match(authGate,/if\(mode==='signup'&&password\.length<8\)/);assert.match(authGate,/minLength=\{mode==='signup'\?8:undefined\}/);assert.doesNotMatch(authGate,/if\(!cleanEmail\|\|password\.length<8\)/)}],
   ['Login permite que Supabase valide contraseñas legacy',()=>assert.match(authGate,/if\(mode==='login'\)[\s\S]*signInWithPassword/)],

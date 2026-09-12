@@ -49,6 +49,7 @@ export function AuthGate({children}:{children:ReactNode}){
       }catch(error){
         console.warn('CONECTA cloud hydration failed; local state kept available',error);
         if(active&&version===prepareVersion){
+          if(nextSession)setCloudStorageWriter(queueCloudStateSave);
           initializedUserId=nextUserId;
           setReady(true);
         }

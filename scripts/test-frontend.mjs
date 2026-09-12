@@ -83,6 +83,8 @@ const checks=[
   ['Login permite que Supabase valide contraseñas legacy',()=>assert.match(authGate,/if\(mode==='login'\)[\s\S]*signInWithPassword/)],
   ['Crear plan espera el resultado de sincronización',()=>assert.match(createPlan,/await onCreate\(plan\)/)],
   ['Tarjetas de plan tienen navegación por teclado',()=>assert.match(plans,/tabIndex=\{0\}/)],
+  ['Explora abre los planes como pantalla dedicada',()=>{assert.match(app,/const openExplorePlan=\(plan:Plan\)=>openPlan\(plan,'Explora'\)/);assert.match(app,/onPlan=\{openExplorePlan\}/);assert.doesNotMatch(app,/view!==['"]Plan['"]&&selected/)}],
+  ['Seguimiento del organizador se recalcula por organizador real',()=>{assert.match(plans,/setFollowing\(current\.has\(organizerName\)\)/);assert.match(plans,/const toggleFollowing=/);assert.match(plans,/onClick=\{toggleFollowing\}/)}],
 ];
 
 for(const [name,check] of checks){

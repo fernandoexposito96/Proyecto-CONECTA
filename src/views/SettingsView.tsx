@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BadgeCheck, ChevronRight, CircleHelp, Database, LockKeyhole, Mail, MessageCircleMore, ShieldCheck } from 'lucide-react';
 import { accountFromUser, demoAccount } from '../lib/identity';
+import { loadProfilePrivacySettings, removeBackendBlock, saveProfilePrivacySetting, syncBackendBlocks } from '../lib/privacyBackend';
 import { saveAccountIdentity, submitSupportRequest } from '../lib/settingsBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import { supabase } from '../lib/supabase';
@@ -66,6 +67,15 @@ export function SettingsView(){
     return ()=>{active=false};
   },[]);
 
+  useEffect(()=>{
+    let active=true;
+    const current=loadStored<PrivacySettings>(storageKeys.privacySettings,defaultPrivacy);
+    void loadProfilePrivacySettings(current).then(remote=>{
+      if(active&&remote)setPrivacy(remote);
+    }).catch(error=>console.warn('CONECTA privacy load failed; local privacy kept',error));
+    return ()=>{active=false};
+  },[]);
+
   useEffect(()=>{saveStored(storageKeys.notificationToggles,toggles)},[toggles]);
   useEffect(()=>{saveStored(storageKeys.notificationFrequency,frequency)},[frequency]);
   useEffect(()=>{
@@ -80,7 +90,10 @@ export function SettingsView(){
   useEffect(()=>{saveStored(storageKeys.premiumRequested,premiumStarted)},[premiumStarted]);
   useEffect(()=>{saveStored(storageKeys.settingsAccount,account)},[account]);
   useEffect(()=>{saveStored(storageKeys.privacySettings,privacy)},[privacy]);
-  useEffect(()=>{saveStored(storageKeys.blockedUsers,blockedUsers)},[blockedUsers]);
+  useEffect(()=>{
+    saveStored(storageKeys.blockedUsers,blockedUsers);
+    void syncBackendBlocks(blockedUsers).catch(error=>console.warn('CONECTA block sync failed; local blocks kept',error));
+  },[blockedUsers]);
 
   const flash=(text:string)=>{
     setNotice(text);
@@ -145,11 +158,13 @@ export function SettingsView(){
   };
   const setPrivacyValue=<K extends PrivacyFieldKey>(key:K,value:PrivacySettings[K])=>{
     setPrivacy(current=>({...current,[key]:value}));
+    void saveProfilePrivacySetting(key,value).catch(error=>console.warn('CONECTA privacy save failed; local preference kept',error));
     flash('Preferencia guardada');
   };
   const unblockUser=(userId:string)=>{
     const user=blockedUsers.find(item=>item.userId===userId);
     setBlockedUsers(current=>current.filter(item=>item.userId!==userId));
+    void removeBackendBlock(userId).catch(error=>console.warn('CONECTA backend unblock failed; local unblock kept',error));
     flash(user?`${user.name} desbloqueado`:'Usuario desbloqueado');
   };
   const downloadData=()=>{

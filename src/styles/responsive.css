@@ -1,0 +1,140 @@
+/* CONECTA — capa responsive final.
+   Objetivo: conservar el diseño y la funcionalidad, evitando desbordes o roturas
+   desde teléfonos pequeños hasta monitores grandes. Cargar SIEMPRE al final. */
+
+:root{
+  --layout-max:1440px;
+  --layout-gutter:clamp(16px,2.2vw,34px);
+}
+
+html,body,#app,.app-shell{width:100%;max-width:100%}
+body{min-width:0}
+main,.content,.page,.section{min-width:0;max-width:100%}
+.content{width:min(var(--layout-max),100%);padding-left:var(--layout-gutter);padding-right:var(--layout-gutter)}
+
+/* Ningún medio puede empujar el layout fuera de pantalla. */
+img,video,canvas,svg{max-width:100%}
+img,video{height:auto}
+iframe{max-width:100%}
+input,select,textarea,button{max-width:100%}
+
+/* Evita que textos largos, nombres, emails o URLs rompan tarjetas. */
+.page,.section,.section-head,.page-title,
+.home-target-copy,.home-target-next-copy,.premium-banner{
+  overflow-wrap:anywhere;
+}
+
+/* Pantallas grandes: más aire sin estirar el contenido hasta el infinito. */
+@media (min-width:1600px){
+  :root{--layout-max:1500px;--layout-gutter:38px}
+  .content{padding-top:32px}
+  .home-target-hero{height:390px}
+}
+
+@media (min-width:2000px){
+  :root{--layout-max:1580px;--layout-gutter:44px}
+}
+
+/* Portátiles y tablets horizontales. */
+@media (min-width:761px) and (max-width:1180px){
+  :root{--layout-gutter:clamp(18px,2vw,24px)}
+  .content{padding-top:22px;padding-bottom:48px}
+  .section{padding:18px}
+  .page-title h1{font-size:clamp(29px,3vw,34px)}
+  .section-head h2{font-size:clamp(22px,2.35vw,27px)}
+
+  .home-target-hero{height:clamp(285px,31vw,350px)}
+  .home-target-copy{left:clamp(24px,3vw,34px);top:clamp(30px,4vw,42px);max-width:55%}
+  .home-target-copy h1{font-size:clamp(39px,5vw,52px)}
+  .home-target-copy p{font-size:clamp(14px,1.7vw,17px)}
+  .home-target-note{right:clamp(22px,3vw,32px);font-size:clamp(17px,2vw,21px)}
+  .home-target-next{grid-template-columns:clamp(112px,15vw,154px) minmax(0,1fr) 46px;gap:14px}
+  .home-target-next>img{width:100%;height:96px}
+  .home-target-next-copy>strong{font-size:clamp(21px,2.5vw,26px)}
+}
+
+/* Móvil: medidas fluidas y seguras. */
+@media (max-width:760px){
+  :root{--layout-gutter:var(--mobile-gutter)}
+
+  .content{
+    padding-left:var(--mobile-gutter);
+    padding-right:var(--mobile-gutter);
+    overflow-x:clip;
+  }
+
+  .section-head,.page-title{min-width:0}
+  .section-head h2,.page-title h1{min-width:0}
+
+  /* Los carruseles respetan el borde de pantalla y no dejan tarjetas cortadas. */
+  .filter-row,.tabs,
+  .home-target-categories,.home-target-plans,.home-target-people,.home-target-escapes{
+    max-width:100%;
+    overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .home-target-categories,.home-target-plans,.home-target-people,.home-target-escapes{
+    scroll-padding-inline:2px;
+  }
+
+  .home-target-next{width:100%;max-width:100%}
+  .home-target-next-copy>strong,.home-target-meta{min-width:0}
+
+  .premium-banner{padding:20px 18px}
+  .premium-banner h2{font-size:clamp(22px,7vw,27px)}
+  .home-footer-note{padding-left:14px;padding-right:14px}
+}
+
+/* Teléfonos estrechos. */
+@media (max-width:430px){
+  :root{--mobile-gutter:14px}
+  .content{padding-top:12px}
+  .section{padding:14px;border-radius:19px}
+  .section-head{gap:9px}
+  .section-head h2{font-size:21px}
+  .page-title{gap:10px}
+  .page-title h1{font-size:clamp(27px,8vw,30px)}
+
+  .home-target-head{gap:8px}
+  .home-target-head h2{font-size:21px}
+  .home-target-head button{font-size:12px}
+  .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .quick-grid>button{min-width:0;padding:12px}
+}
+
+/* Móviles muy pequeños: nada debe salirse ni quedar inutilizable. */
+@media (max-width:360px){
+  :root{--mobile-gutter:11px}
+  .content{padding-top:10px}
+  .section{padding:12px;border-radius:17px}
+  .page-title h1{font-size:26px}
+  .page-title>button{width:38px;height:38px;flex-basis:38px}
+
+  .home-target-hero{height:205px}
+  .home-target-copy{left:13px;top:20px;max-width:210px}
+  .home-target-copy h1{font-size:30px}
+  .home-target-copy p{font-size:10px}
+  .home-target-note{right:10px;top:21px;font-size:12px;max-width:90px}
+
+  .home-target-next{grid-template-columns:70px minmax(0,1fr) 26px;gap:7px;padding:7px 8px}
+  .home-target-next>img{height:70px;border-radius:14px}
+  .home-target-next-copy>strong{font-size:16px}
+  .home-target-meta{font-size:10px}
+
+  .quick-grid{grid-template-columns:1fr}
+  .bottom-nav{padding-left:4px;padding-right:4px}
+  .bottom-nav>button span{font-size:9px}
+  .bottom-nav .create{width:50px;min-width:50px;height:50px}
+}
+
+/* Altura reducida: útil en móviles apaisados y ventanas pequeñas. */
+@media (max-height:560px) and (max-width:900px){
+  .content{padding-top:10px}
+  .home-target-hero{max-height:220px}
+}
+
+/* El zoom de accesibilidad no debe provocar scroll horizontal global. */
+@supports (overflow:clip){
+  body,.app-shell,main{overflow-x:clip}
+}

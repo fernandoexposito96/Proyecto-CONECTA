@@ -38,6 +38,7 @@ export default function App(){
   const [homeBrowseMode,setHomeBrowseMode]=useState<HomeBrowseMode>('all');
   const [homeBrowseCategory,setHomeBrowseCategory]=useState<string|null>(null);
   const [chatTarget,setChatTarget]=useState<string|null>(null);
+  const [chatPlanId,setChatPlanId]=useState<string|null>(null);
   const [unreadNotifications,setUnreadNotifications]=useState(0);
 
   useEffect(()=>{saveStored(storageKeys.createdPlans,createdPlans)},[createdPlans]);
@@ -101,9 +102,10 @@ export default function App(){
     setHomeBrowseCategory(category);
     setView('HomeBrowse');
   };
-  const openChat=(name?:string)=>{
+  const openChat=(name?:string,planId?:string)=>{
     setSelected(null);
     setChatTarget(name||null);
+    setChatPlanId(planId||null);
     setView('Chat');
   };
   const openPlan=(plan:Plan,returnView:View)=>{
@@ -149,7 +151,7 @@ export default function App(){
         {view==='Inicio'&&<HomeView setView={setView} onPlan={openHomePlan} onBrowse={openHomeBrowse}/>} 
         {view==='HomeBrowse'&&<HomeBrowseView mode={homeBrowseMode} category={homeBrowseCategory} onBack={()=>setView('Inicio')} onPlan={openHomeBrowsePlan} onBrowse={openHomeBrowse}/>} 
         {view==='Explora'&&<ExploreView onPlan={openExplorePlan} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} 
-        {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
+        {view==='Chat'&&<ChatView initialContact={chatTarget} initialPlanId={chatPlanId}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
         {view==='Ajustes'&&<SettingsView/>}
         {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications} onOpenPlanChat={openChat}/>} 

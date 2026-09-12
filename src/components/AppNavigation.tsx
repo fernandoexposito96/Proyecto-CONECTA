@@ -4,24 +4,24 @@ import { accountFromUser, avatarFromUser, demoAccount, demoAvatar } from '../lib
 import { supabase } from '../lib/supabase';
 import type { View } from '../types';
 
-const isHomeFlow=(view:View)=>view==='Inicio'||view==='HomeBrowse'||view==='Plan';
+const isHomeFlow=(view:View)=>view==='Inicio'||view==='HomeBrowse';
 
-export function BottomNav({view,setView}:{view:View,setView:(v:View)=>void}){
+export function BottomNav({view,setView,activeView=view}:{view:View;setView:(v:View)=>void;activeView?:View}){
   return <nav className="bottom-nav" aria-label="Navegación principal">
-    <button type="button" className={isHomeFlow(view)?'active':''} onClick={()=>setView('Inicio')}><Home/><span>Inicio</span></button>
-    <button type="button" className={view==='Explora'?'active':''} onClick={()=>setView('Explora')}><Search/><span>Explora</span></button>
-    <button type="button" className={`create ${view==='Crear'?'active':''}`} aria-label="Crear plan" onClick={()=>setView('Crear')}><Plus/></button>
-    <button type="button" className={view==='Chat'?'active':''} onClick={()=>setView('Chat')}><MessageCircle/><span>Chat</span></button>
-    <button type="button" className={view==='Perfil'||view==='Ajustes'?'active':''} onClick={()=>setView('Perfil')}><CircleUserRound/><span>Perfil</span></button>
+    <button type="button" className={isHomeFlow(activeView)?'active':''} onClick={()=>setView('Inicio')}><Home/><span>Inicio</span></button>
+    <button type="button" className={activeView==='Explora'?'active':''} onClick={()=>setView('Explora')}><Search/><span>Explora</span></button>
+    <button type="button" className={`create ${activeView==='Crear'?'active':''}`} aria-label="Crear plan" onClick={()=>setView('Crear')}><Plus/></button>
+    <button type="button" className={activeView==='Chat'?'active':''} onClick={()=>setView('Chat')}><MessageCircle/><span>Chat</span></button>
+    <button type="button" className={activeView==='Perfil'||activeView==='Ajustes'?'active':''} onClick={()=>setView('Perfil')}><CircleUserRound/><span>Perfil</span></button>
   </nav>
 }
 
-export function Sidebar({view,setView}:{view:View,setView:(v:View)=>void}){
+export function Sidebar({view,setView,activeView=view}:{view:View;setView:(v:View)=>void;activeView?:View}){
   const items:[View,typeof Home][]=[['Inicio',Home],['Explora',Compass],['Chat',MessageCircle],['Perfil',CircleUserRound],['Ajustes',Settings]];
   return <aside className="sidebar">
     <div className="brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div>
     <nav aria-label="Navegación lateral">{items.map(([label,Icon])=>{
-      const active=label==='Inicio'?isHomeFlow(view):view===label;
+      const active=label==='Inicio'?isHomeFlow(activeView):activeView===label;
       return <button type="button" key={label} className={active?'active':''} onClick={()=>setView(label)}><Icon/><span>{label}</span></button>;
     })}</nav>
     <div className="premium-box"><Crown/><strong>CONECTA Premium</strong><span>Más planes. Más personas. Más vida.</span><button type="button" onClick={()=>setView('Ajustes')}>Ver Premium</button></div>

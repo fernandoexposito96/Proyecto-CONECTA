@@ -26,6 +26,14 @@ export function blockedNames():Set<string>{
   return new Set(loadBlockedUsers().map(user=>user.name));
 }
 
+export function blockedUserIds():Set<string>{
+  return new Set(loadBlockedUsers().filter(user=>!user.userId.startsWith('legacy-')).map(user=>user.userId));
+}
+
+export function blockedLegacyNames():Set<string>{
+  return new Set(loadBlockedUsers().filter(user=>user.userId.startsWith('legacy-')).map(user=>user.name));
+}
+
 export function canUseLocation(settings:PrivacySettings=loadPrivacySettings()){
   return settings.locationSharing!=='Nunca';
 }

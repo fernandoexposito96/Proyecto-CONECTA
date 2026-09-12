@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 
 const activeStatuses=['attending','requested','waitlist','attended'];
+const inactiveStatuses=['interested','declined','no_show'];
 
 export async function joinPlan(planId:string){
   const {data:{user},error:userError}=await supabase.auth.getUser();
@@ -9,26 +10,31 @@ export async function joinPlan(planId:string){
 
   const {data:existing,error:selectError}=await supabase
     .from('plan_members')
-    .select('plan_id')
+    .select('status')
     .eq('plan_id',planId)
     .eq('user_id',user.id)
     .maybeSingle();
   if(selectError)throw selectError;
 
-  if(existing){
-    const {error}=await supabase
+  const currentStatus=existing?String(existing.status||''):'';
+  if(currentStatus&&activeStatuses.includes(currentStatus))return currentStatus;
+
+  if(currentStatus&&inactiveStatuses.includes(currentStatus)){
+    const {error:deleteError}=await supabase
       .from('plan_members')
-      .update({status:'attending'})
+      .delete()
       .eq('plan_id',planId)
       .eq('user_id',user.id);
-    if(error)throw error;
-    return;
+    if(deleteError)throw deleteError;
   }
 
-  const {error}=await supabase
+  const {data:inserted,error}=await supabase
     .from('plan_members')
-    .insert({plan_id:planId,user_id:user.id,status:'attending',role:'participant'});
+    .insert({plan_id:planId,user_id:user.id,status:'attending',role:'participant'})
+    .select('status')
+    .single();
   if(error)throw error;
+  return String(inserted.status||'attending');
 }
 
 export async function leavePlan(planId:string){

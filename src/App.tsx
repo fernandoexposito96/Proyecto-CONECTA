@@ -68,8 +68,9 @@ export default function App(){
         if(invitedPlan){
           setExploreFilter('all');
           setExploreCategory(null);
-          setView('Explora');
+          setPlanReturnView('Explora');
           setSelected(invitedPlan);
+          setView('Plan');
         }
         clearInviteFromUrl();
       })
@@ -112,6 +113,7 @@ export default function App(){
   };
   const openHomePlan=(plan:Plan)=>openPlan(plan,'Inicio');
   const openHomeBrowsePlan=(plan:Plan)=>openPlan(plan,'HomeBrowse');
+  const openExplorePlan=(plan:Plan)=>openPlan(plan,'Explora');
   const closePlan=()=>{
     setSelected(null);
     setView(planReturnView);
@@ -144,7 +146,7 @@ export default function App(){
       <div className="content">
         {view==='Inicio'&&<HomeView setView={setView} onPlan={openHomePlan} onBrowse={openHomeBrowse}/>} 
         {view==='HomeBrowse'&&<HomeBrowseView mode={homeBrowseMode} category={homeBrowseCategory} onBack={()=>setView('Inicio')} onPlan={openHomeBrowsePlan} onBrowse={openHomeBrowse}/>} 
-        {view==='Explora'&&<ExploreView onPlan={setSelected} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} 
+        {view==='Explora'&&<ExploreView onPlan={openExplorePlan} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} 
         {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
         {view==='Ajustes'&&<SettingsView/>}

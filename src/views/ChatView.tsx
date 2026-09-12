@@ -3,7 +3,7 @@ import { ChevronLeft, Search, Send, X } from 'lucide-react';
 import { chats, people } from '../data/demoData';
 import { backendCurrentUserId, loadBackendChats, loadBackendMessages, sendBackendMessage, type BackendChatMessage, type BackendChatPreview } from '../lib/chatBackend';
 import { blockedNames, loadBlockedUsers } from '../lib/privacy';
-import { loadStored, saveStored, storageKeys } from '../lib/storage';
+import { loadStored, saveStored, storageChangeEvent, storageKeys } from '../lib/storage';
 import type { ChatItem, ChatTab } from '../types';
 
 const groupNames=new Set(['Grupo Pádel','Viaje a Madrid','Running Tarragona','Cine y palomitas']);
@@ -19,8 +19,8 @@ const avatarFor=(name:string,index=0)=>people.find(person=>person.name===name)?.
 const chatKey=(item:ChatItem)=>item.conversationId||`demo:${item.name}:${item.isGroup?'group':'direct'}`;
 
 export function ChatView({initialContact=null}:{initialContact?:string|null}){
-  const [blocked]=useState<Set<string>>(()=>blockedNames());
-  const [blockedIds]=useState<Set<string>>(()=>new Set(loadBlockedUsers().map(user=>user.userId)));
+  const [blocked,setBlocked]=useState<Set<string>>(()=>blockedNames());
+  const [blockedIds,setBlockedIds]=useState<Set<string>>(()=>new Set(loadBlockedUsers().map(user=>user.userId)));
   const [tab,setTab]=useState<ChatTab>('Todos');
   const [searchOpen,setSearchOpen]=useState(false);
   const [query,setQuery]=useState('');
@@ -35,6 +35,22 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   const [threadError,setThreadError]=useState('');
 
   useEffect(()=>{saveStored(storageKeys.chatMessages,sent)},[sent]);
+  useEffect(()=>{
+    const refreshBlocked=()=>{
+      setBlocked(blockedNames());
+      setBlockedIds(new Set(loadBlockedUsers().map(user=>user.userId)));
+    };
+    const onStorageChange=(event:Event)=>{
+      const detail=(event as CustomEvent<{key?:string}>).detail;
+      if(detail?.key===storageKeys.blockedUsers)refreshBlocked();
+    };
+    window.addEventListener(storageChangeEvent,onStorageChange);
+    window.addEventListener('storage',refreshBlocked);
+    return ()=>{
+      window.removeEventListener(storageChangeEvent,onStorageChange);
+      window.removeEventListener('storage',refreshBlocked);
+    };
+  },[]);
   useEffect(()=>{if(initialContact&&!blocked.has(initialContact))setActiveChat(initialContact)},[initialContact,blocked]);
   useEffect(()=>{
     let active=true;

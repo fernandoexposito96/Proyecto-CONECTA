@@ -6,11 +6,12 @@ import { acceptPlanInvite, clearInviteFromUrl, inviteCodeFromUrl } from './lib/i
 import { fetchUnreadNotificationCount } from './lib/notificationsBackend';
 import { createRealPlan, fetchRealPlans } from './lib/realPlansBackend';
 import { loadStored, saveStored, storageKeys } from './lib/storage';
-import type { ExploreFilter, Plan, View } from './types';
+import type { ExploreFilter, HomeBrowseMode, Plan, View } from './types';
 import { CalendarView } from './views/CalendarView';
 import { ChatView } from './views/ChatView';
 import { CreatePlanView } from './views/CreatePlanView';
 import { ExploreView } from './views/ExploreView';
+import { HomeBrowseView } from './views/HomeBrowseView';
 import { HomeView } from './views/HomeView';
 import { NotificationsView } from './views/NotificationsView';
 import { ProfileView } from './views/ProfileView';
@@ -30,9 +31,12 @@ const mergePlans=(primary:Plan[],secondary:Plan[])=>{
 export default function App(){
   const [view,setView]=useState<View>('Inicio');
   const [selected,setSelected]=useState<Plan|null>(null);
+  const [planReturnView,setPlanReturnView]=useState<View>('Inicio');
   const [createdPlans,setCreatedPlans]=useState<Plan[]>(()=>loadStored(storageKeys.createdPlans,[]));
   const [exploreFilter,setExploreFilter]=useState<ExploreFilter>('near');
   const [exploreCategory,setExploreCategory]=useState<string|null>(null);
+  const [homeBrowseMode,setHomeBrowseMode]=useState<HomeBrowseMode>('all');
+  const [homeBrowseCategory,setHomeBrowseCategory]=useState<string|null>(null);
   const [chatTarget,setChatTarget]=useState<string|null>(null);
   const [unreadNotifications,setUnreadNotifications]=useState(0);
 
@@ -91,18 +95,26 @@ export default function App(){
     setExploreCategory(category);
     setView('Explora');
   };
+  const openHomeBrowse=(mode:HomeBrowseMode,category:string|null=null)=>{
+    setHomeBrowseMode(mode);
+    setHomeBrowseCategory(category);
+    setView('HomeBrowse');
+  };
   const openChat=(name?:string)=>{
     setSelected(null);
     setChatTarget(name||null);
     setView('Chat');
   };
-  const openHomePlan=(plan:Plan)=>{
+  const openPlan=(plan:Plan,returnView:View)=>{
+    setPlanReturnView(returnView);
     setSelected(plan);
     setView('Plan');
   };
-  const closeHomePlan=()=>{
+  const openHomePlan=(plan:Plan)=>openPlan(plan,'Inicio');
+  const openHomeBrowsePlan=(plan:Plan)=>openPlan(plan,'HomeBrowse');
+  const closePlan=()=>{
     setSelected(null);
-    setView('Inicio');
+    setView(planReturnView);
   };
   const addCreatedPlan=async(plan:Plan):Promise<boolean>=>{
     setExploreFilter('all');
@@ -130,7 +142,8 @@ export default function App(){
     <main>
       <Header view={view} setView={setView} unreadNotifications={unreadNotifications}/>
       <div className="content">
-        {view==='Inicio'&&<HomeView setView={setView} onPlan={openHomePlan} onExplore={openExplore}/>} 
+        {view==='Inicio'&&<HomeView setView={setView} onPlan={openHomePlan} onBrowse={openHomeBrowse}/>} 
+        {view==='HomeBrowse'&&<HomeBrowseView mode={homeBrowseMode} category={homeBrowseCategory} onBack={()=>setView('Inicio')} onPlan={openHomeBrowsePlan} onBrowse={openHomeBrowse}/>} 
         {view==='Explora'&&<ExploreView onPlan={setSelected} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} 
         {view==='Chat'&&<ChatView initialContact={chatTarget}/>} 
         {view==='Perfil'&&<ProfileView setView={setView}/>} 
@@ -138,7 +151,7 @@ export default function App(){
         {view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications} onOpenPlanChat={openChat}/>} 
         {view==='Crear'&&<CreatePlanView setView={setView} onCreate={addCreatedPlan}/>} 
         {view==='Calendario'&&<CalendarView setView={setView}/>} 
-        {view==='Plan'&&selected&&<PlanDetail plan={selected} onClose={closeHomePlan} onOpenChat={openChat} standalone/>}
+        {view==='Plan'&&selected&&<PlanDetail plan={selected} onClose={closePlan} onOpenChat={openChat} standalone/>}
       </div>
     </main>
     <BottomNav view={view} setView={setView}/>

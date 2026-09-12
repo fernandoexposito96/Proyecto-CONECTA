@@ -14,6 +14,7 @@ const profile=read('src/views/ProfileView.tsx');
 const settings=read('src/views/SettingsView.tsx');
 const navigation=read('src/components/AppNavigation.tsx');
 const plans=read('src/components/PlanComponents.tsx');
+const planFeatures=read('src/components/PlanFeatureTools.tsx');
 const chatBackend=read('src/lib/chatBackend.ts');
 const cloud=read('src/lib/cloud.ts');
 const identity=read('src/lib/identity.ts');
@@ -75,6 +76,9 @@ const checks=[
   ['Chat real no marca como enviado un fallo de red',()=>assert.match(chat,/message not marked as sent/)],
   ['Conversaciones reales vacías siguen visibles',()=>assert.match(chatBackend,/Conversación nueva/)],
   ['Chat real filtra bloqueos por ID y no por nombre',()=>assert.match(chat,/filter\(real=>real\.userId\?!blockedIds\.has\(real\.userId\):\(real\.isGroup\|\|!blocked\.has\(real\.name\)\)\)/)],
+  ['Chat real conserva plan_id desde Supabase',()=>{assert.match(chatBackend,/select\('id,type,title,plan_id,created_at'\)/);assert.match(chatBackend,/planId/)}],
+  ['Abrir chat de plan usa ID y no título',()=>{assert.match(planFeatures,/onOpenChat\(plan\.title,planId\)/);assert.match(app,/setChatTarget\(planId\?`plan:\$\{planId\}`:\(name\|\|null\)\)/);assert.match(chat,/`plan:\$\{item\.planId\}`===activeChat/)}],
+  ['Pestaña Planes reconoce conversaciones reales de plan',()=>{assert.match(chat,/if\(item\.conversationId&&!item\.planId\)return false/);assert.match(chat,/if\(item\.conversationId&&item\.planId\)return false/)}],
   ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
   ['Sync de bloqueos recuerda solo el estado conocido de la sesión',()=>{assert.match(privacyBackend,/lastDesiredBlockIds/);assert.match(privacyBackend,/prepareBlockSyncUser/)}],
   ['Sync de bloqueos solo elimina IDs previamente conocidos',()=>assert.match(privacyBackend,/lastDesiredBlockIds[\s\S]*filter\(id=>!desired\.has\(id\)&&existing\.has\(id\)\)/)],

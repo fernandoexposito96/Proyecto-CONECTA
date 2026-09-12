@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Heart, MapPin, UsersRound } from 'lucide-react';
-import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
+import { blockedLegacyNames, blockedNames, blockedUserIds, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { planIdentityKey } from '../lib/planLogic';
 import { joinPlan, leavePlan, isPlanJoined } from '../lib/attendanceBackend';
 import { loadPlanSocialDetails, type PlanSocialDetails } from '../lib/planSocialBackend';
@@ -26,7 +26,9 @@ export function PlanDetail({plan,onClose,onOpenChat,standalone=false}:{plan:Plan
   const [joinError,setJoinError]=useState('');
   const [showParticipants,setShowParticipants]=useState(false);
   const [locationAllowed]=useState(()=>canUseLocation(loadPrivacySettings()));
-  const [blocked]=useState<Set<string>>(()=>blockedNames());
+  const [blockedDemoNames]=useState<Set<string>>(()=>blockedNames());
+  const [blockedRealIds]=useState<Set<string>>(()=>blockedUserIds());
+  const [blockedLegacyRealNames]=useState<Set<string>>(()=>blockedLegacyNames());
   const [social,setSocial]=useState<PlanSocialDetails|null>(null);
 
   useEffect(()=>{
@@ -67,8 +69,8 @@ export function PlanDetail({plan,onClose,onOpenChat,standalone=false}:{plan:Plan
     return ()=>{active=false};
   },[plan.backendId]);
 
-  const demoParticipants=['Marta','Carlos','Laura','Sara','Álex','Nuria'].filter(name=>!blocked.has(name));
-  const realParticipants=(social?.participants||[]).filter(person=>!blocked.has(person.name));
+  const demoParticipants=['Marta','Carlos','Laura','Sara','Álex','Nuria'].filter(name=>!blockedDemoNames.has(name));
+  const realParticipants=(social?.participants||[]).filter(person=>!blockedRealIds.has(person.id)&&!blockedLegacyRealNames.has(person.name));
   const participantNames=plan.backendId?realParticipants.map(person=>person.name):demoParticipants;
   const participantAvatars=plan.backendId?realParticipants.slice(0,3).map(person=>person.avatar).filter((value):value is string=>Boolean(value)):[
     './assets/images/photo-1492562080023-ab3db95bfbce.jpg',

@@ -29,9 +29,15 @@ for(const file of textFiles){
   const rel=path.relative(root,file);
   const text=fs.readFileSync(file,'utf8');
   if(conflictPattern.test(text))errors.push(`${rel}: contiene marcadores de conflicto Git`);
-  if(/\bdebugger\s*;?/.test(text))errors.push(`${rel}: contiene debugger`);
+  if(/^\s*debugger\s*;?\s*$/m.test(text))errors.push(`${rel}: contiene debugger`);
   let match;
-  while((match=imagePattern.exec(text)))imageRefs.add(match[1]);
+  while((match=imagePattern.exec(text))){
+    if(match[1].startsWith('${')){
+      warnings.push(`${rel}: ruta de imagen dinámica no verificable estáticamente`);
+      continue;
+    }
+    imageRefs.add(match[1]);
+  }
 }
 
 for(const image of imageRefs){

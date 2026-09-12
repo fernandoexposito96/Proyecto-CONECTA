@@ -56,7 +56,14 @@ try{
   assert.deepEqual(run({query:'tArRaGoNa'}).map(p=>p.title),['Plan lunes','Café de tarde','Cena']);
   assert.deepEqual(run({sortAsc:false}).map(p=>p.distance),['26 km','8 km','5 km','3 km','2 km','1 km']);
 
-  console.log('Logic unit tests: 17/17 OK');
+  const mixedPlans=[
+    {title:'Demo cercano',image:'x',time:'Hoy · 18:00',place:'Tarragona',distance:'1 km',spots:'4 plazas',category:'Social'},
+    {backendId:'real-1',title:'Plan real',image:'x',time:'Hoy · 18:00',place:'Tarragona',distance:'Cerca de ti',spots:'4 plazas',category:'Social'},
+  ];
+  const mixed=filterExplorePlans(mixedPlans,{timeFilter:'all',category:null,query:'',sortAsc:true});
+  assert.deepEqual(mixed.map(p=>p.title),['Plan real','Demo cercano']);
+
+  console.log('Logic unit tests: 18/18 OK');
 } finally {
   fs.rmSync(tmpDir,{recursive:true,force:true});
 }

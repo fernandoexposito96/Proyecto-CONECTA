@@ -5,6 +5,7 @@ const read=(path)=>fs.readFileSync(path,'utf8');
 const app=read('src/App.tsx');
 const authGate=read('src/components/AuthGate.tsx');
 const home=read('src/views/HomeView.tsx');
+const homeBrowse=read('src/views/HomeBrowseView.tsx');
 const explore=read('src/views/ExploreView.tsx');
 const createPlan=read('src/views/CreatePlanView.tsx');
 const chat=read('src/views/ChatView.tsx');
@@ -26,7 +27,8 @@ const theme=read('src/styles/theme.css');
 const checks=[
   ['App transmite categoría a Explora',()=>assert.match(app,/initialCategory=\{exploreCategory\}/)],
   ['Explora acepta categoría inicial',()=>assert.match(explore,/initialCategory\?:string\|null/)],
-  ['Inicio abre la categoría elegida',()=>assert.match(home,/openExplore\('all',name\)/)],
+  ['Inicio abre la categoría en pantalla propia',()=>{assert.match(home,/browse\('categories',name\)/);assert.doesNotMatch(home,/openExplore\('all',name\)/);assert.match(app,/HomeBrowseView/)}],
+  ['Pantalla propia de Inicio conserva navegación de categorías',()=>assert.match(homeBrowse,/onBrowse\('categories',name\)/)],
   ['Escapadas abren detalle',()=>assert.match(home,/onClick=\{\(\)=>openEscape\(/)],
   ['Filtro de personas tiene acción',()=>assert.match(explore,/onClick=\{cyclePeopleFilter\}/)],
   ['Like de estados tiene acción',()=>assert.match(explore,/onClick=\{\(\)=>toggleStoryLike\(/)],

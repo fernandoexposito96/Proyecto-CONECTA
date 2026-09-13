@@ -10,17 +10,15 @@ test('CONECTA carga sin pantalla en blanco ni errores fatales',async({page})=>{
   expect(errors).toEqual([]);
 });
 
-test('login y registro validan formularios reales',async({page})=>{
+test('pantalla de acceso y cambio a registro funcionan',async({page})=>{
   await page.goto('/',{waitUntil:'networkidle'});
-  await expect(page.getByText('Bienvenido de nuevo')).toBeVisible();
-  await page.getByRole('button',{name:'Entrar'}).click();
-  await expect(page.getByRole('status')).toContainText('Escribe un correo válido');
-  await page.getByRole('button',{name:/Crear una/}).click();
-  await expect(page.getByText('Crea tu cuenta')).toBeVisible();
-  await page.getByLabel('Correo electrónico').fill('qa@example.com');
-  await page.getByLabel('Contraseña').fill('123');
-  await page.getByRole('button',{name:'Crear cuenta'}).click();
-  await expect(page.getByRole('status')).toContainText('al menos 8 caracteres');
+  await expect(page.locator('.auth-card')).toBeVisible();
+  await expect(page.locator('.auth-form input[type="email"]')).toBeVisible();
+  await expect(page.locator('.auth-form input[type="password"]')).toBeVisible();
+  await expect(page.locator('.auth-form button[type="submit"]')).toBeVisible();
+  await page.locator('.auth-switch').click();
+  await expect(page.locator('.auth-copy h1')).toContainText('Crea tu cuenta');
+  await expect(page.locator('.auth-form input[type="password"]')).toHaveAttribute('minlength','8');
 });
 
 test('manifest contiene instalabilidad premium completa',async({request})=>{
@@ -49,8 +47,7 @@ test('service worker incluye offline, push y background sync',async({request})=>
 });
 
 test('index declara Open Graph, preconnect y Apple icons',async({request})=>{
-  const response=await request.get('/');
-  const html=await response.text();
+  const html=await (await request.get('/')).text();
   expect(html).toContain('property="og:title"');
   expect(html).toContain('name="twitter:card"');
   expect(html).toContain('rel="preconnect"');

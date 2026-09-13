@@ -18,7 +18,8 @@ type MemberRow={plan_id:string;user_id:string;status:string|null};
 type ProfileRow={id:string;display_name:string|null;username:string|null;avatar_url:string|null;organizer_verified:boolean|null};
 
 const fallbackImage='./assets/images/photo-1529156069898-49953e39b3ac.jpg';
-const activeStatuses=new Set(['attending','requested','waitlist','attended']);
+const activeStatusList=['attending','requested','waitlist','attended'] as const;
+const activeStatuses=new Set<string>(activeStatusList);
 const startsAtFormatter=new Intl.DateTimeFormat('es-ES',{
   weekday:'short',
   day:'2-digit',
@@ -68,7 +69,8 @@ export async function fetchRealPlans():Promise<Plan[]>{
   const {data:memberData,error:memberError}=await supabase
     .from('plan_members')
     .select('plan_id,user_id,status')
-    .in('plan_id',planIds);
+    .in('plan_id',planIds)
+    .in('status',[...activeStatusList]);
   if(memberError)console.warn('CONECTA plan members unavailable; plan data kept',memberError);
   else members=(memberData||[]) as MemberRow[];
 
@@ -82,7 +84,7 @@ export async function fetchRealPlans():Promise<Plan[]>{
 
   const profileIds=[...new Set([
     ...rows.map(row=>row.creator_id).filter(Boolean),
-    ...members.filter(row=>activeStatuses.has(String(row.status||''))).map(row=>row.user_id).filter(Boolean),
+    ...members.map(row=>row.user_id).filter(Boolean),
   ])];
   const profilesById=new Map<string,ProfileRow>();
   if(profileIds.length){

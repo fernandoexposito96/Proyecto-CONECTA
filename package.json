@@ -11,7 +11,8 @@
     "test:features": "node scripts/test-feature-round.mjs",
     "test:react": "node scripts/test-react.mjs",
     "test:logic": "node scripts/test-logic.mjs",
-    "check": "npm run verify && npm run lint && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && tsc --noEmit",
+    "hardening:10": "node scripts/hardening-10.mjs",
+    "check": "npm run verify && npm run lint && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && npm run hardening:10 && tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview"
   },

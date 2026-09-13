@@ -93,3 +93,51 @@
   .swipe-card{height:calc(100dvh - 170px);min-height:300px}
   .person-detail-hero{height:300px}
 }
+
+/* HomeBrowse: pulido final tras revisión visual en iPhone. */
+.home-browse-premium .home-browse-filter-row{
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  margin-left:0;
+  margin-right:0;
+  padding-left:4px;
+  padding-right:4px;
+  scroll-padding-inline:4px;
+  overscroll-behavior-inline:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.home-browse-premium .home-browse-filter-row>button:first-child{margin-left:0}
+.home-browse-premium .home-browse-filter-row>button:last-child{margin-right:2px}
+
+.home-browse-premium .home-browse-categories .home-browse-category-label{
+  left:10px;
+  right:auto;
+  bottom:10px;
+  max-width:calc(100% - 58px);
+  padding:8px 11px;
+  background:rgba(255,255,255,.94);
+  color:#4e2fc4;
+  border:1px solid rgba(113,75,235,.10);
+  box-shadow:0 7px 18px rgba(31,21,80,.13);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  text-shadow:none;
+  font-weight:900;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.home-browse-premium .home-browse-categories .home-browse-category-label svg{flex:none;color:#6d45e4}
+.home-browse-premium .home-browse-categories button>b{background:rgba(255,255,255,.96);box-shadow:0 7px 18px rgba(31,21,80,.13)}
+
+@media(max-width:760px){
+  .home-browse-premium .home-browse-person-photo{aspect-ratio:16/8.7;max-height:285px}
+  .home-browse-premium .home-browse-person-photo img{object-position:center 35%}
+  .home-browse-premium .home-browse-person-body{padding:13px 15px 15px}
+  .home-browse-premium .home-browse-person-tags{gap:7px}
+  .home-browse-premium .home-browse-person-tags>span{padding:6px 10px}
+}
+@media(max-width:390px){
+  .home-browse-premium .home-browse-person-photo{aspect-ratio:16/9.2;max-height:235px}
+}

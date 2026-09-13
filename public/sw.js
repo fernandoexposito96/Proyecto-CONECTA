@@ -1,13 +1,13 @@
 /* CONECTA — service worker seguro.
    - Nunca intercepta Supabase ni otros dominios.
-   - Navegación: red primero, caché solo como respaldo offline.
+   - Navegación: red primero, caché como respaldo offline.
    - Assets: stale-while-revalidate para acelerar sin bloquear actualizaciones.
    - Cada versión elimina cachés antiguas de CONECTA.
    - El runtime cache se recorta para evitar crecimiento indefinido. */
 
-const CACHE_NAME='conecta-runtime-v4';
+const CACHE_NAME='conecta-runtime-v5';
 const MAX_RUNTIME_ENTRIES=160;
-const SHELL=['./','./index.html','./icon.svg','./manifest.webmanifest','./apple-touch-icon.png'];
+const SHELL=['./','./index.html','./offline.html','./icon.svg','./icon-maskable.svg','./manifest.webmanifest','./apple-touch-icon.png'];
 
 async function trimCache(cache,maxEntries){
   const keys=await cache.keys();
@@ -50,7 +50,7 @@ self.addEventListener('fetch',event=>{
         }
         return response;
       }catch{
-        return (await caches.match('./index.html'))||(await caches.match('./'))||Response.error();
+        return (await caches.match('./index.html'))||(await caches.match('./'))||(await caches.match('./offline.html'))||Response.error();
       }
     })());
     return;

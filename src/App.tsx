@@ -38,7 +38,7 @@ export default function App(){
     if(shortcut==='create-plan')setView('Crear');
     if(shortcut==='chat')setView('Chat');
     if(shortcut==='now'){
-      setExploreFilter('now');
+      setExploreFilter('today');
       setExploreCategory(null);
       setView('Explora');
     }

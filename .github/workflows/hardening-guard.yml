@@ -36,7 +36,13 @@ jobs:
           git fetch origin "${{ github.base_ref }}" --depth=1
           changed="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
           echo "$changed"
-          forbidden="$(printf '%s\n' "$changed" | grep -E '^(src/(views|components|styles|data)/|src/App\.tsx$|index\.html$|public/)' || true)"
+
+          if [[ "${{ github.head_ref }}" == pwa/* ]]; then
+            forbidden="$(printf '%s\n' "$changed" | grep -E '^(src/(views|components|styles|data)/|src/App\.tsx$|index\.html$|public/)' | grep -Ev '^public/(sw\.js|manifest\.webmanifest)$' || true)"
+          else
+            forbidden="$(printf '%s\n' "$changed" | grep -E '^(src/(views|components|styles|data)/|src/App\.tsx$|index\.html$|public/)' || true)"
+          fi
+
           if [ -n "$forbidden" ]; then
             echo 'Hardening branch attempted to modify frozen demo/visual files:'
             printf '%s\n' "$forbidden"

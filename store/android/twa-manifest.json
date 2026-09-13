@@ -1,0 +1,48 @@
+{
+  "packageId": "com.conecta.app",
+  "host": "fernandoexposito96.github.io",
+  "name": "CONECTA",
+  "launcherName": "CONECTA",
+  "display": "standalone",
+  "themeColor": "#0b3150",
+  "themeColorDark": "#0b3150",
+  "navigationColor": "#0b3150",
+  "navigationColorDark": "#0b3150",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": true,
+  "enableSiteSettingsShortcut": true,
+  "startUrl": "/Proyecto-CONECTA/",
+  "fullScopeUrl": "https://fernandoexposito96.github.io/Proyecto-CONECTA/",
+  "webManifestUrl": "https://fernandoexposito96.github.io/Proyecto-CONECTA/manifest.webmanifest",
+  "iconUrl": "https://fernandoexposito96.github.io/Proyecto-CONECTA/icon-512.png",
+  "maskableIconUrl": "https://fernandoexposito96.github.io/Proyecto-CONECTA/icon-maskable-512.png",
+  "fallbackType": "customtabs",
+  "orientation": "portrait",
+  "splashScreenFadeOutDuration": 300,
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "minSdkVersion": 23,
+  "shortcuts": [
+    {
+      "name": "Crear plan",
+      "shortName": "Crear plan",
+      "url": "/Proyecto-CONECTA/?shortcut=create-plan",
+      "chosenIconUrl": "https://fernandoexposito96.github.io/Proyecto-CONECTA/icon-512.png"
+    },
+    {
+      "name": "Modo Ahora",
+      "shortName": "Ahora",
+      "url": "/Proyecto-CONECTA/?shortcut=now",
+      "chosenIconUrl": "https://fernandoexposito96.github.io/Proyecto-CONECTA/icon-512.png"
+    },
+    {
+      "name": "Chat",
+      "shortName": "Chat",
+      "url": "/Proyecto-CONECTA/?shortcut=chat",
+      "chosenIconUrl": "https://fernandoexposito96.github.io/Proyecto-CONECTA/icon-512.png"
+    }
+  ],
+  "fingerprints": [],
+  "shareTarget": null,
+  "generatorApp": "bubblewrap-cli"
+}

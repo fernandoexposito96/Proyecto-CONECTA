@@ -10,11 +10,11 @@ import type { ExploreFilter, HomeBrowseMode, Plan, View } from './types';
 import { CalendarView } from './views/CalendarView';
 import { ChatView } from './views/ChatView';
 import { CreatePlanView } from './views/CreatePlanView';
-import { ExploreView } from './views/ExploreView';
+import { ExploreSocialView } from './views/ExploreSocialView';
 import { HomeBrowseView } from './views/HomeBrowseView';
 import { HomeView } from './views/HomeView';
 import { NotificationsView } from './views/NotificationsView';
-import { ProfileView } from './views/ProfileView';
+import { ProfileEnhancedView } from './views/ProfileEnhancedView';
 import { SettingsView } from './views/SettingsView';
 
 const planKey=(plan:Plan)=>plan.backendId?`backend:${plan.backendId}`:`${plan.title}|${plan.time}|${plan.place}`;
@@ -62,5 +62,5 @@ export default function App(){
   const addCreatedPlan=async(plan:Plan):Promise<boolean>=>{setExploreFilter('all');setExploreCategory(null);try{const real=await createRealPlan(plan);setCreatedPlans(prev=>mergePlans([real],prev.filter(item=>planKey(item)!==planKey(plan))));return true;}catch(error){console.warn('CONECTA real plan publish unavailable; keeping prototype fallback',error);setCreatedPlans(prev=>mergePlans([plan],prev));try{await createSharedPlan(plan);const shared=await fetchSharedPlans();setCreatedPlans(local=>mergePlans(shared,local));}catch(fallbackError){console.warn('CONECTA prototype plan publish failed; local copy kept',fallbackError);}return false;}};
 
   const navigationView=view==='Plan'?planReturnView:view;
-  return <div className="app-shell"><Sidebar view={view} activeView={navigationView} setView={setView}/><main><Header view={view} setView={setView} unreadNotifications={unreadNotifications}/><div className="content">{view==='Inicio'&&<HomeView setView={setView} onPlan={openHomePlan} onBrowse={openHomeBrowse}/>} {view==='HomeBrowse'&&<HomeBrowseView mode={homeBrowseMode} category={homeBrowseCategory} onBack={()=>setView('Inicio')} onPlan={openHomeBrowsePlan} onBrowse={openHomeBrowse}/>} {view==='Explora'&&<ExploreView onPlan={openExplorePlan} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} {view==='Chat'&&<ChatView initialContact={chatTarget}/>} {view==='Perfil'&&<ProfileView setView={setView}/>} {view==='Ajustes'&&<SettingsView/>}{view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications} onOpenPlanChat={openChat}/>} {view==='Crear'&&<CreatePlanView setView={setView} onCreate={addCreatedPlan}/>} {view==='Calendario'&&<CalendarView setView={setView}/>} {view==='Plan'&&selected&&<PlanDetail plan={selected} onClose={closePlan} onOpenChat={openChat} standalone/>}</div></main><BottomNav view={view} activeView={navigationView} setView={setView}/></div>;
+  return <div className="app-shell"><Sidebar view={view} activeView={navigationView} setView={setView}/><main><Header view={view} setView={setView} unreadNotifications={unreadNotifications}/><div className="content">{view==='Inicio'&&<HomeView setView={setView} onPlan={openHomePlan} onBrowse={openHomeBrowse}/>} {view==='HomeBrowse'&&<HomeBrowseView mode={homeBrowseMode} category={homeBrowseCategory} onBack={()=>setView('Inicio')} onPlan={openHomeBrowsePlan} onBrowse={openHomeBrowse}/>} {view==='Explora'&&<ExploreSocialView onPlan={openExplorePlan} extraPlans={createdPlans} initialFilter={exploreFilter} initialCategory={exploreCategory} onChat={openChat}/>} {view==='Chat'&&<ChatView initialContact={chatTarget}/>} {view==='Perfil'&&<ProfileEnhancedView setView={setView}/>} {view==='Ajustes'&&<SettingsView/>}{view==='Notificaciones'&&<NotificationsView onUnreadCountChange={setUnreadNotifications} onOpenPlanChat={openChat}/>} {view==='Crear'&&<CreatePlanView setView={setView} onCreate={addCreatedPlan}/>} {view==='Calendario'&&<CalendarView setView={setView}/>} {view==='Plan'&&selected&&<PlanDetail plan={selected} onClose={closePlan} onOpenChat={openChat} standalone/>}</div></main><BottomNav view={view} activeView={navigationView} setView={setView}/></div>;
 }

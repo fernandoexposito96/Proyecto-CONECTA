@@ -33,3 +33,7 @@ Requisitos externos pendientes de publicación:
 - Política de privacidad y condiciones públicas.
 - Eliminación de cuenta accesible si aplica.
 - Pruebas reales en Android/iPhone.
+
+## Estado técnico
+
+Los iconos PNG y las capturas instalables se generan automáticamente desde la app real y quedan versionados en `public/` antes del despliegue final.

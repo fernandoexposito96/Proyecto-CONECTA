@@ -148,21 +148,24 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
     .map(row=>row.preview);
 }
 
-export async function loadBackendMessages(conversationId:string):Promise<BackendChatMessage[]>{
+export async function loadBackendMessages(conversationId:string,limit=100):Promise<BackendChatMessage[]>{
   if(!conversationId)return [];
+  const safeLimit=Math.max(1,Math.min(limit,200));
   const {data,error}=await supabase
     .from('messages')
     .select('id,sender_id,content,created_at')
     .eq('conversation_id',conversationId)
-    .order('created_at',{ascending:true})
-    .limit(300);
+    .order('created_at',{ascending:false})
+    .limit(safeLimit);
   if(error)throw error;
-  return (data||[]).map(message=>({
-    id:String(message.id||''),
-    content:String(message.content||''),
-    senderId:String(message.sender_id||''),
-    createdAt:String(message.created_at||''),
-  }));
+  return (data||[])
+    .map(message=>({
+      id:String(message.id||''),
+      content:String(message.content||''),
+      senderId:String(message.sender_id||''),
+      createdAt:String(message.created_at||''),
+    }))
+    .reverse();
 }
 
 export async function sendBackendMessage(conversationId:string,content:string){

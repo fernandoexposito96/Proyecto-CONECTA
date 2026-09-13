@@ -7,6 +7,10 @@ const authGate=read('src/components/AuthGate.tsx');
 const home=read('src/views/HomeView.tsx');
 const homeBrowse=read('src/views/HomeBrowseView.tsx');
 const explore=read('src/views/ExploreView.tsx');
+const explorePeople=read('src/hooks/useExplorePeople.ts');
+const exploreStories=read('src/hooks/useExploreStories.ts');
+const peopleGrid=read('src/components/explore/PeopleGridView.tsx');
+const storyViewer=read('src/components/explore/StoryViewer.tsx');
 const createPlan=read('src/views/CreatePlanView.tsx');
 const chat=read('src/views/ChatView.tsx');
 const notifications=read('src/views/NotificationsView.tsx');
@@ -31,8 +35,8 @@ const checks=[
   ['Inicio abre la categoría en pantalla propia',()=>{assert.match(home,/browse\('categories',name\)/);assert.doesNotMatch(home,/openExplore\('all',name\)/);assert.match(app,/HomeBrowseView/)}],
   ['Pantalla propia de Inicio conserva navegación de categorías',()=>assert.match(homeBrowse,/onBrowse\('categories',name\)/)],
   ['Escapadas abren detalle',()=>assert.match(home,/onClick=\{\(\)=>openEscape\(/)],
-  ['Filtro de personas tiene acción',()=>assert.match(explore,/onClick=\{cyclePeopleFilter\}/)],
-  ['Like de estados tiene acción',()=>assert.match(explore,/onClick=\{\(\)=>toggleStoryLike\(/)],
+  ['Filtro de personas tiene acción',()=>{assert.match(explorePeople,/const \[filter,setFilter\]=useState<PeopleFilter>/);assert.match(peopleGrid,/onChange=\{onFilter\}/)}],
+  ['Like de estados tiene acción',()=>{assert.match(exploreStories,/const toggleLike=/);assert.match(storyViewer,/onClick=\{onLike\}/)}],
   ['Respuesta de estado enlaza con chat',()=>assert.match(explore,/sendStoryReply/)],
   ['Persistencia de likes de estado existe',()=>assert.match(storage,/storyLikes:/)],
   ['Persistencia de seguimiento existe',()=>assert.match(storage,/organizerFollows:/)],

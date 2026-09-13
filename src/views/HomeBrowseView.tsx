@@ -5,84 +5,33 @@ import { PlanCards } from '../components/PlanComponents';
 import { categories, escapes, people, plans } from '../data/demoData';
 import type { HomeBrowseMode, Plan } from '../types';
 
-const modeTitle:Record<HomeBrowseMode,string>={
-  all:'Explorar planes',
-  categories:'Categorías',
-  near:'Planes cerca de ti',
-  today:'Planes de hoy',
-  afternoon:'Esta tarde',
-  tonight:'Esta noche',
-  weekend:'Este finde',
-  escapes:'Escapadas y eventos',
-  people:'Personas compatibles',
-};
+const premiumCss=`
+.home-browse-premium{position:relative;isolation:isolate;min-height:calc(100dvh - 88px);border-radius:32px;background:linear-gradient(180deg,#fbf9ff 0%,#f5f0ff 47%,#fff 100%);overflow:hidden}
+.home-browse-premium:before{content:"";position:absolute;z-index:-3;inset:0;background:radial-gradient(circle at 10% 7%,rgba(152,119,255,.22),transparent 27%),radial-gradient(circle at 88% 10%,rgba(189,167,255,.18),transparent 22%),linear-gradient(180deg,rgba(255,255,255,.38),rgba(248,244,255,.72));pointer-events:none}
+.home-browse-blob{position:absolute;z-index:-2;display:block;border-radius:45% 55% 60% 40%/50% 40% 60% 50%;background:rgba(134,100,255,.08);pointer-events:none}.home-browse-blob-a{width:360px;height:240px;left:-120px;top:10px;transform:rotate(14deg)}.home-browse-blob-b{width:280px;height:210px;right:-110px;top:90px;transform:rotate(-20deg)}
+.home-browse-premium .home-browse-heading small{display:block;margin-bottom:8px;color:#7751f2;font-size:12px;font-weight:950;letter-spacing:.22em}.home-browse-premium .home-browse-heading h1{font-size:clamp(34px,4.6vw,54px);color:#111b45}.home-browse-premium .home-browse-heading p{color:#8967e8;font-size:16px}.home-browse-premium .home-browse-back{width:60px;height:60px;background:linear-gradient(145deg,#173d64,#0f5276);box-shadow:0 14px 30px rgba(17,61,94,.22)}
+.home-browse-filter-row{display:flex;gap:10px;margin:-3px 0 24px;overflow-x:auto;padding:2px 1px 6px;scrollbar-width:none}.home-browse-filter-row button{flex:none;min-height:44px;padding:0 18px;display:flex;align-items:center;gap:8px;border:1px solid rgba(118,83,231,.18);border-radius:999px;background:rgba(255,255,255,.78);color:#626b81;font-weight:800}.home-browse-filter-row button.active{border-color:transparent;color:#fff;background:linear-gradient(135deg,#7447f4,#925cff)}
+.home-browse-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.home-browse-plan-card{overflow:hidden;border:1px solid rgba(121,84,229,.10);border-radius:26px;background:rgba(255,255,255,.97);box-shadow:0 16px 36px rgba(68,48,128,.10);cursor:pointer}.home-browse-plan-image{position:relative;aspect-ratio:16/10;overflow:hidden;background:#ece8f8}.home-browse-plan-image>img{width:100%;height:100%;object-fit:cover}.home-browse-plan-image>button{position:absolute;right:12px;top:12px;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:#7347f4}.home-browse-plan-image>span{position:absolute;left:13px;bottom:13px;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.90);color:#5d3bd2;font-size:12px;font-weight:900}.home-browse-plan-body{padding:15px 16px 16px;display:grid;gap:6px}.home-browse-plan-body>strong{color:#151d45;font-size:22px;line-height:1.05}.home-browse-plan-body>span{display:flex;align-items:center;gap:7px;color:#778095;font-size:13px}.home-browse-plan-body>span svg{width:16px;height:16px}.home-browse-plan-avatars{display:flex;align-items:center;margin-top:4px}.home-browse-plan-avatars img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #fff;margin-right:-6px}.home-browse-plan-avatars b{height:30px;min-width:38px;margin-left:8px;padding:0 9px;display:grid;place-items:center;border-radius:999px;background:#f0eaff;color:#6c45df;font-size:11px}
+.home-browse-premium .home-browse-categories{gap:16px}.home-browse-premium .home-browse-categories button{aspect-ratio:1.16/1;border-radius:26px;box-shadow:0 15px 34px rgba(64,44,121,.12)}.home-browse-category-label{position:absolute;z-index:2;left:13px;bottom:13px;max-width:70%;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.90);color:#301c72;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:900}.home-browse-categories button>b{position:absolute;z-index:2;right:12px;bottom:12px;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.92);color:#5130bc;font-size:24px}
+.home-browse-premium .home-browse-people{grid-template-columns:1fr;gap:18px}.home-browse-premium .home-browse-person{display:grid;grid-template-columns:minmax(230px,34%) 1fr;border-radius:28px;background:rgba(255,255,255,.96);box-shadow:0 16px 36px rgba(68,48,128,.09)}.home-browse-premium .home-browse-person-photo{aspect-ratio:auto;height:100%;min-height:240px}.home-browse-person-photo>button{position:absolute;top:14px;right:14px;width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:50%;background:rgba(255,255,255,.93);color:#7447f4}.home-browse-premium .home-browse-person-body{padding:24px 26px;display:grid;align-content:center;gap:12px}.home-browse-person-tags{display:flex;flex-wrap:wrap;gap:8px}.home-browse-person-tags>span{padding:7px 10px;border-radius:999px;background:#f1ebff;color:#5f43c8;font-size:12px;font-weight:800}
+@media(max-width:760px){.home-browse-premium{margin-inline:-2px;border-radius:0;padding-top:20px}.home-browse-premium .home-browse-heading h1{font-size:34px}.home-browse-premium .home-browse-heading p{font-size:13px}.home-browse-premium .home-browse-back{width:50px;height:50px}.home-browse-filter-row{margin-bottom:18px;gap:8px}.home-browse-filter-row button{min-height:40px;padding:0 14px;font-size:12px}.home-browse-plan-grid{gap:11px}.home-browse-plan-card{border-radius:20px}.home-browse-plan-image{aspect-ratio:1.12/1}.home-browse-plan-body{padding:12px}.home-browse-plan-body>strong{font-size:17px}.home-browse-plan-body>span{font-size:11px}.home-browse-premium .home-browse-categories{gap:11px}.home-browse-premium .home-browse-categories button{aspect-ratio:1/1;border-radius:20px}.home-browse-category-label{left:9px;bottom:9px;padding:7px 9px;font-size:11px}.home-browse-premium .home-browse-person{grid-template-columns:1fr;border-radius:22px}.home-browse-premium .home-browse-person-photo{min-height:0;height:auto;aspect-ratio:16/10}.home-browse-premium .home-browse-person-body{padding:14px 15px 16px}}
+@media(max-width:390px){.home-browse-premium .home-browse-heading h1{font-size:31px}.home-browse-plan-grid{grid-template-columns:1fr}.home-browse-plan-image{aspect-ratio:16/9}.home-browse-premium .home-browse-person-photo{aspect-ratio:4/3}}
+`;
 
-function plansFor(mode:HomeBrowseMode,category:string|null):Plan[]{
-  if(category)return plans.filter(plan=>plan.category===category);
-  if(mode==='near')return plans.slice(0,6);
-  if(mode==='today')return plans.filter(plan=>plan.time.startsWith('Hoy'));
-  if(mode==='afternoon')return plans.filter(plan=>/17:|18:|19:/.test(plan.time));
-  if(mode==='tonight')return plans.filter(plan=>/20:|21:|22:/.test(plan.time));
-  if(mode==='weekend')return plans.filter(plan=>/Sáb|Dom|Vie/.test(plan.time));
-  return plans;
-}
+const modeTitle:Record<HomeBrowseMode,string>={all:'Explorar planes',categories:'Categorías',near:'Planes cerca de ti',today:'Planes de hoy',afternoon:'Esta tarde',tonight:'Esta noche',weekend:'Este finde',escapes:'Escapadas y eventos',people:'Personas compatibles'};
+function plansFor(mode:HomeBrowseMode,category:string|null):Plan[]{if(category)return plans.filter(plan=>plan.category===category);if(mode==='near')return plans.slice(0,6);if(mode==='today')return plans.filter(plan=>plan.time.startsWith('Hoy'));if(mode==='afternoon')return plans.filter(plan=>/17:|18:|19:/.test(plan.time));if(mode==='tonight')return plans.filter(plan=>/20:|21:|22:/.test(plan.time));if(mode==='weekend')return plans.filter(plan=>/Sáb|Dom|Vie/.test(plan.time));return plans;}
+function cleanMatch(value:string){const parsed=Number.parseInt(value.replace(/[^0-9]/g,''),10);return Number.isNaN(parsed)?value:`${Math.min(100,Math.max(0,parsed))}%`;}
 
-function cleanMatch(value:string){
-  const parsed=Number.parseInt(value.replace(/[^0-9]/g,''),10);
-  if(Number.isNaN(parsed))return value;
-  return `${Math.min(100,Math.max(0,parsed))}%`;
-}
-
-export function HomeBrowseView({mode,category,onBack,onPlan,onBrowse}:{
-  mode:HomeBrowseMode;
-  category:string|null;
-  onBack:()=>void;
-  onPlan:(plan:Plan)=>void;
-  onBrowse:(mode:HomeBrowseMode,category?:string|null)=>void;
-}){
-  const title=category?category:modeTitle[mode];
-  const visiblePlans=plansFor(mode,category);
-
-  useEffect(()=>{
-    window.scrollTo({top:0,behavior:'auto'});
-  },[mode,category]);
-
-  return <div className="page home-browse-page home-browse-premium">
-    <span className="home-browse-blob home-browse-blob-a"/>
-    <span className="home-browse-blob home-browse-blob-b"/>
-
-    <header className="home-browse-header">
-      <div className="home-browse-heading">
-        <small>CONECTA</small>
-        <h1>{title}</h1>
-        <p>Descubre opciones desde Inicio</p>
-      </div>
-      <button className="home-browse-back" type="button" aria-label="Volver a Inicio" onClick={onBack}><ChevronLeft/></button>
-    </header>
-
-    {(mode==='near'||mode==='all')&&!category&&<div className="home-browse-filter-row" aria-label="Filtros rápidos">
-      <button className="active" type="button">Todos</button>
-      {['Deporte','Comida','Cine','Música'].map(name=><button type="button" key={name} onClick={()=>onBrowse('categories',name)}><CategoryIcon name={name}/>{name}</button>)}
-    </div>}
-
+export function HomeBrowseView({mode,category,onBack,onPlan,onBrowse}:{mode:HomeBrowseMode;category:string|null;onBack:()=>void;onPlan:(plan:Plan)=>void;onBrowse:(mode:HomeBrowseMode,category?:string|null)=>void;}){
+  const title=category?category:modeTitle[mode];const visiblePlans=plansFor(mode,category);
+  useEffect(()=>{window.scrollTo({top:0,behavior:'auto'});},[mode,category]);
+  return <div className="page home-browse-page home-browse-premium"><style>{premiumCss}</style><span className="home-browse-blob home-browse-blob-a"/><span className="home-browse-blob home-browse-blob-b"/>
+    <header className="home-browse-header"><div className="home-browse-heading"><small>CONECTA</small><h1>{title}</h1><p>Descubre opciones desde Inicio</p></div><button className="home-browse-back" type="button" aria-label="Volver a Inicio" onClick={onBack}><ChevronLeft/></button></header>
+    {(mode==='near'||mode==='all')&&!category&&<div className="home-browse-filter-row" aria-label="Filtros rápidos"><button className="active" type="button">Todos</button>{['Deporte','Comida','Cine','Música'].map(name=><button type="button" key={name} onClick={()=>onBrowse('categories',name)}><CategoryIcon name={name}/>{name}</button>)}</div>}
     {mode==='categories'&&!category&&<section className="home-browse-grid home-browse-categories" aria-label="Categorías">{categories.map(([name,image])=><button type="button" key={name} onClick={()=>onBrowse('categories',name)}><img loading="lazy" decoding="async" src={image} alt=""/><span className="home-browse-category-label"><CategoryIcon name={name}/>{name}</span><b>›</b></button>)}</section>}
-
-    {mode==='escapes'&&<section className="home-browse-grid home-browse-escapes" aria-label="Escapadas y eventos">{escapes.map(([name,date,image])=><article key={name} role="button" tabIndex={0} onClick={()=>onPlan({title:name,image,time:date,place:name,distance:'',spots:'8 plazas',category:'Viajes'})} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onPlan({title:name,image,time:date,place:name,distance:'',spots:'8 plazas',category:'Viajes'})}}}><img loading="lazy" decoding="async" src={image} alt=""/><div><strong>{name}</strong><span><MapPin/>{date}</span></div></article>)}</section>}
-
-    {mode==='people'&&<section className="home-browse-grid home-browse-people" aria-label="Personas compatibles">{people.map(person=><article className="home-browse-person" key={person.name}>
-      <div className="home-browse-person-photo"><img loading="lazy" decoding="async" src={person.image} alt={`Foto de ${person.name}`}/><button type="button" aria-label={`Guardar ${person.name}`}><Heart/></button><span>{cleanMatch(person.match)} compatible</span></div>
-      <div className="home-browse-person-body">
-        <div className="home-browse-person-main"><strong>{person.name}, {person.age}</strong><span>{person.distance}</span></div>
-        <div className="home-browse-person-tags">{person.tags.slice(0,3).map(tag=><span key={tag}>{tag}</span>)}</div>
-        <p>{person.bio}</p>
-      </div>
-    </article>)}</section>}
-
-    {mode!=='categories'&&mode!=='escapes'&&mode!=='people'&&<section className="home-browse-plan-grid" aria-label={title}>{visiblePlans.map(plan=><article className="home-browse-plan-card" key={`${plan.title}-${plan.time}`} role="button" tabIndex={0} onClick={()=>onPlan(plan)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onPlan(plan)}}}>
-      <div className="home-browse-plan-image"><img loading="lazy" decoding="async" src={plan.image} alt={plan.title}/><button type="button" aria-label={`Guardar ${plan.title}`} onClick={event=>event.stopPropagation()}><Heart/></button><span><CategoryIcon name={plan.category}/>{plan.category}</span></div>
-      <div className="home-browse-plan-body"><strong>{plan.title}</strong><span><CalendarDays/>{plan.time}</span><span><MapPin/>{plan.distance||plan.place}{plan.spots?` · ${plan.spots}`:''}</span><div className="home-browse-plan-avatars">{people.slice(0,3).map(person=><img key={person.name} src={person.image} alt="" loading="lazy" decoding="async"/>)}<b>+3</b></div></div>
-    </article>)}</section>}
-
+    {mode==='escapes'&&<section className="home-browse-grid home-browse-escapes" aria-label="Escapadas y eventos">{escapes.map(([name,date,image])=><article key={name} role="button" tabIndex={0} onClick={()=>onPlan({title:name,image,time:date,place:name,distance:'',spots:'8 plazas',category:'Viajes'})}><img loading="lazy" decoding="async" src={image} alt=""/><div><strong>{name}</strong><span><MapPin/>{date}</span></div></article>)}</section>}
+    {mode==='people'&&<section className="home-browse-grid home-browse-people" aria-label="Personas compatibles">{people.map(person=><article className="home-browse-person" key={person.name}><div className="home-browse-person-photo"><img loading="lazy" decoding="async" src={person.image} alt={`Foto de ${person.name}`}/><button type="button" aria-label={`Guardar ${person.name}`}><Heart/></button><span>{cleanMatch(person.match)} compatible</span></div><div className="home-browse-person-body"><div className="home-browse-person-main"><strong>{person.name}, {person.age}</strong><span>{person.distance}</span></div><div className="home-browse-person-tags">{person.tags.slice(0,3).map(tag=><span key={tag}>{tag}</span>)}</div><p>{person.bio}</p></div></article>)}</section>}
+    {mode!=='categories'&&mode!=='escapes'&&mode!=='people'&&<section className="home-browse-plan-grid" aria-label={title}>{visiblePlans.map(plan=><article className="home-browse-plan-card" key={`${plan.title}-${plan.time}`} role="button" tabIndex={0} onClick={()=>onPlan(plan)}><div className="home-browse-plan-image"><img loading="lazy" decoding="async" src={plan.image} alt={plan.title}/><button type="button" aria-label={`Guardar ${plan.title}`} onClick={event=>event.stopPropagation()}><Heart/></button><span><CategoryIcon name={plan.category}/>{plan.category}</span></div><div className="home-browse-plan-body"><strong>{plan.title}</strong><span><CalendarDays/>{plan.time}</span><span><MapPin/>{plan.distance||plan.place}{plan.spots?` · ${plan.spots}`:''}</span><div className="home-browse-plan-avatars">{people.slice(0,3).map(person=><img key={person.name} src={person.image} alt="" loading="lazy" decoding="async"/>)}<b>+3</b></div></div></article>)}</section>}
     {mode==='categories'&&category&&<PlanCards items={visiblePlans} onPlan={onPlan}/>} 
   </div>;
 }

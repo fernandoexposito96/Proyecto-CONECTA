@@ -21,7 +21,7 @@ const fallbackCommunity=[
   {id:'demo-1',url:'./assets/images/photo-1507525428034-b723cf961d3e.jpg',mediaType:'image' as const,caption:'Atardecer increíble',place:'Tarragona'},
   {id:'demo-2',url:'./assets/images/photo-1517248135467-4c7edcad34c4.jpg',mediaType:'image' as const,caption:'Noche de amigos',place:'Salou'},
   {id:'demo-3',url:'./assets/images/photo-1551632811-561732d1e306.jpg',mediaType:'image' as const,caption:'Ruta de hoy',place:'La Mussara'},
-  {id:'demo-4',url:'./assets/images/photo-1555396273-367ea4eb4db5.jpg',mediaType:'image' as const,caption:'Cena top',place:'Cambrils'},
+  {id:'demo-4',url:'./assets/images/photo-1519046904884-53103b34b206.jpg',mediaType:'image' as const,caption:'Tarde junto al mar',place:'Cambrils'},
 ];
 
 export function ExploreSocialView({onPlan: _onPlan,onChat: _onChat}:{onPlan:(plan:Plan)=>void;extraPlans?:Plan[];initialFilter?:unknown;initialCategory?:string|null;onChat:(name:string)=>void}){

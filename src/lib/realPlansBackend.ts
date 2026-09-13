@@ -19,18 +19,19 @@ type ProfileRow={id:string;display_name:string|null;username:string|null;avatar_
 
 const fallbackImage='./assets/images/photo-1529156069898-49953e39b3ac.jpg';
 const activeStatuses=new Set(['attending','requested','waitlist','attended']);
+const startsAtFormatter=new Intl.DateTimeFormat('es-ES',{
+  weekday:'short',
+  day:'2-digit',
+  month:'short',
+  hour:'2-digit',
+  minute:'2-digit',
+});
 
 function formatStartsAt(value:string|null){
   if(!value)return 'Fecha por confirmar';
   const date=new Date(value);
   if(Number.isNaN(date.getTime()))return 'Fecha por confirmar';
-  return new Intl.DateTimeFormat('es-ES',{
-    weekday:'short',
-    day:'2-digit',
-    month:'short',
-    hour:'2-digit',
-    minute:'2-digit',
-  }).format(date);
+  return startsAtFormatter.format(date);
 }
 
 function basePlan(row:RealPlanRow):Plan{
@@ -71,6 +72,14 @@ export async function fetchRealPlans():Promise<Plan[]>{
   if(memberError)console.warn('CONECTA plan members unavailable; plan data kept',memberError);
   else members=(memberData||[]) as MemberRow[];
 
+  const activeMembersByPlan=new Map<string,MemberRow[]>();
+  for(const member of members){
+    if(!activeStatuses.has(String(member.status||'')))continue;
+    const list=activeMembersByPlan.get(member.plan_id)||[];
+    list.push(member);
+    activeMembersByPlan.set(member.plan_id,list);
+  }
+
   const profileIds=[...new Set([
     ...rows.map(row=>row.creator_id).filter(Boolean),
     ...members.filter(row=>activeStatuses.has(String(row.status||''))).map(row=>row.user_id).filter(Boolean),
@@ -87,7 +96,7 @@ export async function fetchRealPlans():Promise<Plan[]>{
 
   return rows.map(row=>{
     const organizer=profilesById.get(row.creator_id);
-    const activeMembers=members.filter(member=>member.plan_id===row.id&&activeStatuses.has(String(member.status||'')));
+    const activeMembers=activeMembersByPlan.get(row.id)||[];
     const participantProfiles=activeMembers
       .map(member=>profilesById.get(member.user_id))
       .filter((profile):profile is ProfileRow=>Boolean(profile));

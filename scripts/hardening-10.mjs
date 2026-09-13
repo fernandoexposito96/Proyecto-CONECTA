@@ -24,7 +24,7 @@ check('6. PWA sin interceptar Supabase',sw.includes("url.origin!==self.location.
 check('7. Caché PWA acotada',sw.includes('MAX_RUNTIME_ENTRIES')&&sw.includes('trimCache'));
 check('8. Consultas principales acotadas',plans.includes('.limit(100)')&&notifications.includes('Math.min(limit,200)')&&chat.includes('Math.min(limit,200)'));
 check('9. Filtrado pesado delegado a Supabase',plans.includes(".in('status',[...activeStatusList])"));
-check('10. Robot sin auto-merge peligroso',!robot.includes('merge_pull_request')&&!robot.includes('gh pr merge')&&!robot.includes('auto-merge'));
+check('10. Robot sin auto-merge peligroso',!/(?:gh\s+pr\s+merge|merge_pull_request|enable[-_ ]auto[-_ ]merge)/i.test(robot));
 
 let failed=0;
 for(const item of checks){

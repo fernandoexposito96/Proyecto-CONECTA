@@ -43,14 +43,13 @@ export async function uploadProfileMedia(file:File,sourceType:'profile'|'status'
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
   if(!user)throw new Error('Necesitas iniciar sesión para subir contenido.');
-  const mediaType:file is File&{type:string}=file;
-  void mediaType;
-  const kind=file.type.startsWith('video/')?'video':'image';
+
+  const kind:'image'|'video'=file.type.startsWith('video/')?'video':'image';
   if(kind==='image'&&!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type))throw new Error('Formato de imagen no compatible.');
   if(kind==='video'&&!['video/mp4','video/webm','video/quicktime'].includes(file.type))throw new Error('Formato de vídeo no compatible.');
   if(file.size>50*1024*1024)throw new Error('El archivo supera el máximo de 50 MB.');
 
-  const extension=(file.name.split('.').pop()|| (kind==='video'?'mp4':'jpg')).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const extension=(file.name.split('.').pop()||(kind==='video'?'mp4':'jpg')).toLowerCase().replace(/[^a-z0-9]/g,'');
   const path=`${user.id}/${sourceType}/${crypto.randomUUID()}.${extension}`;
   const {error:uploadError}=await supabase.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type,cacheControl:'3600',upsert:false});
   if(uploadError)throw uploadError;

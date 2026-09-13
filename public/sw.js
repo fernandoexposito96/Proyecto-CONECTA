@@ -2,10 +2,19 @@
    - Nunca intercepta Supabase ni otros dominios.
    - Navegación: red primero, caché solo como respaldo offline.
    - Assets: stale-while-revalidate para acelerar sin bloquear actualizaciones.
-   - Cada versión elimina cachés antiguas de CONECTA. */
+   - Cada versión elimina cachés antiguas de CONECTA.
+   - El runtime cache se recorta para evitar crecimiento indefinido. */
 
-const CACHE_NAME='conecta-runtime-v3';
+const CACHE_NAME='conecta-runtime-v4';
+const MAX_RUNTIME_ENTRIES=160;
 const SHELL=['./','./index.html','./icon.svg','./manifest.webmanifest','./apple-touch-icon.png'];
+
+async function trimCache(cache,maxEntries){
+  const keys=await cache.keys();
+  if(keys.length<=maxEntries)return;
+  const excess=keys.length-maxEntries;
+  await Promise.all(keys.slice(0,excess).map(request=>cache.delete(request)));
+}
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)));
@@ -16,6 +25,8 @@ self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
     await Promise.all(keys.filter(key=>key.startsWith('conecta-')&&key!==CACHE_NAME).map(key=>caches.delete(key)));
+    const cache=await caches.open(CACHE_NAME);
+    await trimCache(cache,MAX_RUNTIME_ENTRIES);
     await self.clients.claim();
   })());
 });
@@ -35,6 +46,7 @@ self.addEventListener('fetch',event=>{
         if(response.ok){
           const cache=await caches.open(CACHE_NAME);
           await cache.put('./index.html',response.clone());
+          await trimCache(cache,MAX_RUNTIME_ENTRIES);
         }
         return response;
       }catch{
@@ -51,7 +63,10 @@ self.addEventListener('fetch',event=>{
     const cache=await caches.open(CACHE_NAME);
     const cached=await cache.match(request);
     const network=fetch(request).then(async response=>{
-      if(response.ok)await cache.put(request,response.clone());
+      if(response.ok){
+        await cache.put(request,response.clone());
+        await trimCache(cache,MAX_RUNTIME_ENTRIES);
+      }
       return response;
     }).catch(()=>null);
     return cached||(await network)||Response.error();

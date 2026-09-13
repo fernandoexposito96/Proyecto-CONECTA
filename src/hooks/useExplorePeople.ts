@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { people } from '../data/demoData';
+import { searchPeopleByName, type PersonSearchResult } from '../lib/communityBackend';
 import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { requestBackendConnection } from '../lib/socialBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
@@ -12,6 +13,8 @@ export function useExplorePeople(){
   const [liked,setLiked]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.exploreLikes,[])));
   const [connected,setConnected]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.connections,[])));
   const [query,setQuery]=useState('');
+  const [remotePeople,setRemotePeople]=useState<PersonSearchResult[]>([]);
+  const [searching,setSearching]=useState(false);
 
   const locationAllowed=canUseLocation(privacy);
   const visiblePeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)),[blocked]);
@@ -25,20 +28,20 @@ export function useExplorePeople(){
     return sorted.sort((a,b)=>parseFloat(a.distance)-parseFloat(b.distance));
   },[filter,locationAllowed,query,visiblePeople]);
 
+  useEffect(()=>{
+    const clean=query.trim();
+    if(clean.length<2){setRemotePeople([]);setSearching(false);return;}
+    let active=true;setSearching(true);
+    const timer=window.setTimeout(()=>{void searchPeopleByName(clean).then(items=>{if(active)setRemotePeople(items)}).catch(()=>{if(active)setRemotePeople([])}).finally(()=>{if(active)setSearching(false)})},220);
+    return()=>{active=false;window.clearTimeout(timer)};
+  },[query]);
+
   const persistLikes=(next:Set<string>)=>{setLiked(next);saveStored(storageKeys.exploreLikes,[...next]);};
   const persistConnections=(next:Set<string>)=>{setConnected(next);saveStored(storageKeys.connections,[...next]);};
 
-  const toggleLike=(person:Person)=>{
-    const next=new Set(liked);
-    next.has(person.name)?next.delete(person.name):next.add(person.name);
-    persistLikes(next);
-  };
+  const toggleLike=(person:Person)=>{const next=new Set(liked);next.has(person.name)?next.delete(person.name):next.add(person.name);persistLikes(next);};
+  const addPerson=async(person:Person)=>{if(connected.has(person.name))return;const next=new Set(connected);next.add(person.name);persistConnections(next);if(person.userId){try{await requestBackendConnection(person.userId)}catch(error){console.warn('CONECTA connection request failed; local connection kept',error)}}};
+  const addRemotePerson=async(person:PersonSearchResult)=>{if(connected.has(person.id))return;const next=new Set(connected);next.add(person.id);persistConnections(next);await requestBackendConnection(person.id);};
 
-  const addPerson=async(person:Person)=>{
-    if(connected.has(person.name))return;
-    const next=new Set(connected);next.add(person.name);persistConnections(next);
-    if(person.userId){try{await requestBackendConnection(person.userId)}catch(error){console.warn('CONECTA connection request failed; local connection kept',error)}}
-  };
-
-  return {privacy,locationAllowed,filter,setFilter,liked,connected,query,setQuery,visiblePeople,filteredPeople,toggleLike,addPerson};
+  return {privacy,locationAllowed,filter,setFilter,liked,connected,query,setQuery,visiblePeople,filteredPeople,remotePeople,searching,toggleLike,addPerson,addRemotePerson};
 }

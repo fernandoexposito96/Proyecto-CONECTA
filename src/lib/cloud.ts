@@ -11,16 +11,41 @@ const themeKey='conecta-theme';
 const languageKey='conecta-language';
 const privacyKey='conecta-privacy-settings-v1';
 const blockedUsersKey='conecta-blocked-users-v2';
+const outboxKey='conecta-pending-state-v1';
 let pendingState:Record<string,unknown>={};
+let sendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
 let flushInFlight=false;
 let syncGeneration=0;
+let retryDelay=1500;
+
+function readOutbox(userId:string):Record<string,unknown>{
+  try{
+    const value=JSON.parse(window.localStorage.getItem(outboxKey)||'null');
+    if(value?.userId!==userId||!value.patch||typeof value.patch!=='object'||Array.isArray(value.patch))return {};
+    return Object.fromEntries(Object.entries(value.patch).filter(([key])=>key.startsWith(storagePrefix)&&key!==authUserMarker&&key!==outboxKey));
+  }catch{return {}}
+}
+
+function persistOutbox(){
+  try{
+    const userId=window.localStorage.getItem(authUserMarker);
+    if(!userId)return;
+    const patch={...sendingState,...pendingState};
+    if(Object.keys(patch).length)window.localStorage.setItem(outboxKey,JSON.stringify({userId,patch}));
+    else window.localStorage.removeItem(outboxKey);
+  }catch(error){console.warn('CONECTA pending changes could not be persisted',error)}
+}
+
+function restoreOutbox(patch:Record<string,unknown>){
+  for(const [key,value] of Object.entries(patch))queueCloudStateSave(key,value);
+}
 
 function localPrototypeState(){
   const state:Record<string,unknown>={};
   for(let index=0;index<window.localStorage.length;index+=1){
     const key=window.localStorage.key(index);
-    if(!key?.startsWith(storagePrefix)||key===authUserMarker)continue;
+    if(!key?.startsWith(storagePrefix)||key===authUserMarker||key===outboxKey)continue;
     const raw=window.localStorage.getItem(key);
     if(raw===null)continue;
     try{state[key]=JSON.parse(raw) as unknown}catch{state[key]=raw}
@@ -37,9 +62,20 @@ function clearPrototypeState(){
   keys.forEach(key=>window.localStorage.removeItem(key));
 }
 
+export function clearLocalUserState(){
+  try{
+  const theme=window.localStorage.getItem(themeKey);
+  const language=window.localStorage.getItem(languageKey);
+  clearPrototypeState();
+  window.localStorage.removeItem(authUserMarker);
+  if(theme!==null)window.localStorage.setItem(themeKey,theme);
+  if(language!==null)window.localStorage.setItem(languageKey,language);
+  }catch(error){console.warn('CONECTA local storage unavailable',error)}
+}
+
 function writePrototypeState(state:Record<string,unknown>){
   for(const [key,value] of Object.entries(state)){
-    if(!key.startsWith(storagePrefix)||key===authUserMarker)continue;
+    if(!key.startsWith(storagePrefix)||key===authUserMarker||key===outboxKey)continue;
     window.localStorage.setItem(key,JSON.stringify(value));
   }
 }
@@ -81,7 +117,9 @@ async function mergeRealProfilePrivacy(state:Record<string,unknown>){
 
 export function resetCloudStateQueue(){
   syncGeneration+=1;
+  retryDelay=1500;
   pendingState={};
+  sendingState={};
   if(flushTimer!==null){
     window.clearTimeout(flushTimer);
     flushTimer=null;
@@ -89,33 +127,40 @@ export function resetCloudStateQueue(){
 }
 
 export async function hydrateCloudState(expectedUserId?:string){
+  const generation=syncGeneration;
   const {data:{session},error:sessionError}=await supabase.auth.getSession();
   if(sessionError)throw sessionError;
   if(!session)return false;
   if(expectedUserId&&session.user.id!==expectedUserId)return false;
 
   const previousUserId=window.localStorage.getItem(authUserMarker);
+  const durablePatch=readOutbox(session.user.id);
   const previousLocalState=localPrototypeState();
+  const sessionEmail=session.user.email||demoAccount.email;
+  const canMigrateLocal=previousUserId===session.user.id||(!previousUserId&&localStateBelongsToUser(previousLocalState,sessionEmail));
+  // Isolate the next account before a network request can fail.
+  if(!canMigrateLocal)clearLocalUserState();
   const {data,error}=await supabase
     .from('prototype_state')
     .select('state')
     .eq('user_id',session.user.id)
+    .abortSignal(AbortSignal.timeout(8000))
     .maybeSingle();
 
   if(error)throw error;
-
-  clearPrototypeState();
+  if(generation!==syncGeneration)return false;
 
   if(data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)){
-    const state=await mergeRealProfilePrivacy({...data.state as Record<string,unknown>});
+    const state={...await mergeRealProfilePrivacy({...data.state as Record<string,unknown>}),...durablePatch};
+    if(generation!==syncGeneration)return false;
+    clearPrototypeState();
     writePrototypeState(state);
     window.localStorage.setItem(authUserMarker,session.user.id);
+    restoreOutbox(durablePatch);
     if(isBlockedUsers(state[blockedUsersKey]))void syncBackendBlocks(state[blockedUsersKey]).catch(error=>console.warn('CONECTA block sync failed; demo fallback kept',error));
     return true;
   }
 
-  const sessionEmail=session.user.email||demoAccount.email;
-  const canMigrateLocal=previousUserId===session.user.id||(!previousUserId&&localStateBelongsToUser(previousLocalState,sessionEmail));
   const state:Record<string,unknown>=canMigrateLocal?{...previousLocalState}:{};
   if(!canMigrateLocal){
     if(themeKey in previousLocalState)state[themeKey]=previousLocalState[themeKey];
@@ -123,14 +168,16 @@ export async function hydrateCloudState(expectedUserId?:string){
   }
   state[accountKey]=accountFromUser(session.user,canMigrateLocal?(previousLocalState[accountKey] as {name:string;email:string}|undefined):undefined);
   await mergeRealProfilePrivacy(state);
-
+  Object.assign(state,durablePatch);
+  if(generation!==syncGeneration)return false;
+  clearPrototypeState();
   writePrototypeState(state);
   window.localStorage.setItem(authUserMarker,session.user.id);
+  restoreOutbox(durablePatch);
   if(isBlockedUsers(state[blockedUsersKey]))void syncBackendBlocks(state[blockedUsersKey]).catch(error=>console.warn('CONECTA block sync failed; demo fallback kept',error));
 
   const {error:upsertError}=await supabase
-    .from('prototype_state')
-    .upsert({user_id:session.user.id,state,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    .rpc('merge_my_prototype_state',{p_patch:state,p_expected_user:session.user.id});
   if(upsertError)throw upsertError;
   return true;
 }
@@ -153,37 +200,27 @@ async function flushCloudState(){
   if(!Object.keys(patch).length)return;
 
   flushInFlight=true;
+  sendingState=patch;
   try{
     const {data:{session},error:sessionError}=await supabase.auth.getSession();
     if(sessionError)throw sessionError;
     if(!session||generation!==syncGeneration)return;
 
-    const {data,error:readError}=await supabase
-      .from('prototype_state')
-      .select('state')
-      .eq('user_id',session.user.id)
-      .maybeSingle();
-    if(readError)throw readError;
-    if(generation!==syncGeneration)return;
-
-    const current=data?.state&&typeof data.state==='object'&&!Array.isArray(data.state)
-      ? data.state as Record<string,unknown>
-      : {};
-
-    const {error}=await supabase
-      .from('prototype_state')
-      .upsert({
-        user_id:session.user.id,
-        state:{...current,...patch},
-        updated_at:new Date().toISOString(),
-      },{onConflict:'user_id'});
+    const {error}=await supabase.rpc('merge_my_prototype_state',{
+      p_patch:patch,p_expected_user:session.user.id,
+    }).abortSignal(AbortSignal.timeout(8000));
 
     if(error)throw error;
+    retryDelay=1500;
+    if(generation===syncGeneration){sendingState={};persistOutbox();}
   }catch(error){
     if(generation!==syncGeneration)return;
     pendingState={...patch,...pendingState};
+    sendingState={};
+    persistOutbox();
     console.warn('CONECTA cloud state sync failed; retry scheduled',error);
-    scheduleFlush(1500);
+    scheduleFlush(retryDelay);
+    retryDelay=Math.min(30000,retryDelay*2);
   }finally{
     flushInFlight=false;
     if(generation===syncGeneration&&Object.keys(pendingState).length&&flushTimer===null)scheduleFlush(300);
@@ -191,8 +228,9 @@ async function flushCloudState(){
 }
 
 export function queueCloudStateSave(key:string,value:unknown){
-  if(!key.startsWith(storagePrefix)||key===authUserMarker)return;
+  if(!key.startsWith(storagePrefix)||key===authUserMarker||key===outboxKey)return;
   pendingState[key]=value;
+  persistOutbox();
   if(key===privacyKey&&isPrivacySettings(value)){
     void syncProfilePrivacySettings(value).catch(error=>console.warn('CONECTA profile privacy write failed; demo state kept',error));
   }
@@ -212,8 +250,7 @@ type PrototypePlanRow={
 function isPlan(value:unknown):value is Plan{
   return Boolean(
     value&&typeof value==='object'&&
-    'title' in value&&typeof (value as Plan).title==='string'&&
-    'image' in value&&typeof (value as Plan).image==='string'
+    ['title','image','time','place','distance','spots','category'].every(key=>typeof (value as Record<string,unknown>)[key]==='string')
   );
 }
 

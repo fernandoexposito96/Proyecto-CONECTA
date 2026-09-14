@@ -97,10 +97,26 @@ function isThisWeek(plan:Plan){
 
 export function filterExplorePlans(items:Plan[],options:ExplorePlanOptions):Plan[]{
   const q=options.query.trim().toLocaleLowerCase('es');
+  const now=new Date();
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
+  const weekendEnd=new Date(today);weekendEnd.setDate(weekendEnd.getDate()+(7-now.getDay())%7+1);
   const filtered=items.filter(plan=>{
     if(options.category&&plan.category!==options.category)return false;
     if(q&&!`${plan.title} ${plan.place} ${plan.category}`.toLocaleLowerCase('es').includes(q))return false;
 
+    if(plan.startsAt){
+      const date=new Date(plan.startsAt);
+      if(Number.isNaN(date.getTime()))return false;
+      const isToday=date>=today&&date<tomorrow;
+      const hour=date.getHours();
+      if(options.timeFilter==='today')return isToday;
+      if(options.timeFilter==='afternoon')return isToday&&hour>=12&&hour<20;
+      if(options.timeFilter==='tonight')return isToday&&hour>=20;
+      if(options.timeFilter==='weekend')return date>=today&&date<weekendEnd&&[0,5,6].includes(date.getDay());
+      if(options.timeFilter==='week')return isThisWeek(plan);
+      return true;
+    }
     const hour=hourFromPlanTime(plan.time);
     if(options.timeFilter==='today')return plan.time.startsWith('Hoy');
     if(options.timeFilter==='afternoon')return plan.time.startsWith('Hoy')&&hour!==null&&hour>=12&&hour<20;

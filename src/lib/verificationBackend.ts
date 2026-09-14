@@ -25,7 +25,7 @@ export async function loadIdentityVerification():Promise<IdentityVerificationSta
   if(error)throw error;
   if(!data)return {status:'none',createdAt:null,reviewNote:null};
   const raw=String(data.status||'pending');
-  const status:IdentityVerificationStatus=raw==='approved'||raw==='rejected'||raw==='pending'?raw:'pending';
+  const status:IdentityVerificationStatus=raw==='verified'||raw==='approved'?'approved':raw==='rejected'?'rejected':'pending';
   return {status,createdAt:typeof data.created_at==='string'?data.created_at:null,reviewNote:typeof data.review_note==='string'?data.review_note:null};
 }
 

@@ -30,24 +30,11 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Install Playwright test runner without changing lockfile
-        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Build
         run: npm run build
 
-      - name: Start preview
-        run: |
-          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/conecta-preview.log 2>&1 &
-          for i in {1..60}; do
-            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/conecta-preview.log
-          exit 1
-
       - name: Run E2E browser tests
-        run: npx playwright test
+        run: npm run test:e2e

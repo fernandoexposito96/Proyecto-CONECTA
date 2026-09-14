@@ -18,7 +18,7 @@ type MemberRow={plan_id:string;user_id:string;status:string|null};
 type ProfileRow={id:string;display_name:string|null;username:string|null;avatar_url:string|null;organizer_verified:boolean|null};
 
 const fallbackImage='./assets/images/photo-1529156069898-49953e39b3ac.jpg';
-const activeStatusList=['attending','requested','waitlist','attended'] as const;
+const activeStatusList=['attending','attended'] as const;
 const activeStatuses=new Set<string>(activeStatusList);
 const startsAtFormatter=new Intl.DateTimeFormat('es-ES',{
   weekday:'short',

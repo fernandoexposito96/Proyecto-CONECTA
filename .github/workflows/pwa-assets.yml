@@ -34,7 +34,7 @@ jobs:
       - name: Build production app
         run: npm run build
       - name: Install Chromium
-        run: npx -y playwright@1.55.0 install --with-deps chromium
+        run: npx playwright install --with-deps chromium
       - name: Start preview
         run: |
           nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/conecta-preview.log 2>&1 &
@@ -47,14 +47,14 @@ jobs:
       - name: Generate install assets
         run: |
           mkdir -p public/screenshots
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=512,512 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/icon-512.png
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=512,512 "file://${GITHUB_WORKSPACE}/public/icon-maskable.svg" public/icon-maskable-512.png
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=180,180 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon.png
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=167,167 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon-167.png
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=152,152 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon-152.png
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=120,120 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon-120.png
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=390,844 --full-page http://127.0.0.1:4173/ public/screenshots/mobile.png
-          npx -y playwright@1.55.0 screenshot --browser=chromium --viewport-size=1440,900 --full-page http://127.0.0.1:4173/ public/screenshots/wide.png
+          npx playwright screenshot --browser=chromium --viewport-size=512,512 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/icon-512.png
+          npx playwright screenshot --browser=chromium --viewport-size=512,512 "file://${GITHUB_WORKSPACE}/public/icon-maskable.svg" public/icon-maskable-512.png
+          npx playwright screenshot --browser=chromium --viewport-size=180,180 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon.png
+          npx playwright screenshot --browser=chromium --viewport-size=167,167 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon-167.png
+          npx playwright screenshot --browser=chromium --viewport-size=152,152 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon-152.png
+          npx playwright screenshot --browser=chromium --viewport-size=120,120 "file://${GITHUB_WORKSPACE}/public/icon.svg" public/apple-touch-icon-120.png
+          npx playwright screenshot --browser=chromium --viewport-size=390,844 --full-page http://127.0.0.1:4173/ public/screenshots/mobile.png
+          npx playwright screenshot --browser=chromium --viewport-size=1440,900 --full-page http://127.0.0.1:4173/ public/screenshots/wide.png
       - name: Commit generated assets
         run: |
           git config user.name 'conecta-assets-bot'

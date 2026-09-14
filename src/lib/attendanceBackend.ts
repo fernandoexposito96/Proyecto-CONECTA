@@ -49,10 +49,10 @@ export async function leavePlan(planId:string){
   if(error)throw error;
 }
 
-export async function isPlanJoined(planId:string):Promise<boolean>{
+export async function getPlanMembershipStatus(planId:string):Promise<string|null>{
   const {data:{user},error:userError}=await supabase.auth.getUser();
   if(userError)throw userError;
-  if(!user)return false;
+  if(!user)return null;
   const {data,error}=await supabase
     .from('plan_members')
     .select('status')
@@ -60,7 +60,11 @@ export async function isPlanJoined(planId:string):Promise<boolean>{
     .eq('user_id',user.id)
     .maybeSingle();
   if(error)throw error;
-  return Boolean(data&&activeStatuses.includes(String(data.status||'')));
+  return data&&activeStatuses.includes(String(data.status||''))?String(data.status):null;
+}
+
+export async function isPlanJoined(planId:string):Promise<boolean>{
+  return Boolean(await getPlanMembershipStatus(planId));
 }
 
 export async function countMyPlanMemberships():Promise<number>{

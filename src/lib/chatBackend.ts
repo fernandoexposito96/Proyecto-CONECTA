@@ -31,9 +31,9 @@ async function loadLatestMessages(conversationIds:string[]){
   if(!conversationIds.length)return latestByConversation;
 
   const batchLimit=Math.min(1000,Math.max(100,conversationIds.length*20));
-  const {data:recentMessages,error:recentError}=await supabase
+  const {data:recentMessages,error:recentError,count}=await supabase
     .from('messages')
-    .select('conversation_id,content,created_at')
+    .select('conversation_id,content,created_at',{count:'exact'})
     .in('conversation_id',conversationIds)
     .order('created_at',{ascending:false})
     .limit(batchLimit);
@@ -49,6 +49,10 @@ async function loadLatestMessages(conversationIds:string[]){
   }
 
   const missingIds=conversationIds.filter(id=>!latestByConversation.has(id));
+  if(count!==null&&count<=(recentMessages||[]).length){
+    for(const id of missingIds)latestByConversation.set(id,null);
+    return latestByConversation;
+  }
   for(let index=0;index<missingIds.length;index+=FALLBACK_CONCURRENCY){
     const chunk=missingIds.slice(index,index+FALLBACK_CONCURRENCY);
     const fallbackEntries=await Promise.all(chunk.map(async conversationId=>{

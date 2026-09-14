@@ -86,9 +86,9 @@ export async function loadSocialSummary():Promise<SocialSummary>{
   const topCategory=[...categoryCounts.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0]||null;
 
   const upcomingPlans=(memberships||[])
-    .filter(row=>['attending','requested','waitlist'].includes(String(row.status||'')))
+    .filter(row=>String(row.status||'')==='attending')
     .map(row=>planById.get(String(row.plan_id||'')))
-    .filter((row):row is NonNullable<typeof row>=>Boolean(row&&typeof row.starts_at==='string'))
+    .filter((row):row is NonNullable<typeof row>=>Boolean(row&&typeof row.starts_at==='string'&&['published','full'].includes(String(row.status))))
     .map(row=>({
       id:String(row.id||''),
       title:String(row.title||'Plan CONECTA'),

@@ -63,7 +63,21 @@ try{
   const mixed=filterExplorePlans(mixedPlans,{timeFilter:'all',category:null,query:'',sortAsc:true});
   assert.deepEqual(mixed.map(p=>p.title),['Plan real','Demo cercano']);
 
-  console.log('Logic unit tests: 18/18 OK');
+  const date=new Date();date.setHours(18,0,0,0);
+  const real={...mixedPlans[1],time:'fecha localizada sin Hoy',startsAt:date.toISOString()};
+  const filterReal=(timeFilter,items=[real])=>filterExplorePlans(items,{timeFilter,category:null,query:'',sortAsc:true});
+  assert.equal(filterReal('today').length,1);
+  assert.equal(filterReal('afternoon').length,1);
+  assert.equal(filterReal('tonight').length,0);
+  date.setHours(21);real.startsAt=date.toISOString();
+  assert.equal(filterReal('tonight').length,1);
+  date.setDate(date.getDate()+1);real.startsAt=date.toISOString();
+  assert.equal(filterReal('today').length,0);
+  real.startsAt='invalid';assert.equal(filterReal('today').length,0);
+  const sunday=new Date();sunday.setDate(sunday.getDate()+(7-sunday.getDay())%7);sunday.setHours(18,0,0,0);
+  real.startsAt=sunday.toISOString();assert.equal(filterReal('weekend').length,1);
+  sunday.setDate(sunday.getDate()+7);real.startsAt=sunday.toISOString();assert.equal(filterReal('weekend').length,0);
+  console.log('Logic unit tests: 26/26 OK');
 } finally {
   fs.rmSync(tmpDir,{recursive:true,force:true});
 }

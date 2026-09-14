@@ -11,23 +11,26 @@
     "test:features": "node scripts/test-feature-round.mjs",
     "test:react": "node scripts/test-react.mjs",
     "test:logic": "node scripts/test-logic.mjs",
+    "test:e2e": "node scripts/run-e2e.mjs",
+    "test:edge": "node scripts/test-edge.mjs",
     "hardening:10": "node scripts/hardening-10.mjs",
-    "check": "npm run verify && npm run lint && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && npm run hardening:10 && tsc --noEmit",
+    "check": "npm run verify && npm run lint && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && npm run test:edge && npm run hardening:10 && tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.115.0",
+    "lucide-react": "1.31.0",
     "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "lucide-react": "1.31.0"
+    "react-dom": "19.2.6"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "6.0.2",
-    "vite": "8.2.2",
-    "typescript": "5.9.3",
+    "@playwright/test": "1.63.0",
     "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3"
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "typescript": "5.9.3",
+    "vite": "8.2.2"
   },
   "engines": {
     "node": ">=22 <23"

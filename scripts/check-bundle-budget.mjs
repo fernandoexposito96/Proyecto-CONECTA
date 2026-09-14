@@ -1,8 +1,9 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const root = new URL('../dist/assets/', import.meta.url);
-const dir = root.pathname;
+const dir = fileURLToPath(root);
 const files = await readdir(dir);
 
 let js = 0;

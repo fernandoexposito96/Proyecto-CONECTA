@@ -104,13 +104,22 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
     const conversationId=activeItem?.conversationId;
     if(!conversationId)return;
     let active=true;
-    void loadBackendMessages(conversationId)
-      .then(messages=>{if(active)setBackendThreads(current=>({...current,[conversationId]:messages}))})
+    let loading=false;
+    const refresh=async()=>{
+      if(loading)return;
+      loading=true;
+      await loadBackendMessages(conversationId)
+      .then(messages=>{if(active){setBackendThreads(current=>({...current,[conversationId]:messages}));setThreadError('')}})
       .catch(error=>{
         console.warn('CONECTA real thread unavailable; demo fallback kept',error);
         if(active)setThreadError('No se han podido cargar los mensajes sincronizados. Puedes volver atrás e intentarlo de nuevo.');
       });
-    return ()=>{active=false};
+      loading=false;
+    };
+    void refresh();
+    const interval=window.setInterval(()=>{if(document.visibilityState==='visible')void refresh()},5000);
+    window.addEventListener('focus',refresh);
+    return ()=>{active=false;window.clearInterval(interval);window.removeEventListener('focus',refresh)};
   },[activeItem?.conversationId]);
 
   const visible=useMemo(()=>items.filter(item=>{
@@ -142,10 +151,12 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
       setDraft('');
       setSendError('');
       setSending(true);
+      let delivered=false;
       try{
         if(item.conversationId){
           const sentReal=await sendBackendMessage(item.conversationId,text);
           if(!sentReal)throw new Error('La conversación no está disponible para envío.');
+          delivered=true;
           const refreshed=await loadBackendMessages(item.conversationId);
           setBackendThreads(current=>({...current,[item.conversationId as string]:refreshed}));
           const refreshedChats=await loadBackendChats();
@@ -155,8 +166,8 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
         }
       }catch(error){
         console.warn('CONECTA real message send failed; message not marked as sent',error);
-        setDraft(text);
-        setSendError(error instanceof Error?error.message:'No se ha podido enviar el mensaje. Comprueba tu conexión e inténtalo otra vez.');
+        if(!delivered)setDraft(text);
+        setSendError(delivered?'Mensaje enviado. No se ha podido actualizar la conversación; se volverá a consultar automáticamente.':error instanceof Error?error.message:'No se ha podido enviar el mensaje. Comprueba tu conexión e inténtalo otra vez.');
       }finally{
         setSending(false);
       }

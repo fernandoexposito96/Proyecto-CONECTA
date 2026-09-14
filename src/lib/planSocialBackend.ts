@@ -17,7 +17,7 @@ export async function loadPlanSocialDetails(planId:string):Promise<PlanSocialDet
     .from('plan_members')
     .select('user_id,status')
     .eq('plan_id',planId)
-    .in('status',['attending','requested','waitlist','attended']);
+    .in('status',['attending','attended']);
   if(membersError)throw membersError;
 
   const ids=[...new Set([

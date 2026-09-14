@@ -41,7 +41,7 @@ export function useExplorePeople(){
 
   const toggleLike=(person:Person)=>{const next=new Set(liked);next.has(person.name)?next.delete(person.name):next.add(person.name);persistLikes(next);};
   const addPerson=async(person:Person)=>{if(connected.has(person.name))return;const next=new Set(connected);next.add(person.name);persistConnections(next);if(person.userId){try{await requestBackendConnection(person.userId)}catch(error){console.warn('CONECTA connection request failed; local connection kept',error)}}};
-  const addRemotePerson=async(person:PersonSearchResult)=>{if(connected.has(person.id))return;const next=new Set(connected);next.add(person.id);persistConnections(next);await requestBackendConnection(person.id);};
+  const addRemotePerson=async(person:PersonSearchResult)=>{if(connected.has(person.id))return;const sent=await requestBackendConnection(person.id);if(!sent)throw new Error('No se ha podido enviar la solicitud.');setConnected(current=>{const next=new Set(current);next.add(person.id);saveStored(storageKeys.connections,[...next]);return next;});};
 
   return {privacy,locationAllowed,filter,setFilter,liked,connected,query,setQuery,visiblePeople,filteredPeople,remotePeople,searching,toggleLike,addPerson,addRemotePerson};
 }

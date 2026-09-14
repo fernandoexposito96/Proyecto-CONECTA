@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { hydrateCloudState, queueCloudStateSave, resetCloudStateQueue } from '../lib/cloud';
+import { clearLocalUserState, hydrateCloudState, queueCloudStateSave, resetCloudStateQueue } from '../lib/cloud';
 import { setCloudStorageWriter } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 
@@ -35,6 +35,7 @@ export function AuthGate({children}:{children:ReactNode}){
       setSession(nextSession);
       setCloudStorageWriter(null);
       resetCloudStateQueue();
+      if(!nextSession)clearLocalUserState();
 
       try{
         if(nextSession){
@@ -49,7 +50,7 @@ export function AuthGate({children}:{children:ReactNode}){
       }catch(error){
         console.warn('CONECTA cloud hydration failed; local state kept available',error);
         if(active&&version===prepareVersion){
-          if(nextSession)setCloudStorageWriter(queueCloudStateSave);
+          // Do not overwrite remote state with defaults after a failed read.
           initializedUserId=nextUserId;
           setReady(true);
         }

@@ -63,11 +63,12 @@ export async function uploadProfileMedia(file:File,sourceType:'profile'|'status'
     await supabase.storage.from(MEDIA_BUCKET).remove([path]);
     throw insertError;
   }
-  const {data:urlData}=supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+  const {data:urlData,error:urlError}=await supabase.storage.from(MEDIA_BUCKET).createSignedUrl(path,3600);
+  if(urlError)throw urlError;
   return {
     id:String(row.id),
     userId:String(row.user_id),
-    url:urlData.publicUrl,
+    url:urlData.signedUrl,
     mediaType:row.media_type==='video'?'video':'image',
     sourceType:row.source_type==='status'||row.source_type==='plan'?row.source_type:'profile',
     caption:String(row.caption||''),
@@ -90,19 +91,23 @@ export async function loadProfileMedia(userId?:string):Promise<ProfileMediaItem[
     .order('created_at',{ascending:false})
     .limit(100);
   if(error)throw error;
-  return (data||[]).map(row=>{
+  if(!data?.length)return [];
+  const paths=data.map(row=>String(row.storage_path||''));
+  const {data:urls,error:urlError}=await supabase.storage.from(MEDIA_BUCKET).createSignedUrls(paths,3600);
+  if(urlError)throw urlError;
+  const urlsByPath=new Map((urls||[]).map(item=>[item.path,item.signedUrl]));
+  return (data||[]).map((row):ProfileMediaItem=>{
     const path=String(row.storage_path||'');
-    const {data:urlData}=supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
     return {
       id:String(row.id),
       userId:String(row.user_id),
-      url:urlData.publicUrl,
+      url:urlsByPath.get(path)||'',
       mediaType:row.media_type==='video'?'video':'image',
       sourceType:row.source_type==='status'||row.source_type==='plan'?row.source_type:'profile',
       caption:String(row.caption||''),
       createdAt:String(row.created_at||''),
     };
-  });
+  }).filter(item=>Boolean(item.url));
 }
 
 export async function removeProfileMedia(item:ProfileMediaItem):Promise<void>{

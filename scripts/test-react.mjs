@@ -31,7 +31,7 @@ try{
   fs.writeFileSync(path.join(tmp,'settingsBackend.mjs'),'export async function syncSettingStorageKey(){ return false; }\n');
   fs.writeFileSync(path.join(tmp,'PlanFeatureTools.mjs'),'export function PlanFeatureTools(){ return null; }\n');
   fs.writeFileSync(path.join(tmp,'planLogic.mjs'),"export function planIdentityKey(plan){ return plan.backendId?`backend:${plan.backendId}`:`${plan.title}|${plan.time}|${plan.place}`; }\n");
-  fs.writeFileSync(path.join(tmp,'attendanceBackend.mjs'),"export async function joinPlan(){}\nexport async function leavePlan(){}\nexport async function isPlanJoined(){ return false; }\n");
+  fs.writeFileSync(path.join(tmp,'attendanceBackend.mjs'),"export async function joinPlan(){}\nexport async function leavePlan(){}\nexport async function getPlanMembershipStatus(){ return null; }\n");
   fs.writeFileSync(path.join(tmp,'planSocialBackend.mjs'),"export async function loadPlanSocialDetails(){ return {organizer:null,participants:[]}; }\n");
   compile('src/lib/storage.ts','storage.mjs',code=>code.replace("'./settingsBackend'","'./settingsBackend.mjs'").replace('"./settingsBackend"','"./settingsBackend.mjs"'));
   compile('src/lib/privacy.ts','privacy.mjs',code=>code.replace("'./storage'","'./storage.mjs'").replace('"./storage"','"./storage.mjs"'));

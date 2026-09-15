@@ -1,23 +1,38 @@
 import { useEffect, useMemo, useState } from 'react';
 import { people } from '../data/demoData';
 import { searchPeopleByName, type PersonSearchResult } from '../lib/communityBackend';
-import { blockedNames, canUseLocation, loadPrivacySettings } from '../lib/privacy';
+import { blockedNames, blockedUserIds, canUseLocation, loadPrivacySettings } from '../lib/privacy';
 import { requestBackendConnection } from '../lib/socialBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { PeopleFilter, Person } from '../types';
 
+function initialConnections(){
+  const legacy=loadStored<string[]>(storageKeys.connections,[]);
+  const demoNames=new Set(people.map(person=>person.name));
+  const storedDemo=loadStored<string[]>(storageKeys.demoConnections,[]);
+  const storedBackend=loadStored<string[]>(storageKeys.backendConnections,[]);
+  const demo=new Set([...storedDemo,...legacy.filter(value=>demoNames.has(value))]);
+  const backend=new Set([...storedBackend,...legacy.filter(value=>!demoNames.has(value))]);
+  if(legacy.length){saveStored(storageKeys.demoConnections,[...demo]);saveStored(storageKeys.backendConnections,[...backend]);}
+  return {demo,backend};
+}
+
 export function useExplorePeople(){
   const [privacy]=useState(loadPrivacySettings);
   const [blocked]=useState<Set<string>>(()=>blockedNames());
+  const [blockedIds]=useState<Set<string>>(()=>blockedUserIds());
   const [filter,setFilter]=useState<PeopleFilter>(()=>canUseLocation(privacy)?'near':'match');
   const [liked,setLiked]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.exploreLikes,[])));
-  const [connected,setConnected]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.connections,[])));
+  const [connectionState]=useState(initialConnections);
+  const [demoConnected,setDemoConnected]=useState<Set<string>>(connectionState.demo);
+  const [backendConnected,setBackendConnected]=useState<Set<string>>(connectionState.backend);
   const [query,setQuery]=useState('');
   const [remotePeople,setRemotePeople]=useState<PersonSearchResult[]>([]);
   const [searching,setSearching]=useState(false);
 
+  const connected=useMemo(()=>new Set([...demoConnected,...backendConnected]),[demoConnected,backendConnected]);
   const locationAllowed=canUseLocation(privacy);
-  const visiblePeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)),[blocked]);
+  const visiblePeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)&&(!person.userId||!blockedIds.has(person.userId))),[blocked,blockedIds]);
   const filteredPeople=useMemo(()=>{
     const clean=query.trim().toLocaleLowerCase('es');
     const list=visiblePeople.filter(person=>!clean||person.name.toLocaleLowerCase('es').includes(clean));
@@ -32,16 +47,30 @@ export function useExplorePeople(){
     const clean=query.trim();
     if(clean.length<2){setRemotePeople([]);setSearching(false);return;}
     let active=true;setSearching(true);
-    const timer=window.setTimeout(()=>{void searchPeopleByName(clean).then(items=>{if(active)setRemotePeople(items)}).catch(()=>{if(active)setRemotePeople([])}).finally(()=>{if(active)setSearching(false)})},220);
+    const timer=window.setTimeout(()=>{void searchPeopleByName(clean).then(items=>{if(active)setRemotePeople(items.filter(item=>!blockedIds.has(item.id)))}).catch(()=>{if(active)setRemotePeople([])}).finally(()=>{if(active)setSearching(false)})},220);
     return()=>{active=false;window.clearTimeout(timer)};
-  },[query]);
+  },[query,blockedIds]);
 
   const persistLikes=(next:Set<string>)=>{setLiked(next);saveStored(storageKeys.exploreLikes,[...next]);};
-  const persistConnections=(next:Set<string>)=>{setConnected(next);saveStored(storageKeys.connections,[...next]);};
+  const persistDemoConnections=(next:Set<string>)=>{setDemoConnected(next);saveStored(storageKeys.demoConnections,[...next]);};
+  const persistBackendConnections=(next:Set<string>)=>{setBackendConnected(next);saveStored(storageKeys.backendConnections,[...next]);};
 
   const toggleLike=(person:Person)=>{const next=new Set(liked);next.has(person.name)?next.delete(person.name):next.add(person.name);persistLikes(next);};
-  const addPerson=async(person:Person)=>{if(connected.has(person.name))return;const next=new Set(connected);next.add(person.name);persistConnections(next);if(person.userId){try{await requestBackendConnection(person.userId)}catch(error){console.warn('CONECTA connection request failed; local connection kept',error)}}};
-  const addRemotePerson=async(person:PersonSearchResult)=>{if(connected.has(person.id))return;const sent=await requestBackendConnection(person.id);if(!sent)throw new Error('No se ha podido enviar la solicitud.');setConnected(current=>{const next=new Set(current);next.add(person.id);saveStored(storageKeys.connections,[...next]);return next;});};
+  const addPerson=async(person:Person)=>{
+    if(demoConnected.has(person.name)||(person.userId&&backendConnected.has(person.userId)))return;
+    const nextDemo=new Set(demoConnected);nextDemo.add(person.name);persistDemoConnections(nextDemo);
+    if(person.userId&&!blockedIds.has(person.userId)){
+      try{const sent=await requestBackendConnection(person.userId);if(sent){const nextBackend=new Set(backendConnected);nextBackend.add(person.userId);persistBackendConnections(nextBackend);}}
+      catch(error){console.warn('CONECTA connection request failed; demo connection kept',error)}
+    }
+  };
+  const addRemotePerson=async(person:PersonSearchResult)=>{
+    if(blockedIds.has(person.id))throw new Error('No puedes conectar con un usuario bloqueado.');
+    if(backendConnected.has(person.id))return;
+    const sent=await requestBackendConnection(person.id);
+    if(!sent)throw new Error('No se ha podido enviar la solicitud.');
+    const next=new Set(backendConnected);next.add(person.id);persistBackendConnections(next);
+  };
 
-  return {privacy,locationAllowed,filter,setFilter,liked,connected,query,setQuery,visiblePeople,filteredPeople,remotePeople,searching,toggleLike,addPerson,addRemotePerson};
+  return {privacy,locationAllowed,filter,setFilter,liked,connected,demoConnected,backendConnected,query,setQuery,visiblePeople,filteredPeople,remotePeople,searching,toggleLike,addPerson,addRemotePerson};
 }

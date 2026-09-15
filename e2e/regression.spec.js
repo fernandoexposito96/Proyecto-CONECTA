@@ -66,7 +66,8 @@ test('created real plan is discoverable in the existing plan browser',async({pag
   await page.goto('/?shortcut=create-plan');
   await page.getByPlaceholder('Ej. Pádel al atardecer').fill('Audit published plan');
   await page.getByPlaceholder('Tarragona, Salou...').fill('Tarragona');
-  await page.locator('input[type=datetime-local]').fill('2030-06-14T18:00');
+  await page.locator('input[type=date]').fill('2030-06-14');
+  await page.locator('input[type=time]').fill('18:00');
   await page.locator('.create-plan-card button[type=submit]').click();
   await expect(page.getByText('Plan creado y sincronizado',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Ver planes',exact:true}).click();

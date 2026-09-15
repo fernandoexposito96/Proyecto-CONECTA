@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { people } from '../data/demoData';
 import { loadProfileMedia, uploadProfileMedia, type ProfileMediaItem } from '../lib/communityBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
@@ -16,8 +16,20 @@ export function useExploreStories(){
   const [uploading,setUploading]=useState(false);
   const [error,setError]=useState('');
   const inputRef=useRef<HTMLInputElement|null>(null);
+  const refreshPromise=useRef<Promise<void>|null>(null);
 
-  const refresh=async()=>{try{setMedia(await loadProfileMedia())}catch{setMedia([])}};
+  const refresh=useCallback(()=>{
+    if(refreshPromise.current)return refreshPromise.current;
+    const task=loadProfileMedia()
+      .then(items=>{setMedia(items);})
+      .catch(()=>{setMedia([]);})
+      .finally(()=>{if(refreshPromise.current===task)refreshPromise.current=null;});
+    refreshPromise.current=task;
+    return task;
+  },[]);
+
+  useEffect(()=>{void refresh();},[refresh]);
+
   const upload=async(file?:File)=>{if(!file)return;setUploading(true);setError('');try{const item=await uploadProfileMedia(file,'status');setMedia(prev=>[item,...prev]);}catch(e){setError(e instanceof Error?e.message:'No se ha podido subir el estado.')}finally{setUploading(false);if(inputRef.current)inputRef.current.value='';}};
   const toggleLike=(key:string)=>{const next=new Set(storyLikes);next.has(key)?next.delete(key):next.add(key);setStoryLikes(next);saveStored(storageKeys.storyLikes,[...next]);};
 

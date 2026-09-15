@@ -20,12 +20,15 @@ export async function joinPlan(planId:string){
   if(currentStatus&&activeStatuses.includes(currentStatus))return currentStatus;
 
   if(currentStatus&&inactiveStatuses.includes(currentStatus)){
-    const {error:deleteError}=await supabase
+    const {data:updated,error:updateError}=await supabase
       .from('plan_members')
-      .delete()
+      .update({status:'attending',role:'participant'})
       .eq('plan_id',planId)
-      .eq('user_id',user.id);
-    if(deleteError)throw deleteError;
+      .eq('user_id',user.id)
+      .select('status')
+      .single();
+    if(updateError)throw updateError;
+    return String(updated.status||'attending');
   }
 
   const {data:inserted,error}=await supabase

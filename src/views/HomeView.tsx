@@ -27,7 +27,7 @@ export function HomeView({setView,onPlan,onBrowse}:{setView:(v:View)=>void,onPla
     let active=true;
     void loadSocialSummary()
       .then(value=>{if(active)setSummary(value)})
-      .catch(error=>console.warn('CONECTA next plan unavailable; demo plan kept',error))
+      .catch(error=>console.warn('CONECTA next plan unavailable; demo remains available elsewhere',error))
       .finally(()=>{if(active)setSummaryReady(true)});
     return ()=>{active=false};
   },[]);
@@ -36,7 +36,7 @@ export function HomeView({setView,onPlan,onBrowse}:{setView:(v:View)=>void,onPla
   const allowedPeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)),[blocked]);
   const imageFor=(name:string,fallback:string)=>categories.find(([category])=>category===name)?.[1]||fallback;
 
-  const featuredPlan:Plan=summaryReady&&summary.nextPlan?{
+  const featuredPlan:Plan|null=summaryReady&&summary.nextPlan?{
     backendId:summary.nextPlan.id,
     title:summary.nextPlan.title,
     image:plans[5]?.image||plans[0].image,
@@ -46,15 +46,7 @@ export function HomeView({setView,onPlan,onBrowse}:{setView:(v:View)=>void,onPla
     distance:'',
     spots:'Plan confirmado',
     category:summary.nextPlan.category||'Plan'
-  }:{
-    title:'Concierto local en Reus',
-    image:plans[5]?.image||plans[0].image,
-    time:'Mar, 8 sept · 22:37',
-    place:'Centre de Reus',
-    distance:'12 km',
-    spots:'16 personas van',
-    category:'Música'
-  };
+  }:null;
 
   const nearbyPlans:Plan[]=[
     {title:'Entreno en grupo',image:imageFor('Deporte',plans[0].image),time:'Hoy · 19:00',place:'Vila-seca',distance:'2 km',spots:'+8',category:'Deporte'},
@@ -80,7 +72,9 @@ export function HomeView({setView,onPlan,onBrowse}:{setView:(v:View)=>void,onPla
 
   return <div className="page home-page home-target">
     <section className="home-target-hero"><img decoding="async" fetchPriority="high" src="./assets/images/photo-1529156069898-49953e39b3ac.jpg" alt="Grupo de amigos disfrutando de un plan"/><div className="home-target-hero-shade"/><div className="home-target-copy"><h1>Vive más<br/>planes <span>juntos</span></h1><p>Conoce gente, organiza planes<br/>y crea experiencias reales.</p><button type="button" onClick={()=>browse('all')}>Explorar planes <ChevronRight/></button></div><div className="home-target-note">Buenas<br/>compañías<br/>mejores historias</div></section>
-    <button className="home-target-next" type="button" onClick={()=>onPlan(featuredPlan)}><img src={featuredPlan.image} alt={featuredPlan.title} decoding="async"/><span className="home-target-next-copy"><small>TU PRÓXIMO PLAN</small><strong>{featuredPlan.title}</strong><span className="home-target-meta"><CalendarDays/>{featuredPlan.time}<i/><MapPin/>{featuredPlan.place}</span><span className="home-target-attendees"><span className="home-target-avatars"><img loading="lazy" decoding="async" src={people[0].image} alt="Participante"/><img loading="lazy" decoding="async" src={people[2].image} alt="Participante"/><img loading="lazy" decoding="async" src={people[1].image} alt="Participante"/><b>+12</b></span><em>{featuredPlan.spots}</em></span></span><span className="home-target-next-arrow"><ChevronRight/></span></button>
+    {featuredPlan
+      ? <button className="home-target-next" type="button" onClick={()=>onPlan(featuredPlan)}><img src={featuredPlan.image} alt={featuredPlan.title} decoding="async"/><span className="home-target-next-copy"><small>TU PRÓXIMO PLAN</small><strong>{featuredPlan.title}</strong><span className="home-target-meta"><CalendarDays/>{featuredPlan.time}<i/><MapPin/>{featuredPlan.place}</span><span className="home-target-attendees"><span className="home-target-avatars"><img loading="lazy" decoding="async" src={people[0].image} alt="Participante"/><img loading="lazy" decoding="async" src={people[2].image} alt="Participante"/><img loading="lazy" decoding="async" src={people[1].image} alt="Participante"/><b>+12</b></span><em>{featuredPlan.spots}</em></span></span><span className="home-target-next-arrow"><ChevronRight/></span></button>
+      : summaryReady && <button className="home-target-next" type="button" onClick={()=>browse('all')}><span className="home-target-next-copy"><small>TU PRÓXIMO PLAN</small><strong>Aún no tienes ningún plan confirmado</strong><span className="home-target-meta">Explora planes cerca de ti para apuntarte al primero</span></span><span className="home-target-next-arrow"><ChevronRight/></span></button>}
     <section className="home-target-section"><div className="home-target-head"><h2>Explora por categorías</h2><button onClick={()=>browse('categories')}>Ver todas <ChevronRight/></button></div><div className="home-target-categories">{homeCategories.map(([name,image])=><button key={name} onClick={()=>browse('categories',name)}><img loading="lazy" decoding="async" src={image} alt={name}/><span/><b><CategoryIcon name={name}/>{name}</b></button>)}</div></section>
     <section className="home-target-section"><div className="home-target-head"><h2>Descubre planes cerca de ti</h2><button onClick={()=>browse(locationAllowed?'near':'all')}>Ver todo <ChevronRight/></button></div><div className="home-target-plans">{nearbyPlans.map(plan=><article key={plan.title} role="button" tabIndex={0} onClick={()=>onPlan(plan)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onPlan(plan)}}}><img loading="lazy" decoding="async" src={plan.image} alt={plan.title}/><span className="home-target-card-shade"/><Heart className="home-target-heart"/><div><small>{plan.time}</small><strong>{plan.title}</strong><span><MapPin/>{plan.place}</span><b>{plan.spots}</b></div></article>)}</div></section>
     <section className="home-target-section"><div className="home-target-head home-target-head-sub"><div><h2>Escapadas y eventos</h2><p>Planes más allá de tu ciudad</p></div><button onClick={()=>browse('escapes')}>Ver todas <ChevronRight/></button></div><div className="home-target-escapes">{homeEscapes.map(item=><article key={item.title} role="button" tabIndex={0} onClick={()=>openEscape(item)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEscape(item)}}}><img loading="lazy" decoding="async" src={item.image} alt={item.title}/><span className="home-target-card-shade"/><Heart className="home-target-heart"/><div><strong>{item.title}</strong><span><MapPin/>{item.subtitle}</span></div></article>)}</div></section>

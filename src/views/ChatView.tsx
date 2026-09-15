@@ -85,9 +85,10 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
         planId:real.planId,
       }));
 
+    const realNames=new Set(realItems.map(item=>item.name.trim().toLocaleLowerCase('es')));
     const demoItems:ChatItem[]=chats
       .map(([name,msg,count],i)=>({name,msg,count,isGroup:groupNames.has(name),avatar:avatarFor(name,i)}))
-      .filter(item=>item.isGroup||!blocked.has(item.name));
+      .filter(item=>(item.isGroup||!blocked.has(item.name))&&!realNames.has(item.name.trim().toLocaleLowerCase('es')));
 
     const base=[...realItems,...demoItems];
     if(initialContact&&!planTargetId(initialContact)&&!blocked.has(initialContact)&&!base.some(item=>item.name===initialContact)){
@@ -176,5 +177,5 @@ export function ChatView({initialContact=null}:{initialContact?:string|null}){
   }
 
   const blockedAttempt=Boolean(initialContact&&!planTargetId(initialContact)&&blocked.has(initialContact));
-  return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button type="button" aria-label="Buscar conversaciones" onClick={()=>setSearchOpen(value=>!value)}>{searchOpen?<X/>:<Search/>}</button></div>{blockedAttempt&&<div className="empty-state">Este usuario está bloqueado. Puedes gestionarlo desde Ajustes → Privacidad → Usuarios bloqueados.</div>}{searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Buscar conversación" aria-label="Buscar conversación"/></div>}<div className="tabs">{(['Todos','Planes','Grupos'] as ChatTab[]).map(item=><button type="button" key={item} className={tab===item?'active':''} onClick={()=>setTab(item)}>{item}</button>)}</div><div className="chat-list">{visible.map((item,index)=><button type="button" key={chatKey(item)} onClick={()=>setActiveChat(chatKey(item))}><img loading="lazy" decoding="async" src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>{item.conversationId?item.msg:(sent[item.name]?.at(-1)||item.msg)}</span></div><small>{index<3?'12:'+(45-index*8):'Ayer'}</small>{item.count&&<b>{item.count}</b>}</button>)}</div></div>;
+  return <div className="page chat-page"><div className="page-title"><div><h1>Chat</h1><p>Tus conversaciones y grupos</p></div><button type="button" aria-label="Buscar conversaciones" onClick={()=>setSearchOpen(value=>!value)}>{searchOpen?<X/>:<Search/>}</button></div>{blockedAttempt&&<div className="empty-state">Este usuario está bloqueado. Puedes gestionarlo desde Ajustes → Privacidad → Usuarios bloqueados.</div>}{searchOpen&&<div className="explore-search"><Search/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Buscar conversación" aria-label="Buscar conversación"/></div>}<div className="tabs">{(['Todos','Planes','Grupos'] as ChatTab[]).map(item=><button type="button" key={item} className={tab===item?'active':''} onClick={()=>setTab(item)}>{item}</button>)}</div><div className="chat-list">{visible.map(item=><button type="button" key={chatKey(item)} onClick={()=>setActiveChat(chatKey(item))}><img loading="lazy" decoding="async" src={item.avatar} alt={item.name}/><div><strong>{item.name}</strong><span>{item.conversationId?item.msg:(sent[item.name]?.at(-1)||item.msg)}</span></div>{item.count&&<b>{item.count}</b>}</button>)}</div></div>;
 }

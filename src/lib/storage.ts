@@ -47,6 +47,8 @@ export function saveStored<T>(key:string,value:T){
 export const storageKeys={
   createdPlans:'conecta-created-plans-v1',
   connections:'conecta-connections-v1',
+  demoConnections:'conecta-demo-connections-v2',
+  backendConnections:'conecta-backend-connections-v2',
   chatMessages:'conecta-chat-messages-v1',
   exploreLikes:'conecta-explore-likes-v1',
   storyAdded:'conecta-story-added-v1',

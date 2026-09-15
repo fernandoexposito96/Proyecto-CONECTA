@@ -4,6 +4,7 @@ type CloudWriter=(key:string,value:unknown)=>void|Promise<void>;
 let cloudWriter:CloudWriter|null=null;
 
 export const storageChangeEvent='conecta:storage-change';
+const backendIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function setCloudStorageWriter(writer:CloudWriter|null){
   cloudWriter=writer;
@@ -22,6 +23,7 @@ export function loadStored<T>(key:string,fallback:T):T{
       if(key===storageKeys.createdPlans&&!parsed.every(item=>item&&typeof item==='object'&&['title','image','time','place','distance','spots','category'].every(field=>typeof item[field]==='string')))return fallback;
       if(key===storageKeys.blockedUsers&&!parsed.every(item=>item&&typeof item==='object'&&typeof item.userId==='string'&&typeof item.name==='string'))return fallback;
       if(key!==storageKeys.createdPlans&&key!==storageKeys.blockedUsers&&!parsed.every(item=>typeof item==='string'))return fallback;
+      if(key===storageKeys.connections)return parsed.filter(item=>typeof item==='string'&&!backendIdPattern.test(item)) as T;
     }
     if(key===storageKeys.chatMessages&&!Object.values(parsed as object).every(item=>Array.isArray(item)&&item.every(message=>typeof message==='string')))return fallback;
     return parsed as T;

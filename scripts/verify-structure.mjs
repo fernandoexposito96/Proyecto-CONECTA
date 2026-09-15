@@ -21,7 +21,6 @@ const expectedStyleImports = [
   './theme.css',
   './error-boundary.css',
   './responsive.css',
-  './quality-polish.css',
 ];
 
 const forbiddenLegacyStyles = [
@@ -40,6 +39,7 @@ const forbiddenLegacyStyles = [
   'mobile-layout-final.css',
   'mobile-edge-final.css',
   'settings-reference-final.css',
+  'quality-polish.css',
 ];
 
 const failures = [];

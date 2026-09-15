@@ -34,3 +34,18 @@ img,video,canvas,svg{max-width:100%}img,video{height:auto}iframe{max-width:100%}
 @media(pointer:coarse){:where(.profile-tabs button,.filter-row button,.tabs button,.swipe-filter-row button){min-height:40px}}
 @media(min-width:1600px){.content{width:min(1440px,100%)}.profile-page{max-width:1020px}.chat-page{max-width:1040px}}
 @media(max-height:560px) and (orientation:landscape){.home-target-hero{height:210px}.profile-cover{height:180px}.swipe-card{height:calc(100dvh - 170px);min-height:300px}.person-detail-hero{height:300px}}
+
+/* Plan detail — authoritative responsive layout.
+   This final layer intentionally owns only sizing/flow so plans.css remains the visual source. */
+.detail-page-shell,.detail-card,.detail-photo,.detail-body,.detail-title,.info-row,.participant-row,.organizer,.plan-tools{box-sizing:border-box;min-width:0}
+.detail-page-shell{width:100%;max-width:100%;margin-inline:auto;overflow-x:clip}
+.detail-page-shell .detail-card{width:min(760px,100%);margin-inline:auto;overflow-x:hidden}
+.detail-photo{width:100%;aspect-ratio:16/10;height:auto;min-height:300px;max-height:430px}
+.detail-photo>img{display:block;width:100%;height:100%;object-fit:cover}
+.detail-body{width:100%;max-width:100%}
+.detail-title>*{min-width:0}.detail-title h1{max-width:100%;text-wrap:balance}.info-row div{min-width:0}.info-row strong,.info-row span{white-space:normal}.participant-row{max-width:100%}.description{max-width:68ch}.chips{max-width:100%}.organizer{max-width:100%}.plan-tools{max-width:100%}
+@media(max-width:760px){.detail-page-shell{width:calc(100% + (var(--mobile-gutter) * 2));max-width:none;margin-left:calc(var(--mobile-gutter) * -1);margin-right:calc(var(--mobile-gutter) * -1);padding:0 0 calc(104px + env(safe-area-inset-bottom,0px));}.detail-page-shell .detail-card{width:100%;max-width:none;margin:0;border-radius:0;border-left:0;border-right:0;box-shadow:none}.detail-photo{aspect-ratio:4/3;height:auto;min-height:0;max-height:none}.detail-body{padding:20px clamp(16px,4.5vw,22px) 28px}.detail-title{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px}.detail-title h1{font-size:clamp(26px,7.2vw,34px);line-height:1.08}.detail-title span{margin-top:2px}.info-row{width:100%;margin-top:12px;padding:14px;gap:11px}.participant-row{width:100%;padding:17px 2px;gap:10px}.description{width:100%;font-size:clamp(15px,4vw,17px);line-height:1.55}.chips{width:100%;gap:7px}.organizer{width:100%}.plan-tools{width:100%}}
+@media(max-width:430px){.detail-page-shell{width:calc(100% + 28px);margin-left:-14px;margin-right:-14px}.detail-photo{aspect-ratio:1.34/1}.detail-body{padding:18px 16px 28px}.detail-title h1{font-size:clamp(25px,7.6vw,31px)}.info-row{padding:13px 12px}.participant-row{align-items:center}.participant-row button{white-space:nowrap}.chips span{max-width:100%}}
+@media(max-width:360px){.detail-page-shell{width:calc(100% + 22px);margin-left:-11px;margin-right:-11px}.detail-title{grid-template-columns:1fr}.detail-title span{width:max-content;max-width:100%}.participant-row{align-items:flex-start;flex-direction:column}.participant-row button{align-self:flex-end}.organizer{flex-wrap:wrap}.organizer button{margin-left:auto}}
+@media(min-width:761px) and (max-width:1180px){.detail-page-shell{padding-inline:clamp(18px,3vw,30px)}.detail-page-shell .detail-card{width:min(720px,100%)}.detail-photo{aspect-ratio:16/9;min-height:330px}.detail-body{padding:26px 28px}}
+@media(min-width:1181px){.detail-page-shell{padding:28px 32px 46px}.detail-page-shell .detail-card{width:min(760px,100%)}.detail-photo{aspect-ratio:16/9;min-height:390px}.detail-body{padding:30px 34px}}

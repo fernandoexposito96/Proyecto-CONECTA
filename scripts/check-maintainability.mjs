@@ -2,14 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root=process.cwd();
-const scanRoots=['src/lib','src/hooks'];
+// Protect every runtime source area, not only backend/hooks. New UI work must replace
+// the canonical implementation instead of adding another visual/component layer.
+const scanRoots=['src/components','src/views','src/lib','src/hooks','src/data'];
 const failures=[];
 const warnings=[];
 const sourceExt=/\.(?:ts|tsx|js|mjs)$/;
 const patchTerms=['TEMPORARY','WORKAROUND','QUICK-FIX','QUICK FIX','MONKEY-PATCH','MONKEY PATCH','HOTFIX'];
 const obsoleteTerms=['DEPRECATED','OBSOLETE'];
-const layeredName=/(?:copy|backup|old|new|final|fixed|fix|patch|temp|tmp|v\d+)\.(?:ts|tsx|js|mjs)$/i;
-const duplicateSuffix=/(?:[-_.](?:copy|backup|old|new|final|fixed|fix|patch|temp|tmp|v\d+))$/i;
+const layeredName=/(?:copy|backup|old|new|final|fixed|fix|patch|temp|tmp|legacy|v\d+)\.(?:ts|tsx|js|mjs)$/i;
+const duplicateSuffix=/(?:[-_.](?:copy|backup|old|new|final|fixed|fix|patch|temp|tmp|legacy|v\d+))$/i;
+const embeddedStyle=/<style(?:\s|>)/i;
 
 function walk(dir){
   const abs=path.join(root,dir);
@@ -31,9 +34,10 @@ for(const file of files){
   else if(lines>350||bytes>20000)warnings.push(`${file}: se acerca al límite de mantenibilidad (${lines} líneas / ${bytes} bytes)`);
   if(patchTerms.some(term=>upper.includes(term)))failures.push(`${file}: marcador de parche temporal detectado`);
   if(obsoleteTerms.some(term=>upper.includes(term)))warnings.push(`${file}: contiene marcador deprecated/obsolete; revisar retirada`);
+  if(/\.tsx$/.test(file)&&embeddedStyle.test(text))failures.push(`${file}: capa <style> incrustada detectada; usa el CSS canónico del área`);
 
   const basename=path.basename(file);
-  if(layeredName.test(basename))failures.push(`${file}: nombre de capa/parche detectado; modifica el módulo canónico en vez de añadir otra versión`);
+  if(layeredName.test(basename))failures.push(`${file}: nombre de capa/parche detectado; reemplaza el módulo canónico en vez de añadir otra versión`);
   const ext=path.extname(basename);
   const stem=basename.slice(0,-ext.length);
   const canonical=stem.replace(duplicateSuffix,'').toLocaleLowerCase('en');
@@ -54,5 +58,5 @@ if(failures.length){
   console.error('\nCONECTA maintainability guard: FAIL\n'+failures.map(item=>`- ${item}`).join('\n'));
   process.exit(1);
 }
-console.log(`CONECTA maintainability guard: OK · ${files.length} módulos internos revisados · sin capas de parche duplicadas.`);
+console.log(`CONECTA maintainability guard: OK · ${files.length} módulos de aplicación revisados · una sola implementación canónica por área.`);
 if(warnings.length)console.warn('\nAvisos de mantenibilidad:\n'+warnings.map(item=>`- ${item}`).join('\n'));

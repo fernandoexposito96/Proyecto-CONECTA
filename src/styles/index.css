@@ -1,28 +1,12 @@
-/*
- * CONECTA — orden de cascada explícito.
- *
- * Cada hoja conserva su responsabilidad y el diseño actual. Las cascade layers
- * hacen que la prioridad dependa de esta arquitectura, no del aumento accidental
- * de especificidad entre archivos. Así evitamos volver a crear capas de parches.
- *
- * Orden de menor a mayor prioridad:
- *   foundation -> navigation -> views -> theme -> errors -> responsive
- */
-@layer foundation, navigation, views, theme, errors, responsive;
-
-@import './base.css' layer(foundation);
-@import './navigation.css' layer(navigation);
-
-@import './home.css' layer(views);
-@import './explore.css' layer(views);
-@import './plans.css' layer(views);
-@import './chat.css' layer(views);
-@import './profile.css' layer(views);
-@import './settings.css' layer(views);
-@import './utility-views.css' layer(views);
-
-@import './theme.css' layer(theme);
-@import './error-boundary.css' layer(errors);
-
-/* Única capa autorizada para adaptar geometría/tamaños por viewport. */
-@import './responsive.css' layer(responsive);
+@import './base.css';
+@import './navigation.css';
+@import './home.css';
+@import './explore.css';
+@import './plans.css';
+@import './chat.css';
+@import './profile.css';
+@import './settings.css';
+@import './utility-views.css';
+@import './theme.css';
+@import './error-boundary.css';
+@import './responsive.css';

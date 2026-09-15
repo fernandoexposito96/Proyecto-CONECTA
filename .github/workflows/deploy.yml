@@ -13,9 +13,11 @@ permissions:
   pages: write
   id-token: write
 
+# Never kill a deployment that has already passed part of the validation pipeline.
+# New main pushes queue behind the active Pages run instead of cancelling it.
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:

@@ -7,6 +7,8 @@
     "dev": "vite",
     "verify": "node scripts/verify-structure.mjs",
     "lint": "node scripts/lint.mjs",
+    "maintainability": "node scripts/check-maintainability.mjs",
+    "runtime:safety": "node scripts/check-runtime-safety.mjs",
     "test:frontend": "node scripts/test-frontend.mjs",
     "test:features": "node scripts/test-feature-round.mjs",
     "test:react": "node scripts/test-react.mjs",
@@ -14,7 +16,7 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:edge": "node scripts/test-edge.mjs",
     "hardening:10": "node scripts/hardening-10.mjs",
-    "check": "npm run verify && npm run lint && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && npm run test:edge && npm run hardening:10 && tsc --noEmit",
+    "check": "npm run verify && npm run lint && npm run maintainability && npm run runtime:safety && npm run test:frontend && npm run test:features && npm run test:react && npm run test:logic && npm run test:edge && npm run hardening:10 && tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview"
   },

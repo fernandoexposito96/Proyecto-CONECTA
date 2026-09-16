@@ -17,7 +17,6 @@ const notifications=read('src/views/NotificationsView.tsx');
 const notificationsBackend=read('src/lib/notificationsBackend.ts');
 const storage=read('src/lib/storage.ts');
 const settingsBackend=read('src/lib/settingsBackend.ts');
-const supportBackend=read('src/lib/supportBackend.ts');
 
 const tests=[
   ['App transmite categoría a Explora',()=>assert.match(app,/initialCategory=\{exploreCategory\}/)],
@@ -34,7 +33,7 @@ const tests=[
   ['Ajustes locales se reflejan también en backend',()=>assert.match(settings,/saveUserSettings/)],
   ['Apariencia, idioma y privacidad usan user_settings real',()=>assert.match(settingsBackend,/user_settings/)],
   ['Notificaciones conservan frecuencia en user_settings',()=>assert.match(settings,/notification_frequency/)],
-  ['Soporte dispone de inserción real protegida',()=>assert.match(supportBackend,/support_requests/)],
+  ['Soporte dispone de inserción real protegida',()=>assert.match(settingsBackend,/support_requests/)],
   ['Cuenta guarda identidad real antes de confirmar UI',()=>assert.match(settings,/updateUser/)],
   ['Soporte técnico se envía dentro de CONECTA',()=>assert.match(settings,/submitSupportRequest/)],
   ['Las pantallas informativas ya no muestran un falso guardar',()=>assert.doesNotMatch(settings,/Guardado correctamente/)],

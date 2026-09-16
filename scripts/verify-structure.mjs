@@ -21,6 +21,7 @@ const expectedStyleImports = [
   './theme.css',
   './error-boundary.css',
   './responsive.css',
+  './home-browse.css',
 ];
 
 const forbiddenLegacyStyles = [

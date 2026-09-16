@@ -5,7 +5,7 @@ const read=path=>fs.readFileSync(path,'utf8');
 const app=read('src/App.tsx');
 const explore=read('src/views/ExploreView.tsx');
 const homeBrowse=read('src/views/HomeBrowseView.tsx');
-const planFeatures=read('src/views/PlanFeaturesView.tsx');
+const planFeatures=read('src/components/PlanFeatureTools.tsx');
 const chat=read('src/views/ChatView.tsx');
 const chatBackend=read('src/lib/chatBackend.ts');
 const cloud=read('src/lib/cloudState.ts');

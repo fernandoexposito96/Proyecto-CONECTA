@@ -6,8 +6,21 @@ import { requestBackendConnection } from '../lib/socialBackend';
 import { loadStored, saveStored, storageKeys } from '../lib/storage';
 import type { PeopleFilter, Person } from '../types';
 
+function loadLegacyConnectionValues(){
+  try{
+    const raw=window.localStorage.getItem(storageKeys.connections);
+    if(!raw)return [];
+    const parsed:unknown=JSON.parse(raw);
+    return Array.isArray(parsed)?parsed.filter((value):value is string=>typeof value==='string'):[];
+  }catch{
+    return [];
+  }
+}
+
 function initialConnections(){
-  const legacy=loadStored<string[]>(storageKeys.connections,[]);
+  // Read the legacy key directly here: loadStored intentionally filters backend UUIDs
+  // from that mixed key, but the migration still needs those IDs once to preserve them.
+  const legacy=loadLegacyConnectionValues();
   const demoNames=new Set(people.map(person=>person.name));
   const storedDemo=loadStored<string[]>(storageKeys.demoConnections,[]);
   const storedBackend=loadStored<string[]>(storageKeys.backendConnections,[]);

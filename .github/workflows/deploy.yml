@@ -4,28 +4,26 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  workflow_run:
-    workflows: ['CONECTA PWA Assets']
-    types: [completed]
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Never kill a deployment that has already passed part of the validation pipeline.
-# New main pushes queue behind the active Pages run instead of cancelling it.
+# One deterministic publication path: every accepted main commit queues for Pages.
+# Never cancel an in-flight publication, so a newer update cannot leave the site half-published.
 concurrency:
   group: github-pages
   cancel-in-progress: false
 
 jobs:
   build:
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout exact main commit
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
@@ -45,7 +43,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: conecta-check-log
+          name: conecta-check-log-${{ github.run_id }}
           path: check.log
           if-no-files-found: ignore
           retention-days: 7
@@ -59,7 +57,7 @@ jobs:
         run: npm run test:e2e
       - name: Configure Pages
         uses: actions/configure-pages@v6
-      - name: Upload artifact
+      - name: Upload exact build artifact
         uses: actions/upload-pages-artifact@v5
         with:
           path: dist
@@ -71,6 +69,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy exact validated build to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

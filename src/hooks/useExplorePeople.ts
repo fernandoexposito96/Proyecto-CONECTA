@@ -34,8 +34,14 @@ export function useExplorePeople(){
   const [privacy]=useState(loadPrivacySettings);
   const [blocked]=useState<Set<string>>(()=>blockedNames());
   const [blockedIds]=useState<Set<string>>(()=>blockedUserIds());
+  // Snapshot tomado una sola vez al montar, igual que "blocked": a alguien a quien
+  // le das a "No me gusta" en esta sesión no desaparece de la lista hasta la próxima
+  // vez que se abra la app. Así se evita que el índice del carrusel se desplace en
+  // caliente y se salte a la siguiente persona sin querer.
+  const [dislikedInitial]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.exploreDislikes,[])));
   const [filter,setFilter]=useState<PeopleFilter>(()=>canUseLocation(privacy)?'near':'match');
   const [liked,setLiked]=useState<Set<string>>(()=>new Set(loadStored<string[]>(storageKeys.exploreLikes,[])));
+  const [disliked,setDisliked]=useState<Set<string>>(dislikedInitial);
   const [connectionState]=useState(initialConnections);
   const [demoConnected,setDemoConnected]=useState<Set<string>>(connectionState.demo);
   const [backendConnected,setBackendConnected]=useState<Set<string>>(connectionState.backend);
@@ -45,7 +51,7 @@ export function useExplorePeople(){
 
   const connected=useMemo(()=>new Set([...demoConnected,...backendConnected]),[demoConnected,backendConnected]);
   const locationAllowed=canUseLocation(privacy);
-  const visiblePeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)&&(!person.userId||!blockedIds.has(person.userId))),[blocked,blockedIds]);
+  const visiblePeople=useMemo(()=>people.filter(person=>!blocked.has(person.name)&&(!person.userId||!blockedIds.has(person.userId))&&!dislikedInitial.has(person.name)),[blocked,blockedIds,dislikedInitial]);
   const filteredPeople=useMemo(()=>{
     const clean=query.trim().toLocaleLowerCase('es');
     const list=visiblePeople.filter(person=>!clean||person.name.toLocaleLowerCase('es').includes(clean));
@@ -65,10 +71,18 @@ export function useExplorePeople(){
   },[query,blockedIds]);
 
   const persistLikes=(next:Set<string>)=>{setLiked(next);saveStored(storageKeys.exploreLikes,[...next]);};
+  const persistDislikes=(next:Set<string>)=>{setDisliked(next);saveStored(storageKeys.exploreDislikes,[...next]);};
   const persistDemoConnections=(next:Set<string>)=>{setDemoConnected(next);saveStored(storageKeys.demoConnections,[...next]);};
   const persistBackendConnections=(next:Set<string>)=>{setBackendConnected(next);saveStored(storageKeys.backendConnections,[...next]);};
 
   const toggleLike=(person:Person)=>{const next=new Set(liked);next.has(person.name)?next.delete(person.name):next.add(person.name);persistLikes(next);};
+  const dislikePerson=(person:Person)=>{
+    if(disliked.has(person.name))return;
+    const next=new Set(disliked);
+    next.add(person.name);
+    persistDislikes(next);
+    if(liked.has(person.name)){const nextLiked=new Set(liked);nextLiked.delete(person.name);persistLikes(nextLiked);}
+  };
   const addPerson=async(person:Person)=>{
     if(demoConnected.has(person.name)||(person.userId&&backendConnected.has(person.userId)))return;
     const nextDemo=new Set(demoConnected);nextDemo.add(person.name);persistDemoConnections(nextDemo);
@@ -85,5 +99,5 @@ export function useExplorePeople(){
     const next=new Set(backendConnected);next.add(person.id);persistBackendConnections(next);
   };
 
-  return {privacy,locationAllowed,filter,setFilter,liked,connected,demoConnected,backendConnected,query,setQuery,visiblePeople,filteredPeople,remotePeople,searching,toggleLike,addPerson,addRemotePerson};
+  return {privacy,locationAllowed,filter,setFilter,liked,disliked,connected,demoConnected,backendConnected,query,setQuery,visiblePeople,filteredPeople,remotePeople,searching,toggleLike,dislikePerson,addPerson,addRemotePerson};
 }

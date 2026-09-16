@@ -10,9 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-# Keep one publication lane and always prioritize the newest accepted main commit.
-# Older queued/in-flight builds are obsolete once main advances and must not delay
-# the UI currently stored in the repository.
 concurrency:
   group: github-pages
   cancel-in-progress: true
@@ -33,7 +30,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify installed versions
-        run: npm ls @supabase/supabase-js@2.115.0 react@19.2.6 react-dom@19.2.6 vite@8.2.2 typescript@5.9.3 @vitejs/plugin-react@6.0.2 --depth=0
+        run: npm ls @supabase/supabase-js@2.115.0 react@19.2.6 react-dom@19.2.6 vite@8.2.2 typescript@5.9.3 --depth=0
       - name: Production security audit
         run: npm audit --omit=dev --audit-level=high
       - name: Structure, tests and type check

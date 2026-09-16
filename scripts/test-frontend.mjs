@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const read=path=>fs.readFileSync(path,'utf8');
 const app=read('src/App.tsx');
+const navigation=read('src/components/AppNavigation.tsx');
 const explore=read('src/views/ExploreView.tsx');
 const homeBrowse=read('src/views/HomeBrowseView.tsx');
 const planFeatures=read('src/components/PlanFeatureTools.tsx');
@@ -44,9 +45,9 @@ const tests=[
   ['Ajustes leen el usuario autenticado',()=>assert.match(settings,/getUser/)],
   ['Cerrar sesiones usa Supabase real',()=>assert.match(settings,/signOut/)],
   ['El botón de sesiones ya no es un flash demo',()=>assert.doesNotMatch(settings,/Sesiones cerradas/)],
-  ['Avatar superior usa la sesión real',()=>assert.match(app,/avatar/)],
-  ['La búsqueda superior abre Explora sin cortar una escritura',()=>assert.match(app,/explore/)],
-  ['Campana solo muestra indicador si hay no leídas reales',()=>assert.match(app,/unread/)],
+  ['Avatar superior usa la sesión real',()=>{assert.match(navigation,/supabase\.auth\.getUser\(\)/);assert.match(navigation,/setProfileAvatar\(avatarFromUser/)}],
+  ['La búsqueda superior abre Explora sin cortar una escritura',()=>assert.match(navigation,/const openSearch=\(\)=>setView\('Explora'\)/)],
+  ['Campana solo muestra indicador si hay no leídas reales',()=>assert.match(navigation,/unreadNotifications>0&&<i\/>/)],
   ['App centraliza el contador de no leídas',()=>assert.match(app,/unread/)],
   ['Notificaciones leen el backend real',()=>assert.match(notifications,/loadBackendNotifications/)],
   ['Notificaciones permiten marcar como leído en backend',()=>assert.match(notifications,/markBackendNotificationRead/)],

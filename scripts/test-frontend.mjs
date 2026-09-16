@@ -81,7 +81,8 @@ const checks=[
   ['Conversaciones reales vacías siguen visibles',()=>assert.match(chatBackend,/Conversación nueva/)],
   ['Chat real filtra bloqueos por ID y no por nombre',()=>assert.match(chat,/filter\(real=>real\.userId\?!blockedIds\.has\(real\.userId\):\(real\.isGroup\|\|!blocked\.has\(real\.name\)\)\)/)],
   ['Chat real conserva plan_id desde Supabase',()=>{assert.match(chatBackend,/select\('id,type,title,plan_id,created_at'\)/);assert.match(chatBackend,/planId/)}],
-  ['Abrir chat de plan usa ID y no título',()=>{assert.match(planFeatures,/onOpenChat\(plan\.title,planId\)/);assert.match(app,/setChatTarget\(planId\?`plan:\$\{planId\}`:\(name\|\|null\)\)/);assert.match(chat,/`plan:\$\{item\.planId\}`===activeChat/)}],
+  ['Abrir chat de persona real conserva userId estable',()=>{assert.match(app,/const \[chatTarget,setChatTarget\]=useState<ChatContact\|null>/);assert.match(app,/const openContactChat=\(contact:ChatContact\)/);assert.match(app,/setChatTarget\(contact\)/);assert.match(chat,/initialContact\?:ChatContact\|null/);assert.match(chat,/ensureDirectConversation\(initialContact\.userId\)/)}],
+  ['Abrir chat de plan usa destino separado por ID',()=>{assert.match(planFeatures,/onOpenChat\(plan\.title,planId\)/);assert.match(app,/setPlanChatTarget\(planId\?`plan:\$\{planId\}`:null\)/);assert.match(app,/initialPlanTarget=\{planChatTarget\}/);assert.match(chat,/`plan:\$\{item\.planId\}`===initialPlanTarget/)}],
   ['Pestaña Planes reconoce conversaciones reales de plan',()=>{assert.match(chat,/if\(item\.conversationId&&!item\.planId\)return false/);assert.match(chat,/if\(item\.conversationId&&item\.planId\)return false/)}],
   ['Bloqueos reales se sincronizan sin tocar IDs demo',()=>assert.match(cloud,/syncBackendBlocks/)],
   ['Sync de bloqueos recuerda solo el estado conocido de la sesión',()=>{assert.match(privacyBackend,/lastDesiredBlockIds/);assert.match(privacyBackend,/prepareBlockSyncUser/)}],
@@ -93,7 +94,7 @@ const checks=[
   ['Login permite que Supabase valide contraseñas legacy',()=>assert.match(authGate,/if\(mode==='login'\)[\s\S]*signInWithPassword/)],
   ['Crear plan espera el resultado de sincronización',()=>assert.match(createPlan,/await onCreate\(plan\)/)],
   ['Tarjetas de plan tienen navegación por teclado',()=>assert.match(plans,/tabIndex=\{0\}/)],
-  ['Explora abre los planes como pantalla dedicada',()=>{assert.match(app,/const openExplorePlan=\(plan:Plan\)=>openPlan\(plan,'Explora'\)/);assert.match(app,/onPlan=\{openExplorePlan\}/);assert.doesNotMatch(app,/view!==['"]Plan['"]&&selected/)}],
+  ['Explora abre los planes como pantalla dedicada',()=>{assert.match(app,/onPlan=\{plan=>openPlan\(plan,'Explora'\)\}/);assert.doesNotMatch(app,/view!==['"]Plan['"]&&selected/)}],
   ['Seguimiento del organizador usa identidad única en usuarios reales',()=>{assert.match(plans,/const organizerFollowKey=social\?\.organizer\?\.id\?`user:\$\{social\.organizer\.id\}`:organizerName/);assert.match(plans,/setFollowing\(current\.has\(organizerFollowKey\)\)/);assert.match(plans,/next\?current\.add\(organizerFollowKey\):current\.delete\(organizerFollowKey\)/);assert.match(plans,/onClick=\{toggleFollowing\}/)}],
 ];
 

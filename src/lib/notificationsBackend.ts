@@ -74,3 +74,16 @@ export async function markBackendNotificationRead(id:string){
     .eq('read',false);
   if(error)throw error;
 }
+
+export async function markAllBackendNotificationsRead(){
+  const userId=await currentNotificationUserId();
+  if(!userId)return 0;
+  const {data,error}=await supabase
+    .from('notifications')
+    .update({read:true})
+    .eq('user_id',userId)
+    .eq('read',false)
+    .select('id');
+  if(error)throw error;
+  return data?.length||0;
+}

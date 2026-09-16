@@ -31,7 +31,14 @@ export function ExploreView({onChat}:{onPlan:(plan:Plan)=>void;extraPlans?:Plan[
   useEffect(()=>{void storyState.refresh()},[]);
   const community=useMemo(()=>[...storyState.media.slice(0,6).map(item=>({id:item.id,url:item.url,mediaType:item.mediaType,caption:item.caption||'Tu nuevo estado',place:'Tu perfil'})),...fallbackCommunity].slice(0,8),[storyState.media]);
   const openSwipe=(person:Person)=>{const index=peopleState.filteredPeople.findIndex(item=>item.name===person.name);setPersonIndex(Math.max(0,index));setMode('swipe');};
-  const advancePerson=(like:boolean)=>{const person=peopleState.filteredPeople[personIndex];if(person&&like)peopleState.toggleLike(person);setPersonIndex(index=>index+1);};
+  const advancePerson=(action:'like'|'dislike'|'skip')=>{
+    const person=peopleState.filteredPeople[personIndex];
+    if(person){
+      if(action==='like')peopleState.toggleLike(person);
+      if(action==='dislike')peopleState.dislikePerson(person);
+    }
+    setPersonIndex(index=>index+1);
+  };
   const sendStoryReply=()=>{const active=storyIndex===null?null:storyState.stories[storyIndex];const text=storyReply.trim();if(!active||!text)return;const current=loadStored<Record<string,string[]>>(storageKeys.chatMessages,{});saveStored(storageKeys.chatMessages,{...current,[active.name]:[...(current[active.name]||[]),text]});setStoryReply('');onChat(active.name);};
   if(mode==='grid')return <PeopleGridView people={peopleState.filteredPeople} filter={peopleState.filter} locationAllowed={peopleState.locationAllowed} privacy={peopleState.privacy} liked={peopleState.liked} onFilter={peopleState.setFilter} onOpen={openSwipe} onToggleLike={peopleState.toggleLike} onBack={()=>setMode('main')}/>;
   if(mode==='swipe')return <><PeopleSwipeView people={peopleState.filteredPeople} index={personIndex} filter={peopleState.filter} locationAllowed={peopleState.locationAllowed} privacy={peopleState.privacy} onFilter={peopleState.setFilter} onBack={()=>setMode('main')} onAdvance={advancePerson} onDetail={setPersonDetail}/>{personDetail&&<PersonDetailCard person={personDetail} privacy={peopleState.privacy} onClose={()=>setPersonDetail(null)} onChat={onChat}/>}</>;

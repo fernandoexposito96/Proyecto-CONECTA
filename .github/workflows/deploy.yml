@@ -10,11 +10,12 @@ permissions:
   pages: write
   id-token: write
 
-# One deterministic publication path: every accepted main commit queues for Pages.
-# Never cancel an in-flight publication, so a newer update cannot leave the site half-published.
+# Keep one publication lane and always prioritize the newest accepted main commit.
+# Older queued/in-flight builds are obsolete once main advances and must not delay
+# the UI currently stored in the repository.
 concurrency:
   group: github-pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:

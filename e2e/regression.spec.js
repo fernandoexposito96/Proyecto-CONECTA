@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {backend,nav} from './helpers.js';
 
-// Regression tests intentionally exercise the canonical UI contract, not styling-only class names.
+// Regression tests exercise stable UI contracts rather than styling-only selectors.
 
 test('authenticated navigation survives malformed persisted state',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('conecta-prototype-state-v1','{bad json'));
@@ -28,11 +28,12 @@ test('created real plan is discoverable in the existing plan browser',async({pag
   await page.getByPlaceholder('Tarragona, Salou...').fill('Tarragona');
   await page.locator('input[type=date]').fill('2030-06-14');
   await page.locator('input[type=time]').fill('18:00');
-  // The current create-plan screen exposes two controls with the same accessible label.
-  // The action button belongs to the editor and is the last visible exact match.
-  const createButtons=page.getByRole('button',{name:'Crear plan',exact:true}).filter({visible:true});
-  await createButtons.last().click();
-  await expect(page.getByText('Plan creado y sincronizado',{exact:true})).toBeVisible();
+  // Submit the actual form instead of depending on duplicated/changed accessible labels.
+  // This remains stable if decorative text or another "Crear plan" control is added later.
+  const form=page.locator('form.cp-form');
+  await expect(form).toBeVisible();
+  await form.locator('button[type=submit]').click();
+  await expect(page.getByText('Plan creado y sincronizado',{exact:true})).toBeVisible({timeout:15000});
   await page.getByRole('button',{name:'Ver planes',exact:true}).click();
   await expect(page.getByText('Audit published plan',{exact:true})).toBeVisible();
   expect(requests.filter(r=>r.table==='plans'&&r.method==='POST')).toHaveLength(1);

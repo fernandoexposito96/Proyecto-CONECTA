@@ -53,6 +53,7 @@ export const storageKeys={
   backendConnections:'conecta-backend-connections-v2',
   chatMessages:'conecta-chat-messages-v1',
   exploreLikes:'conecta-explore-likes-v1',
+  exploreDislikes:'conecta-explore-dislikes-v1',
   storyAdded:'conecta-story-added-v1',
   storyLikes:'conecta-story-likes-v1',
   profileBio:'conecta-profile-bio-v1',

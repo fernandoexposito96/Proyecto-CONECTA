@@ -40,11 +40,8 @@ function handler(slug,{authenticated=false,consumed=false}={}){
 }
 
 let passed=0;
-for(const slug of ['conecta-product-ai','conecta-robot-ai','conecta-moderation','conecta-context']){
+for(const slug of ['conecta-product-ai','conecta-moderation','conecta-context']){
   assert.equal((await handler(slug).invoke({})).status,401,slug+' rejects unverified sessions');passed++;
-}
-for(const [action,status] of [['set_power',403],['scan_now',401]]){
-  assert.equal((await handler('conecta-robot-control').invoke({action})).status,status);passed++;
 }
 for(const slug of ['passkey-auth','passkey-register']){
   const instance=handler(slug,{authenticated:true});

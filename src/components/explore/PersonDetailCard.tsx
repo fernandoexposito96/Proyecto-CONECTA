@@ -2,7 +2,9 @@ import { ChevronLeft, MapPin } from 'lucide-react';
 import type { Person, PrivacySettings } from '../../types';
 import { distanceCopy } from '../../lib/privacy';
 
-export function PersonDetailCard({person,privacy,onClose,onChat}:{person:Person;privacy:PrivacySettings;onClose:()=>void;onChat:(name:string)=>void}){
+export type ChatContact={name:string;userId?:string};
+
+export function PersonDetailCard({person,privacy,onClose,onChat}:{person:Person;privacy:PrivacySettings;onClose:()=>void;onChat:(contact:ChatContact)=>void}){
   return <div className="person-detail-overlay" onClick={onClose}>
     <article className="person-detail-card" onClick={e=>e.stopPropagation()}>
       <div className="person-detail-hero">
@@ -14,7 +16,7 @@ export function PersonDetailCard({person,privacy,onClose,onChat}:{person:Person;
         <strong>{person.job}</strong><p>{person.bio}</p>
         <div className="person-detail-tags">{person.tags.map(tag=><span key={tag}>{tag}</span>)}</div>
         <div className="person-mini-gallery">{person.gallery.map((image,index)=><img key={`${image}-${index}`} src={image} alt={`Foto ${index+1} de ${person.name}`}/>)}</div>
-        <button className="person-chat-cta" onClick={()=>onChat(person.name)}>Hablar con {person.name}</button>
+        <button className="person-chat-cta" onClick={()=>onChat({name:person.name,userId:person.userId})}>Hablar con {person.name}</button>
       </div>
     </article>
   </div>;

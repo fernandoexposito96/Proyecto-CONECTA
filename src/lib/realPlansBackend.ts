@@ -53,10 +53,12 @@ function basePlan(row:RealPlanRow):Plan{
 }
 
 export async function fetchRealPlans():Promise<Plan[]>{
+  const now=new Date().toISOString();
   const {data,error}=await supabase
     .from('plans')
     .select('id,creator_id,title,category,location_name,starts_at,max_people,image_url,visibility,share_slug')
     .in('status',['published','full'])
+    .gte('starts_at',now)
     .order('starts_at',{ascending:true,nullsFirst:false})
     .limit(100);
   if(error)throw error;

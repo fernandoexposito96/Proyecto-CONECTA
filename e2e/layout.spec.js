@@ -51,8 +51,9 @@ for(const [width,height] of [[320,740],[390,844],[600,900],[768,1024],[844,390],
   const authReports=[await measure(page,'Acceso')];await page.locator('.auth-switch').click();authReports.push(await measure(page,'Registro'));
   await backend(page);await page.reload();await expect(page.locator('.app-shell')).toBeVisible();
   await page.addStyleTag({content:'*{content-visibility:visible!important;animation:none!important;transition:none!important;scroll-behavior:auto!important}'});
-  const reports=[...authReports];
-  const check=async label=>{await page.evaluate(()=>window.scrollTo(0,0));await page.evaluate(()=>new Promise(requestAnimationFrame));reports.push(await measure(page,label));};
+  const reports=[...authReports],previews=[];
+  const previewLabels=new Set(['Inicio','Planes','Crear plan','Explora','Chat / conversación','Perfil','Ajustes','Premium']);
+  const check=async label=>{await page.evaluate(()=>window.scrollTo(0,0));await page.evaluate(()=>new Promise(requestAnimationFrame));reports.push(await measure(page,label));if(width===390&&previewLabels.has(label)){previews.push({label,data:(await page.screenshot({type:'jpeg',quality:65,animations:'disabled'})).toString('base64')});}};
   const row=title=>page.locator('.settings-row').filter({has:page.getByText(title,{exact:true})});
   const back=()=>page.locator('.settings-back:not(.placeholder)').click();
   await check('Inicio');
@@ -94,6 +95,18 @@ for(const [width,height] of [[320,740],[390,844],[600,900],[768,1024],[844,390],
     await back();
   }
   await page.locator('.settings-premium-entry').click();await check('Premium');
+  if(previews.length){
+    const canvasPage=await page.context().newPage();
+    await canvasPage.setContent('<canvas id="sheet"></canvas>');
+    const preview=await canvasPage.evaluate(async items=>{
+      const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');canvas.width=1200;canvas.height=Math.ceil(items.length/4)*680;ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      for(let i=0;i<items.length;i++){const img=new Image();img.src='data:image/jpeg;base64,'+items[i].data;await img.decode();const x=(i%4)*300,y=Math.floor(i/4)*680;ctx.fillStyle='#17213e';ctx.font='bold 16px sans-serif';ctx.fillText(items[i].label,x+8,y+22);ctx.drawImage(img,x,y+30,300,649);}
+      return canvas.toDataURL('image/jpeg',.8).split(',')[1];
+    },previews);
+    for(let i=0;i<preview.length;i+=16000)console.log('LAYOUT_PREVIEW_CHUNK '+preview.slice(i,i+16000));
+    await info.attach('mobile-layout-contact-sheet',{body:Buffer.from(preview,'base64'),contentType:'image/jpeg'});
+    await canvasPage.close();
+  }
   console.log('LAYOUT_REPORT '+JSON.stringify({width,height,screens:reports.length,failures:reports.filter(r=>r.issues.length)}));
   await info.attach('layout-report',{body:JSON.stringify(reports,null,2),contentType:'application/json'});
   expect(reports.flatMap(r=>r.issues.map(issue=>({screen:r.label,...issue})))).toEqual([]);

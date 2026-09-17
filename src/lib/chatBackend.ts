@@ -11,17 +11,9 @@ export async function ensureDirectConversation(otherUserId:string){
   const userId=await backendCurrentUserId();
   if(!userId)throw new Error('Necesitas iniciar sesión para iniciar una conversación.');
   if(!otherUserId||otherUserId===userId)throw new Error('No se puede iniciar esta conversación.');
-  const {data:own,error:ownError}=await supabase.from('conversation_members').select('conversation_id').eq('user_id',userId);if(ownError)throw ownError;
-  const ids=[...new Set((own||[]).map(row=>String(row.conversation_id||'')).filter(Boolean))];
-  if(ids.length){
-    const {data:other,error:otherError}=await supabase.from('conversation_members').select('conversation_id').eq('user_id',otherUserId).in('conversation_id',ids);if(otherError)throw otherError;
-    const candidates=[...new Set((other||[]).map(row=>String(row.conversation_id||'')).filter(Boolean))];
-    if(candidates.length){const {data:direct,error:directError}=await supabase.from('conversations').select('id').in('id',candidates).eq('type','direct').limit(1).maybeSingle();if(directError)throw directError;if(direct?.id)return String(direct.id);}
-  }
-  const {data:created,error:createError}=await supabase.from('conversations').insert({type:'direct'}).select('id').single();if(createError)throw createError;
-  const conversationId=String(created.id);
-  const {error:memberError}=await supabase.from('conversation_members').insert([{conversation_id:conversationId,user_id:userId},{conversation_id:conversationId,user_id:otherUserId}]);
-  if(memberError){await supabase.from('conversations').delete().eq('id',conversationId);throw memberError;}
+  const {data:conversationId,error}=await supabase.rpc('get_or_create_direct_conversation',{other_user:otherUserId});
+  if(error)throw error;
+  if(typeof conversationId!=='string'||!conversationId)throw new Error('No se pudo iniciar la conversación.');
   return conversationId;
 }
 
@@ -43,7 +35,7 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
   const membersByConversation=new Map<string,string[]>();for(const member of members||[]){const conversationId=String(member.conversation_id||'');const memberId=String(member.user_id||'');if(!conversationId||!memberId)continue;const list=membersByConversation.get(conversationId)||[];list.push(memberId);membersByConversation.set(conversationId,list);}
   const otherUserIds=[...new Set((members||[]).map(row=>String(row.user_id||'')).filter(id=>id&&id!==userId))];const profilesById=new Map<string,{name:string;avatar?:string}>();
   if(otherUserIds.length){const {data:profiles,error:profileError}=await supabase.from('profiles').select('id,display_name,username,avatar_url').in('id',otherUserIds);if(profileError)throw profileError;for(const profile of profiles||[]){const id=String(profile.id||'');if(!id)continue;profilesById.set(id,{name:String(profile.display_name||profile.username||'Usuario'),avatar:typeof profile.avatar_url==='string'&&profile.avatar_url?profile.avatar_url:undefined});}}
-  const rows=(conversations||[]).map(conversation=>{const conversationId=String(conversation.id||'');const latest=latestByConversation.get(conversationId);const isGroup=String(conversation.type||'direct')!=='direct';const memberIds=membersByConversation.get(conversationId)||[];const otherId=memberIds.find(id=>id&&id!==userId);const profile=otherId?profilesById.get(otherId):undefined;const planId=typeof conversation.plan_id==='string'&&conversation.plan_id?conversation.plan_id:undefined;return {preview:{conversationId,userId:otherId||undefined,planId,name:isGroup?String(conversation.title||'Grupo CONECTA'):(profile?.name||'Conversación'),avatar:profile?.avatar,message:latest?.content||'Conversación nueva',isGroup} satisfies BackendChatPreview,activityAt:latest?.createdAt||String(conversation.created_at||'')};});
+  const rows=(conversations||[]).map(conversation=>{const conversationId=String(conversation.id||'');const latest=latestByConversation.get(conversationId);const isGroup=String(conversation.type||'direct')!=='direct';const memberIds=membersByConversation.get(conversationId)||[];const otherId=memberIds.find(id=>id&&id!==userId);const profile=otherId?profilesById.get(otherId):undefined;const planId=typeof conversation.plan_id==='string'&&conversation.plan_id?conversation.plan_id:undefined;return {preview:{conversationId,userId:isGroup?undefined:otherId||undefined,planId,name:isGroup?String(conversation.title||'Grupo CONECTA'):(profile?.name||'Conversación'),avatar:profile?.avatar,message:latest?.content||'Conversación nueva',isGroup} satisfies BackendChatPreview,activityAt:latest?.createdAt||String(conversation.created_at||'')};});
   return rows.sort((a,b)=>Date.parse(b.activityAt||'')-Date.parse(a.activityAt||'')).map(row=>row.preview);
 }
 

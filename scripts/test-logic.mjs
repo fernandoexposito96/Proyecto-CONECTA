@@ -38,5 +38,32 @@ try{
   const mixedPlans=[{title:'Demo cercano',image:'x',time:'Hoy · 18:00',place:'Tarragona',distance:'1 km',spots:'4 plazas',category:'Social'},{backendId:'real-1',title:'Plan real',image:'x',time:'Hoy · 18:00',place:'Tarragona',distance:'Cerca de ti',spots:'4 plazas',category:'Social'}];
   const mixed=filterExplorePlans(mixedPlans,{timeFilter:'all',category:null,query:'',sortAsc:true});assert.deepEqual(mixed.map(p=>p.title),['Plan real','Demo cercano']);
   const date=new Date();date.setHours(18,0,0,0);const real={...mixedPlans[1],time:'fecha localizada sin Hoy',startsAt:date.toISOString()};const filterReal=(timeFilter,items=[real])=>filterExplorePlans(items,{timeFilter,category:null,query:'',sortAsc:true});assert.equal(filterReal('today').length,1);assert.equal(filterReal('afternoon').length,1);assert.equal(filterReal('tonight').length,0);date.setHours(21);real.startsAt=date.toISOString();assert.equal(filterReal('tonight').length,1);date.setDate(date.getDate()+1);real.startsAt=date.toISOString();assert.equal(filterReal('today').length,0);real.startsAt='invalid';assert.equal(filterReal('today').length,0);const sunday=new Date();sunday.setDate(sunday.getDate()+(7-sunday.getDay())%7);sunday.setHours(18,0,0,0);real.startsAt=sunday.toISOString();assert.equal(filterReal('weekend').length,1);sunday.setDate(sunday.getDate()+7);real.startsAt=sunday.toISOString();assert.equal(filterReal('weekend').length,0);
-  console.log('Logic unit tests: 28/28 OK');
+
+  // Exercise database-to-UI conversion, including absent and malformed coordinates.
+  fs.writeFileSync(path.join(tmpDir,'supabase.mjs'),`export const supabase={from(table){const query={select(){return query},in(){return query},gte(){return query},order(){return query},limit(){return query},then(resolve,reject){return Promise.resolve({data:table==='plans'?globalThis.__coordinateRows:[],error:null}).then(resolve,reject)}};return query}};`);
+  const backendSource=fs.readFileSync('src/lib/realPlansBackend.ts','utf8');
+  const backendResult=ts.transpileModule(backendSource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022},fileName:'realPlansBackend.ts'});
+  fs.writeFileSync(path.join(tmpDir,'realPlansBackend.mjs'),backendResult.outputText.replace(/(['"])\.\/supabase\1/,"'./supabase.mjs'"));
+  const {fetchRealPlans}=await import(pathToFileURL(path.join(tmpDir,'realPlansBackend.mjs')).href);
+  const row={id:'coordinate-test',creator_id:'',title:'Coordinate test',category:'Social',location_name:null,starts_at:null,max_people:2,image_url:null,visibility:'public',share_slug:null};
+  try{
+    for(const invalid of [null,undefined,'',' ',false,true,[],{},NaN,Infinity,'not a coordinate']){
+      globalThis.__coordinateRows=[{...row,latitude:invalid,longitude:invalid}];
+      const [plan]=await fetchRealPlans();
+      assert.equal(plan.latitude,undefined);assert.equal(plan.longitude,undefined);
+      assert.equal(plan.distance,'Ubicación por confirmar');
+    }
+    for(const [latitude,longitude] of [[0,0],['41.1189','1.2445'],[-90,-180],[90,180]]){
+      globalThis.__coordinateRows=[{...row,latitude,longitude}];
+      const [plan]=await fetchRealPlans();
+      assert.equal(plan.latitude,Number(latitude));assert.equal(plan.longitude,Number(longitude));
+      assert.equal(plan.distance,'Ubicación disponible');
+    }
+    globalThis.__coordinateRows=[{...row,latitude:91,longitude:-181}];
+    const [invalidRange]=await fetchRealPlans();
+    assert.equal(invalidRange.latitude,undefined);assert.equal(invalidRange.longitude,undefined);
+    console.log('✓ Missing coordinates stay missing; real zero and coordinate boundaries remain valid');
+  }finally{delete globalThis.__coordinateRows;}
+
+  console.log('Logic unit tests: OK');
 } finally {fs.rmSync(tmpDir,{recursive:true,force:true});}

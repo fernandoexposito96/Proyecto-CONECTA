@@ -31,6 +31,8 @@ async function measure(page,label){
     }
     const explore=document.querySelector('.explore-social-v2'),content=document.querySelector('.content');
     if(explore&&content&&explore.getBoundingClientRect().left-content.getBoundingClientRect().left>70)issues.push({kind:'double-sidebar-offset',element:'Explora'});
+    const composer=document.querySelector('.chat-composer'),bottomNav=document.querySelector('.bottom-nav');
+    if(composer&&bottomNav&&visible(bottomNav)&&window.innerHeight>=650&&composer.getBoundingClientRect().bottom>bottomNav.getBoundingClientRect().top+1)issues.push({kind:'composer-under-navigation',element:'.chat-composer'});
     const copy=document.querySelector('.home-map-copy'),surface=document.querySelector('.home-map-surface');
     if(copy&&surface&&copy.getBoundingClientRect().bottom>surface.getBoundingClientRect().top+2)issues.push({kind:'map-heading-overlap',element:'.home-map-copy',bottom:Math.round(copy.getBoundingClientRect().bottom),mapTop:Math.round(surface.getBoundingClientRect().top)});
     for(const el of document.querySelectorAll('.settings-switch,.settings-radio,.notification-icon,.chat-thread-head>button,.chat-thread-head>img')){
@@ -53,7 +55,8 @@ for(const [width,height] of [[320,740],[390,844],[600,900],[768,1024],[844,390],
   await page.addStyleTag({content:'*{content-visibility:visible!important;animation:none!important;transition:none!important;scroll-behavior:auto!important}'});
   const reports=[...authReports],previews=[];
   const previewLabels=new Set(['Inicio','Planes','Crear plan','Explora','Chat / conversación','Perfil','Ajustes','Premium']);
-  const check=async label=>{await page.evaluate(()=>window.scrollTo(0,0));await page.evaluate(()=>new Promise(requestAnimationFrame));reports.push(await measure(page,label));if(width===390&&previewLabels.has(label)){previews.push({label,data:(await page.screenshot({type:'jpeg',quality:65,animations:'disabled'})).toString('base64')});}};
+  const check=async label=>{await page.evaluate(()=>window.scrollTo(0,0));await page.evaluate(()=>new Promise(requestAnimationFrame));reports.push(await measure(page,label));if(width===390&&previewLabels.has(label)){previews.push({label,data:(await page.screenshot({type:'jpeg',quality:65,animations:'disabled'})).toString('base64')});
+    if(['Inicio','Crear plan','Perfil','Planes'].includes(label)){await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));await page.evaluate(()=>new Promise(requestAnimationFrame));previews.push({label:label+' / abajo',data:(await page.screenshot({type:'jpeg',quality:65,animations:'disabled'})).toString('base64')});await page.evaluate(()=>window.scrollTo(0,0));}}};
   const row=title=>page.locator('.settings-row').filter({has:page.getByText(title,{exact:true})});
   const back=()=>page.locator('.settings-back:not(.placeholder)').click();
   await check('Inicio');

@@ -3,7 +3,7 @@ const planId='22222222-2222-4222-8222-222222222222';
 const user={id:userId,email:'audit@example.invalid',aud:'authenticated',role:'authenticated',user_metadata:{display_name:'Audit'},app_metadata:{},created_at:'2026-01-01T00:00:00Z'};
 const session={access_token:`${Buffer.from('{"alg":"HS256"}').toString('base64url')}.${Buffer.from(JSON.stringify({sub:userId,exp:4102444800,role:'authenticated'})).toString('base64url')}.test`,refresh_token:'test-only',expires_in:3600,expires_at:4102444800,token_type:'bearer',user};
 
-export async function backend(page,{state={},failPrototypeHydration=false,plans=[],planMemberStatus=null,planStartsAt=null,chatRefresh=false,backendOutage=false}={}){
+export async function backend(page,{state={},failPrototypeHydration=false,prototypeHydrationFailures=0,plans=[],planMemberStatus=null,planStartsAt=null,chatRefresh=false,backendOutage=false}={}){
   const requests=[];
   const messages=[];
   await page.addInitScript(({session})=>{
@@ -22,7 +22,7 @@ export async function backend(page,{state={},failPrototypeHydration=false,plans=
     let data=object?null:[];
     if(table==='user')data=user;
     else if(table==='prototype_state'){
-      if(failPrototypeHydration&&method==='GET')return route.fulfill({status:503,json:{message:'offline test'}});
+      if(method==='GET'&&(failPrototypeHydration||prototypeHydrationFailures>0)){prototypeHydrationFailures=Math.max(0,prototypeHydrationFailures-1);return route.fulfill({status:503,json:{message:'offline test'}});}
       data=method==='GET'?{state}:null;
     }else if(table==='profiles')data=object?{id:userId,display_name:'Audit',profile_visibility:'public',show_location:true,allow_messages:'everyone'}:[{id:userId,display_name:'Audit'}];
     else if(table==='plans'){

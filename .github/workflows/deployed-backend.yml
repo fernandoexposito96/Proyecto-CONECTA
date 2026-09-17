@@ -5,12 +5,16 @@ on:
     branches: [main]
     paths:
       - 'supabase/functions/**'
+      - 'src/lib/**'
+      - 'docs/sql/**'
       - 'scripts/test-deployed-backend.mjs'
       - '.github/workflows/deployed-backend.yml'
   pull_request:
     branches: [main]
     paths:
       - 'supabase/functions/**'
+      - 'src/lib/**'
+      - 'docs/sql/**'
       - 'scripts/test-deployed-backend.mjs'
       - '.github/workflows/deployed-backend.yml'
   workflow_dispatch:

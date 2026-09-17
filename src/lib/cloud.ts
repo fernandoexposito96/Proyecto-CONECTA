@@ -142,13 +142,21 @@ export async function hydrateCloudState(expectedUserId?:string){
   const canMigrateLocal=previousUserId===session.user.id||(!previousUserId&&localStateBelongsToUser(previousLocalState,sessionEmail));
   // Isolate the next account before a network request can fail.
   if(!canMigrateLocal)clearLocalUserState();
-  const {data,error}=await supabase
+  const hydrationSignal=AbortSignal.timeout(8000);
+  const readState=()=>supabase
     .from('prototype_state')
     .select('state')
     .eq('user_id',session.user.id)
-    .abortSignal(AbortSignal.timeout(8000))
+    .abortSignal(hydrationSignal)
     .maybeSingle();
-
+  let result=await readState();
+  for(let attempt=0;result.error&&(result.status===0||result.status>=500)&&attempt<2&&!hydrationSignal.aborted;attempt+=1){
+    await new Promise<void>(resolve=>window.setTimeout(resolve,500*(attempt+1)));
+    if(generation!==syncGeneration)return false;
+    if(hydrationSignal.aborted)break;
+    result=await readState();
+  }
+  const {data,error}=result;
   if(error)throw error;
   if(generation!==syncGeneration)return false;
 

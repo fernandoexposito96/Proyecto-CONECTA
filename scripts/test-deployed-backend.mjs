@@ -22,3 +22,11 @@ assert.equal(passkey.status,400);
 assert.equal((await passkey.json()).error,'missing_credential');
 assert.equal(passkey.headers.get('cache-control'),'no-store');
 console.log('✓ Production passkey handler is active and rejects missing credentials without caching');
+
+const directChat=await fetch(url+'/rest/v1/rpc/get_or_create_direct_conversation',{
+  method:'POST',headers:{apikey:key,'Content-Type':'application/json'},
+  body:JSON.stringify({other_user:'11111111-1111-4111-8111-111111111111'}),signal:AbortSignal.timeout(20000),
+});
+assert.ok([401,403].includes(directChat.status),'anonymous direct-chat RPC must be denied');
+await directChat.arrayBuffer();
+console.log('✓ Production direct-chat RPC rejects anonymous callers');

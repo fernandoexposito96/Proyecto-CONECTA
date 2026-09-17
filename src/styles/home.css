@@ -92,3 +92,8 @@
 @media(max-width:390px){
   .home-target-hero{height:216px}.home-target-copy{left:15px;top:22px}.home-target-copy h1{font-size:31px}.home-target-note{font-size:13px;right:13px}.home-target-next{grid-template-columns:76px minmax(0,1fr) 26px;gap:7px}.home-target-next>img{width:76px;height:62px}.home-target-next-copy>strong{font-size:13px}.home-target-categories{grid-auto-columns:82px}.home-target-categories button{height:84px}.home-target-plans{grid-auto-columns:calc(55vw - 22px)}.home-target-escapes{grid-auto-columns:calc(55vw - 22px)}
 }
+
+/* The empty next-plan state has no thumbnail: do not reserve its grid column. */
+.home-target-next:not(:has(>img)){grid-template-columns:minmax(0,1fr) auto}
+.home-target-next:not(:has(>img)) .home-target-next-copy>strong,.home-target-next:not(:has(>img)) .home-target-meta{white-space:normal;overflow:visible}
+.home-target-head>div,.home-target-head h2{min-width:0}.home-target-head button{flex-shrink:0}

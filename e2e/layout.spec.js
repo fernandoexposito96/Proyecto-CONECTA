@@ -1,16 +1,18 @@
 import {test,expect} from '@playwright/test';
 import {backend,nav} from './helpers.js';
+test.describe.configure({retries:0});
 
 // Checks actual geometry, including content hidden by overflow on the document.
 // Horizontal carousels are intentional; document-level horizontal scrolling is not.
 async function measure(page,label){
   await page.mouse.move(0,0);
   return page.evaluate(label=>{
+    let style=document.getElementById('layout-measure-style');if(!style){style=document.createElement('style');style.id='layout-measure-style';document.head.append(style);}style.textContent='*{content-visibility:visible!important;animation:none!important;transition:none!important;scroll-behavior:auto!important}';
     const issues=[],vw=document.documentElement.clientWidth;
     const visible=el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none';};
     const identify=el=>el.tagName.toLowerCase()+'.'+String(el.className||'').trim().split(/\s+/).join('.')+' '+(el.textContent||'').trim().slice(0,65);
     const carousel=el=>{for(let p=el.parentElement;p&&p!==document.body;p=p.parentElement){const s=getComputedStyle(p);if(/auto|scroll/.test(s.overflowX)&&p.scrollWidth>p.clientWidth+2)return true;}return false;};
-    for(const el of document.querySelectorAll('.content :is(h1,h2,h3,p,button,input,select,textarea,article,section,header,[class$="-head"],[class$="-header"]),.topbar,.sidebar,.bottom-nav')){
+    for(const el of document.querySelectorAll('.content :is(h1,h2,h3,p,button,input,select,textarea,article,section,header,[class$="-head"],[class$="-header"]),.topbar,.sidebar,.bottom-nav,.auth-card :is(h1,h2,p,button,input)')){
       if(!visible(el)||el.closest('.leaflet-container')||carousel(el))continue;
       const r=el.getBoundingClientRect();
       if(r.left<-2||r.right>vw+2)issues.push({kind:'viewport-overflow',element:identify(el),left:Math.round(r.left),right:Math.round(r.right),vw});
@@ -29,16 +31,27 @@ async function measure(page,label){
     }
     const explore=document.querySelector('.explore-social-v2'),content=document.querySelector('.content');
     if(explore&&content&&explore.getBoundingClientRect().left-content.getBoundingClientRect().left>70)issues.push({kind:'double-sidebar-offset',element:'Explora'});
+    const copy=document.querySelector('.home-map-copy'),surface=document.querySelector('.home-map-surface');
+    if(copy&&surface&&copy.getBoundingClientRect().bottom>surface.getBoundingClientRect().top+2)issues.push({kind:'map-heading-overlap',element:'.home-map-copy',bottom:Math.round(copy.getBoundingClientRect().bottom),mapTop:Math.round(surface.getBoundingClientRect().top)});
+    for(const el of document.querySelectorAll('.settings-switch,.settings-radio,.notification-icon,.chat-thread-head>button,.chat-thread-head>img')){
+      const minimum=el.matches('.settings-switch')?52:el.matches('.settings-radio')?22:el.matches('img')?46:38;
+      if(visible(el)&&el.getBoundingClientRect().width<minimum-1)issues.push({kind:'compressed-control',element:identify(el),width:el.getBoundingClientRect().width,minimum});
+    }
+    for(const el of document.querySelectorAll('.cp-grid input[type="date"],.cp-grid input[type="time"]')){
+      if(visible(el)&&el.clientWidth<110)issues.push({kind:'compressed-date-control',element:identify(el),width:el.clientWidth});
+    }
     return {label,issues};
   },label);
 }
-for(const [width,height] of [[320,740],[390,844],[768,1024],[1024,768],[1440,900]]){
+for(const [width,height] of [[320,740],[390,844],[600,900],[768,1024],[844,390],[1024,768],[1440,900]]){
  test('layout audit '+width+'x'+height,async({page},info)=>{
   test.skip(info.project.name!=='chromium-desktop','Explicit responsive matrix already includes mobile');
   test.setTimeout(180000);await page.setViewportSize({width,height});
-  await backend(page);await page.goto('/');await expect(page.locator('.app-shell')).toBeVisible();
+  await page.goto('/');await expect(page.locator('.auth-card')).toBeVisible();
+  const authReports=[await measure(page,'Acceso')];await page.locator('.auth-switch').click();authReports.push(await measure(page,'Registro'));
+  await backend(page);await page.reload();await expect(page.locator('.app-shell')).toBeVisible();
   await page.addStyleTag({content:'*{content-visibility:visible!important;animation:none!important;transition:none!important;scroll-behavior:auto!important}'});
-  const reports=[];
+  const reports=[...authReports];
   const check=async label=>{await page.evaluate(()=>window.scrollTo(0,0));await page.evaluate(()=>new Promise(requestAnimationFrame));reports.push(await measure(page,label));};
   const row=title=>page.locator('.settings-row').filter({has:page.getByText(title,{exact:true})});
   const back=()=>page.locator('.settings-back:not(.placeholder)').click();

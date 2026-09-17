@@ -35,7 +35,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 img{display:block;max-width:100%}
 
 .app-shell{min-height:100vh;background:linear-gradient(180deg,#fbf9ff 0%,#f7f4ff 42%,#f5f1ff 100%)}
-main{min-width:0;margin-left:245px;min-height:100vh}
+.app-shell>main{min-width:0;margin-left:245px;min-height:100vh}
 .content{width:min(1280px,100%);margin:0 auto;padding:28px 30px 60px}
 .page{min-width:0;background:transparent}
 
@@ -82,12 +82,12 @@ main{min-width:0;margin-left:245px;min-height:100vh}
 .auth-switch{width:100%;margin-top:16px;padding:10px;border:0;background:transparent;color:var(--purple);font-weight:800}
 .auth-loading{align-content:center;gap:9px;text-align:center}.auth-loading strong{font-size:22px}.auth-loading small{color:var(--muted)}.auth-loader{width:36px;height:36px;border:3px solid #ddd4f4;border-top-color:var(--purple);border-radius:50%;animation:auth-spin .8s linear infinite}@keyframes auth-spin{to{transform:rotate(360deg)}}
 
-@media(max-width:1000px){main{margin-left:210px}.content{padding:22px}}
+@media(max-width:1000px){.app-shell>main{margin-left:210px}.content{padding:22px}}
 
 @media(max-width:760px){
   html,body,#app{background:var(--page-bg)}
-  main{margin-left:0}
-  .app-shell,main{min-height:100dvh}
+  .app-shell>main{margin-left:0}
+  .app-shell,.app-shell>main{min-height:100dvh}
   .content{width:100%;max-width:none;margin:0;padding:14px var(--mobile-gutter) calc(82px + env(safe-area-inset-bottom))}
   .page{width:100%;max-width:none;margin:0;padding:0}
   .section{margin-top:20px;padding:16px;border-radius:20px}

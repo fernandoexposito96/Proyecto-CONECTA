@@ -25,7 +25,7 @@ const activeStatuses=new Set<string>(activeStatusList);
 const startsAtFormatter=new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 
 function formatStartsAt(value:string|null){if(!value)return 'Fecha por confirmar';const date=new Date(value);if(Number.isNaN(date.getTime()))return 'Fecha por confirmar';return startsAtFormatter.format(date)}
-function validCoordinate(value:unknown,min:number,max:number){const number=typeof value==='number'?value:Number(value);return Number.isFinite(number)&&number>=min&&number<=max?number:undefined}
+function validCoordinate(value:unknown,min:number,max:number){if((typeof value!=='number'&&typeof value!=='string')||(typeof value==='string'&&!value.trim()))return undefined;const number=typeof value==='number'?value:Number(value);return Number.isFinite(number)&&number>=min&&number<=max?number:undefined}
 function basePlan(row:RealPlanRow):Plan{
  const latitude=validCoordinate(row.latitude,-90,90);const longitude=validCoordinate(row.longitude,-180,180);
  return {backendId:row.id,creatorId:row.creator_id,title:row.title,image:row.image_url||fallbackImage,time:formatStartsAt(row.starts_at),startsAt:row.starts_at||undefined,place:row.location_name||'Lugar por confirmar',distance:latitude!==undefined&&longitude!==undefined?'Ubicación disponible':'Ubicación por confirmar',spots:row.max_people?`${row.max_people} plazas`:'Plazas abiertas',category:row.category||'Plan',latitude,longitude,visibility:row.visibility==='connections'?'Solo conexiones':'Todos',shareSlug:row.share_slug||undefined};

@@ -19,6 +19,26 @@ export type ProfileMediaItem={
 };
 
 const MEDIA_BUCKET='profile-media';
+const profileColumns='id,display_name,username,avatar_url,city';
+
+function mapPerson(row:any):PersonSearchResult{
+  return {
+    id:String(row.id||''),
+    name:String(row.display_name||row.username||'Usuario'),
+    username:String(row.username||''),
+    avatar:String(row.avatar_url||''),
+    city:String(row.city||''),
+  };
+}
+
+export async function discoverPeople(limit=24):Promise<PersonSearchResult[]>{
+  const {data:{user}}=await supabase.auth.getUser();
+  let query=supabase.from('profiles').select(profileColumns).limit(limit);
+  if(user?.id)query=query.neq('id',user.id);
+  const {data,error}=await query;
+  if(error)throw error;
+  return (data||[]).map(mapPerson).filter(item=>item.id);
+}
 
 export async function searchPeopleByName(query:string,limit=20):Promise<PersonSearchResult[]>{
   const clean=query.trim();
@@ -26,17 +46,11 @@ export async function searchPeopleByName(query:string,limit=20):Promise<PersonSe
   const escaped=clean.replace(/[%_]/g,'\\$&');
   const {data,error}=await supabase
     .from('profiles')
-    .select('id,display_name,username,avatar_url,city')
+    .select(profileColumns)
     .or(`display_name.ilike.%${escaped}%,username.ilike.%${escaped}%`)
     .limit(limit);
   if(error)throw error;
-  return (data||[]).map(row=>({
-    id:String(row.id||''),
-    name:String(row.display_name||row.username||'Usuario'),
-    username:String(row.username||''),
-    avatar:String(row.avatar_url||''),
-    city:String(row.city||''),
-  })).filter(item=>item.id);
+  return (data||[]).map(mapPerson).filter(item=>item.id);
 }
 
 export async function uploadProfileMedia(file:File,sourceType:'profile'|'status'|'plan'='profile',caption=''):Promise<ProfileMediaItem>{

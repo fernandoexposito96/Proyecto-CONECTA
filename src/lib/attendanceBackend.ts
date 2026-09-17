@@ -2,6 +2,18 @@ import { supabase } from './supabase';
 
 const activeStatuses=['attending','requested','waitlist','attended'];
 const inactiveStatuses=['interested','declined','no_show'];
+const seatStatuses=['attending','attended'];
+
+async function targetJoinStatus(planId:string):Promise<'attending'|'waitlist'>{
+  const {data:plan,error:planError}=await supabase.from('plans').select('max_people,status').eq('id',planId).maybeSingle();
+  if(planError)throw planError;
+  if(!plan)throw new Error('El plan ya no está disponible.');
+  const maxPeople=Number(plan.max_people||0);
+  if(!maxPeople)return 'attending';
+  const {count,error:countError}=await supabase.from('plan_members').select('user_id',{count:'exact',head:true}).eq('plan_id',planId).in('status',seatStatuses);
+  if(countError)throw countError;
+  return (count||0)>=maxPeople?'waitlist':'attending';
+}
 
 export async function joinPlan(planId:string){
   const {data:{user},error:userError}=await supabase.auth.getUser();
@@ -18,26 +30,27 @@ export async function joinPlan(planId:string){
 
   const currentStatus=existing?String(existing.status||''):'';
   if(currentStatus&&activeStatuses.includes(currentStatus))return currentStatus;
+  const nextStatus=await targetJoinStatus(planId);
 
   if(currentStatus&&inactiveStatuses.includes(currentStatus)){
     const {data:updated,error:updateError}=await supabase
       .from('plan_members')
-      .update({status:'attending',role:'participant'})
+      .update({status:nextStatus,role:'participant'})
       .eq('plan_id',planId)
       .eq('user_id',user.id)
       .select('status')
       .single();
     if(updateError)throw updateError;
-    return String(updated.status||'attending');
+    return String(updated.status||nextStatus);
   }
 
   const {data:inserted,error}=await supabase
     .from('plan_members')
-    .insert({plan_id:planId,user_id:user.id,status:'attending',role:'participant'})
+    .insert({plan_id:planId,user_id:user.id,status:nextStatus,role:'participant'})
     .select('status')
     .single();
   if(error)throw error;
-  return String(inserted.status||'attending');
+  return String(inserted.status||nextStatus);
 }
 
 export async function leavePlan(planId:string){

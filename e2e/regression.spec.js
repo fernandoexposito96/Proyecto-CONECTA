@@ -66,3 +66,14 @@ test('unsent changes survive reload and merge only into their own account',async
   await backend(page);await page.goto('/');await expect(page.locator('.app-shell')).toBeVisible({timeout:15000});
   await page.reload();await expect(page.locator('.app-shell')).toBeVisible({timeout:15000});
 });
+
+test('temporary plan outage preserves the current account cached plans',async({page})=>{
+  const cached={backendId:'22222222-2222-4222-8222-222222222222',title:'Saved offline plan',image:'image-fallback.svg',time:'Mañana · 18:00',place:'Lugar por confirmar',distance:'Ubicación por confirmar',spots:'2 plazas',category:'Social'};
+  await backend(page,{state:{'conecta-created-plans-v1':[cached]}});
+  await page.route('**/rest/v1/plans?**',route=>route.fulfill({status:503,json:{message:'temporary plan outage'}}));
+  await page.goto('/');
+  await expect(page.locator('.app-shell')).toBeVisible();
+  await page.getByRole('button',{name:'Explorar planes',exact:true}).click();
+  await expect(page.getByText('Saved offline plan',{exact:true})).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('conecta-created-plans-v1')||'[]').some(plan=>plan.title==='Saved offline plan'))).toBe(true);
+});

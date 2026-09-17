@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import ts from 'typescript';
+import vm from 'node:vm';
 
 const sourcePath='src/lib/planLogic.ts';
 const tmpDir=path.resolve('scripts/.logic-test-tmp');
@@ -64,6 +65,37 @@ try{
     assert.equal(invalidRange.latitude,undefined);assert.equal(invalidRange.longitude,undefined);
     console.log('✓ Missing coordinates stay missing; real zero and coordinate boundaries remain valid');
   }finally{delete globalThis.__coordinateRows;}
+
+
+  // Exercise concurrent loading, network failure recovery and bounded loading time.
+  const nodes=[];const timers=new Map();let timerId=0;
+  const testWindow={setTimeout:callback=>{timers.set(++timerId,callback);return timerId;},clearTimeout:id=>timers.delete(id)};
+  const testDocument={
+    querySelector:selector=>nodes.find(node=>node.tagName===(selector.startsWith('link')?'link':'script'))||null,
+    createElement:tagName=>{const node=new EventTarget();node.tagName=tagName;node.dataset={};node.remove=()=>{const index=nodes.indexOf(node);if(index>=0)nodes.splice(index,1);};return node;},
+    head:{appendChild:node=>nodes.push(node)},
+  };
+  const loaderExports={};
+  const loaderOutput=ts.transpileModule(fs.readFileSync('src/lib/leaflet.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+  vm.runInNewContext(loaderOutput,{window:testWindow,document:testDocument,exports:loaderExports,console});
+  const firstLoad=loaderExports.loadLeaflet();
+  assert.equal(loaderExports.loadLeaflet(),firstLoad,'concurrent consumers share one request');
+  assert.equal(nodes.filter(node=>node.tagName==='script').length,1);
+  nodes.find(node=>node.tagName==='script').dispatchEvent(new Event('error'));
+  await assert.rejects(firstLoad,/Leaflet unavailable/);
+  assert.equal(nodes.filter(node=>node.tagName==='script').length,0);
+  const timeoutLoad=loaderExports.loadLeaflet();
+  [...timers.values()][0]();
+  await assert.rejects(timeoutLoad,/Leaflet unavailable/);
+  assert.equal(nodes.filter(node=>node.tagName==='script').length,0);
+  const recoveredLoad=loaderExports.loadLeaflet();
+  testWindow.L={version:'test'};
+  nodes.find(node=>node.tagName==='script').dispatchEvent(new Event('load'));
+  assert.equal(await recoveredLoad,testWindow.L);
+  assert.equal(await loaderExports.loadLeaflet(),testWindow.L);
+  assert.equal(timers.size,0);
+  assert.equal(nodes.filter(node=>node.tagName==='script').length,1);
+  console.log('✓ Map library loads once, retries after failure and cannot remain loading forever');
 
   console.log('Logic unit tests: OK');
 } finally {fs.rmSync(tmpDir,{recursive:true,force:true});}

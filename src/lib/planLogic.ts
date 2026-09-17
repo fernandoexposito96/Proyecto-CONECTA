@@ -7,10 +7,13 @@ export function normalizeSpots(value:string){const parsed=Number(value);if(!Numb
 
 export function createPlanFromDraft(draft:PlanDraft):Plan|null{
   const title=draft.title.trim();const place=draft.place.trim();const rawWhen=draft.when.trim();if(!title||!place||!rawWhen)return null;
-  const parsed=new Date(rawWhen);if(Number.isNaN(parsed.getTime())||parsed.getTime()<=Date.now())return null;
-  const startsAt=parsed.toISOString();
-  const time=new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(parsed);
-  return {title,place,time,startsAt,spots:`${normalizeSpots(draft.spots)} plazas`,distance:'Ubicación por confirmar',category:draft.category,image:draft.image};
+  const parsed=new Date(rawWhen);const hasRealDate=!Number.isNaN(parsed.getTime());
+  if(hasRealDate&&parsed.getTime()<=Date.now())return null;
+  const startsAt=hasRealDate?parsed.toISOString():undefined;
+  const time=startsAt?new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(parsed):rawWhen;
+  const plan:Plan={title,place,time,spots:`${normalizeSpots(draft.spots)} plazas`,distance:startsAt?'Ubicación por confirmar':'0 km',category:draft.category,image:draft.image};
+  if(startsAt)plan.startsAt=startsAt;
+  return plan;
 }
 
 export function hourFromPlanTime(time:string):number|null{const match=time.match(/(?:^|\D)(\d{1,2}):(\d{2})(?:\D|$)/);if(!match)return null;const hour=Number(match[1]);const minute=Number(match[2]);if(!Number.isInteger(hour)||!Number.isInteger(minute)||hour<0||hour>23||minute<0||minute>59)return null;return hour}

@@ -1,10 +1,10 @@
 .settings-page{max-width:760px;margin:0 auto;padding-bottom:18px}
 .settings-shell{display:grid;gap:16px}
-.settings-header{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:12px}
+.settings-header{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:12px}
 .settings-back{width:40px;height:40px;border:1px solid #e7ebf2;border-radius:14px;background:#fff;display:grid;place-items:center;color:#24384f;cursor:pointer;box-shadow:0 8px 22px rgba(20,40,65,.06)}
 .settings-back svg{width:18px}
 .settings-back.placeholder{opacity:0;pointer-events:none}
-.settings-header-copy{text-align:center}
+.settings-header-copy{min-width:0;text-align:center}
 .settings-header-copy h1{margin:0;font-size:30px;letter-spacing:-.04em;color:#162a43}
 .settings-header-copy p{margin:4px 0 0;color:#728096;font-size:13px}
 .settings-search{height:52px;border-radius:18px;background:linear-gradient(180deg,#fff,#f8faff);border:1px solid #e7ebf2;display:flex;align-items:center;padding:0 16px;color:#93a0b3;box-shadow:0 10px 26px rgba(20,40,65,.05)}
@@ -33,18 +33,18 @@
 .settings-danger-cta small{font-size:12px;margin-top:2px}
 .settings-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border-top:1px solid #edf1f6}
 .settings-toggle-row:first-child{border-top:0}
-.settings-toggle-copy{display:grid}
+.settings-toggle-copy{display:grid;min-width:0}
 .settings-toggle-copy strong{color:#1b2f47;font-size:15px}
 .settings-toggle-copy small{color:#7d899a;font-size:12px;margin-top:2px}
-.settings-switch{width:52px;height:30px;border:0;border-radius:999px;background:#d8deea;position:relative;cursor:pointer}
+.settings-switch{width:52px;flex:0 0 52px;height:30px;border:0;border-radius:999px;background:#d8deea;position:relative;cursor:pointer}
 .settings-switch span{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 4px 10px rgba(15,26,45,.16);transition:.2s}
 .settings-switch.is-on{background:linear-gradient(135deg,#6b4df3,#8c6bff)}
 .settings-switch.is-on span{left:25px}
 .settings-frequency-option{width:100%;border:0;border-top:1px solid #edf1f6;background:#fff;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;text-align:left}
-.settings-frequency-copy{display:grid}
+.settings-frequency-copy{display:grid;min-width:0}
 .settings-frequency-copy strong{color:#1b2f47;font-size:15px}
 .settings-frequency-copy small{color:#7d899a;font-size:12px;margin-top:2px}
-.settings-radio{width:22px;height:22px;border:2px solid #cfd7e4;border-radius:50%;display:grid;place-items:center}
+.settings-radio{width:22px;flex:0 0 22px;height:22px;border:2px solid #cfd7e4;border-radius:50%;display:grid;place-items:center}
 .settings-radio span{width:10px;height:10px;border-radius:50%;background:transparent}
 .settings-frequency-option.is-active .settings-radio{border-color:#714ef5}
 .settings-frequency-option.is-active .settings-radio span{background:#714ef5}

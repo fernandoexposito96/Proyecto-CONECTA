@@ -15,9 +15,10 @@
     "test:logic": "node scripts/test-logic.mjs",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:edge": "node scripts/test-edge.mjs",
-    "check": "npm run verify && npm run lint && npm run maintainability && npm run runtime:safety && npm run test:react && npm run test:logic && npm run test:edge && tsc --noEmit",
+    "check": "npm run verify && npm run lint && npm run maintainability && npm run runtime:safety && npm run test:react && npm run test:logic && npm run test:edge && npm run test:pwa && tsc --noEmit",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:pwa": "node scripts/test-service-worker.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.115.0",

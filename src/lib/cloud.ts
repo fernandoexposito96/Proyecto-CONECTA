@@ -17,6 +17,7 @@ let sendingState:Record<string,unknown>={};
 let flushTimer:number|null=null;
 let flushInFlight=false;
 let syncGeneration=0;
+let queueUserId:string|null=null;
 let retryDelay=1500;
 
 function readOutbox(userId:string):Record<string,unknown>{
@@ -29,8 +30,8 @@ function readOutbox(userId:string):Record<string,unknown>{
 
 function persistOutbox(){
   try{
-    const userId=window.localStorage.getItem(authUserMarker);
-    if(!userId)return;
+    const userId=queueUserId;
+    if(!userId||window.localStorage.getItem(authUserMarker)!==userId)return;
     const patch={...sendingState,...pendingState};
     if(Object.keys(patch).length)window.localStorage.setItem(outboxKey,JSON.stringify({userId,patch}));
     else window.localStorage.removeItem(outboxKey);
@@ -117,6 +118,7 @@ async function mergeRealProfilePrivacy(state:Record<string,unknown>){
 
 export function resetCloudStateQueue(){
   syncGeneration+=1;
+  queueUserId=null;
   retryDelay=1500;
   pendingState={};
   sendingState={};
@@ -196,6 +198,7 @@ async function flushCloudState(){
 
   const patch=pendingState;
   const generation=syncGeneration;
+  const expectedUserId=queueUserId;
   pendingState={};
   if(!Object.keys(patch).length)return;
 
@@ -204,10 +207,11 @@ async function flushCloudState(){
   try{
     const {data:{session},error:sessionError}=await supabase.auth.getSession();
     if(sessionError)throw sessionError;
-    if(!session||generation!==syncGeneration)return;
+    if(generation!==syncGeneration)return;
+    if(!session||!expectedUserId||session.user.id!==expectedUserId)throw new Error('Cloud state belongs to a different or unavailable session');
 
     const {error}=await supabase.rpc('merge_my_prototype_state',{
-      p_patch:patch,p_expected_user:session.user.id,
+      p_patch:patch,p_expected_user:expectedUserId,
     }).abortSignal(AbortSignal.timeout(8000));
 
     if(error)throw error;
@@ -229,6 +233,11 @@ async function flushCloudState(){
 
 export function queueCloudStateSave(key:string,value:unknown){
   if(!key.startsWith(storagePrefix)||key===authUserMarker||key===outboxKey)return;
+  let owner:string|null;
+  try{owner=window.localStorage.getItem(authUserMarker)}catch{return;}
+  if(!owner)return;
+  if(queueUserId&&queueUserId!==owner)resetCloudStateQueue();
+  queueUserId=owner;
   pendingState[key]=value;
   persistOutbox();
   if(key===privacyKey&&isPrivacySettings(value)){

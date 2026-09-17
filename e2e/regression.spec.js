@@ -71,7 +71,7 @@ test('anonymous backend outage retains usable login',async({page})=>{
 test('unsent changes survive reload and merge only into their own account',async({page})=>{
   const {requests}=await backend(page,{state:{'conecta-profile-bio-v1':'Remote bio'}});
   await page.goto('/');await expect(page.locator('.app-shell')).toBeVisible({timeout:15000});
-  await page.evaluate(()=>localStorage.setItem('conecta-pending-state-v1',JSON.stringify({userId:'11111111-1111-4111-8111-111111111111',patch:{'conecta-profile-bio-v1':'Unsent audit bio'}})));
+  await page.addInitScript(()=>localStorage.setItem('conecta-pending-state-v1',JSON.stringify({userId:'11111111-1111-4111-8111-111111111111',patch:{'conecta-profile-bio-v1':'Unsent audit bio'}})));
   await page.reload();await expect(page.locator('.app-shell')).toBeVisible({timeout:15000});
   await expect.poll(()=>requests.some(r=>r.table==='merge_my_prototype_state'&&r.body?.p_expected_user==='11111111-1111-4111-8111-111111111111'&&r.body?.p_patch?.['conecta-profile-bio-v1']==='Unsent audit bio')).toBe(true);
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('conecta-profile-bio-v1')))).toBe('Unsent audit bio');

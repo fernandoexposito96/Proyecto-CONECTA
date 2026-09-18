@@ -71,7 +71,7 @@ for(const [width,height] of [[320,740],[390,844],[600,900],[768,1024],[844,390],
     if(label==='Categorías'){await page.locator('.home-browse-categories button').first().click();await check('Categoría / planes');}
     await nav(page,'Inicio');
   }
-  await page.getByRole('button',{name:'Ver mapa completo',exact:false}).click();await check('Mapa');await nav(page,'Inicio');
+  await page.getByTestId('map-entry').click();await check('Mapa');await nav(page,'Inicio');
   await nav(page,'Explora');await check('Explora');
   await page.goto('/?shortcut=create-plan');await expect(page.locator('.cp-form')).toBeVisible();await check('Crear plan');
   await nav(page,'Chat');await check('Chat / lista');

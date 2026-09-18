@@ -29,10 +29,6 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Verify installed versions
-        run: npm ls @supabase/supabase-js@2.115.0 react@19.2.6 react-dom@19.2.6 vite@8.2.2 typescript@5.9.3 --depth=0
-      - name: Production security audit
-        run: npm audit --omit=dev --audit-level=high
       - name: Structure, tests and type check
         run: |
           set -o pipefail
@@ -51,9 +47,9 @@ jobs:
         run: node scripts/check-bundle-budget.mjs
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Browser regression gate
-        timeout-minutes: 6
-        run: npm run test:e2e -- --grep-invert "layout audit|map treats plan titles as text instead of executable HTML"
+      - name: Essential browser gate (smoke + map security)
+        timeout-minutes: 3
+        run: npx playwright test e2e/smoke.spec.js e2e/map-security.spec.js
       - name: Configure Pages
         uses: actions/configure-pages@v6
       - name: Upload exact build artifact

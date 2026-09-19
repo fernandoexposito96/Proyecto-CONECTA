@@ -45,3 +45,19 @@
  .rich-people-list .home-browse-person-body>p{font-size:12px!important;line-height:1.35!important;margin:8px 0!important}
  .rich-person-extra small{font-size:11px!important;line-height:1.3!important}
 }
+
+/* Escapes final mobile structure: image first, compact information below */
+.rich-browse-cards article{display:flex!important;flex-direction:column!important}
+.rich-browse-cards .rich-card-image{order:1!important;display:block!important}
+.rich-browse-cards .rich-card-copy{order:2!important}
+@media(max-width:520px){
+ .rich-browse-cards article{display:flex!important;flex-direction:column!important;border-radius:22px!important;overflow:hidden!important}
+ .rich-browse-cards .rich-card-image{order:1!important;height:190px!important;min-height:190px!important;width:100%!important}
+ .rich-browse-cards .rich-card-copy{order:2!important;min-height:0!important;padding:13px 14px 15px!important;gap:7px!important}
+ .rich-browse-cards .rich-card-copy>strong{font-size:19px!important;line-height:1.12!important}
+ .rich-browse-cards .rich-card-copy>span{font-size:12px!important}
+ .rich-browse-cards .rich-card-meta{gap:8px 12px!important}
+ .rich-browse-cards .rich-card-meta span{font-size:12px!important}
+ .rich-browse-cards .rich-card-meta b{font-size:15px!important}
+ .rich-browse-cards .rich-card-copy>button{justify-self:end!important;width:auto!important;min-height:38px!important;margin-top:3px!important;padding:8px 15px!important;border-radius:12px!important}
+}

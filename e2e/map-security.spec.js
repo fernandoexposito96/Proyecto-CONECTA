@@ -31,6 +31,7 @@ test('map treats plan titles as text instead of executable HTML',async({page})=>
   }]});
   await page.goto('/');
   await expect(page.locator('.app-shell')).toBeVisible();
+  await page.getByTestId('nearby-entry').click();
   await page.getByTestId('map-entry').click();
   const tooltip=page.locator('[data-map-tooltip]').filter({hasText:title});
   await expect(tooltip).toHaveCount(1);

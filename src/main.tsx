@@ -25,8 +25,19 @@ systemThemeQuery?.addEventListener?.('change',()=>{
   if(selectedTheme==='Sistema')applyStoredTheme();
 });
 
+const languageCodes:Record<Language,string>={Español:'es',Català:'ca',English:'en',Français:'fr',Deutsch:'de',Italiano:'it',Português:'pt'};
 const initialLanguage=loadStored<Language>(storageKeys.language,'Español');
-document.documentElement.lang=initialLanguage==='Català'?'ca':initialLanguage==='English'?'en':'es';
+document.documentElement.lang=languageCodes[initialLanguage];
+
+const applyStoredExperience=()=>{
+  const accent=loadStored(storageKeys.accent,'Violeta');
+  document.documentElement.dataset.accent=accent.toLowerCase();
+  document.documentElement.classList.toggle('large-text',loadStored(storageKeys.largeText,false));
+  document.documentElement.classList.toggle('high-contrast',loadStored(storageKeys.highContrast,false));
+  document.documentElement.classList.toggle('compact-view',loadStored(storageKeys.compactView,false));
+  document.documentElement.classList.toggle('reduced-motion',loadStored(storageKeys.reducedMotion,false));
+};
+applyStoredExperience();
 
 const fallbackImage=new URL('image-fallback.svg',document.baseURI).toString();
 document.addEventListener('error',event=>{

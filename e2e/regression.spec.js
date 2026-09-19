@@ -130,3 +130,17 @@ test('failed hydration cannot overwrite remote preferences when settings opens',
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('conecta-privacy-settings-v1')||'null')?.locationSharing)).toBe('Nunca');
   expect(writes).toEqual([]);
 });
+
+test('incomplete server preferences preserve authoritative private profile settings',async({page})=>{
+  const restricted={profileVisibility:'Solo conexiones',planVisibility:'Solo conexiones',locationSharing:'Nunca',messagePermission:'Solo conexiones',connectionRequests:'Nadie'};
+  await backend(page,{state:{'conecta-privacy-settings-v1':restricted}});
+  const writes=[];
+  await page.route('**/rest/v1/user_settings?**',route=>route.fulfill({status:200,json:{privacy:{}}}));
+  await page.route('**/rest/v1/profiles?**',route=>{
+    if(route.request().method()==='POST'){writes.push(route.request().postDataJSON());return route.fulfill({status:200,json:null});}
+    return route.fulfill({status:200,json:{id:'11111111-1111-4111-8111-111111111111',display_name:'Audit',profile_visibility:'connections',show_location:false,allow_messages:'connections'}});
+  });
+  await page.goto('/');await expect(page.locator('.app-shell')).toBeVisible({timeout:15000});
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('conecta-privacy-settings-v1')))).toEqual(restricted);
+  expect(writes.some(write=>write.profile_visibility==='public'||write.show_location===true)).toBe(false);
+});

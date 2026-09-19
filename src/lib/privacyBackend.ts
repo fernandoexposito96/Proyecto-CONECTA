@@ -1,5 +1,6 @@
 import type { BlockedUser, PrivacyFieldKey, PrivacySettings } from '../types';
 import { supabase } from './supabase';
+import { privacyFromBackend } from './settingsBackend';
 
 type ProfilePrivacyRow={
   profile_visibility:string|null;
@@ -13,13 +14,8 @@ let lastDesiredBlockIds:Set<string>|null=null;
 
 export function isRealUserId(value:string){return uuidPattern.test(value);}
 function prepareBlockSyncUser(userId:string){if(blockSyncUserId===userId)return;blockSyncUserId=userId;lastDesiredBlockIds=null;}
-function isObject(value:unknown):value is Record<string,unknown>{return Boolean(value&&typeof value==='object'&&!Array.isArray(value));}
 
 function privacyToBackend(value:PrivacySettings){return {profileVisibility:value.profileVisibility==='Todos'?'everyone':'connections',plansVisibility:value.planVisibility==='Todos'?'everyone':'connections',location:value.locationSharing==='Nunca'?'never':value.locationSharing==='Siempre'?'always':'while_using',messages:value.messagePermission==='Todos'?'everyone':'connections',requests:value.connectionRequests==='Todos'?'everyone':'nobody'};}
-function privacyFromBackend(value:unknown):PrivacySettings|null{
-  if(!isObject(value))return null;
-  return {profileVisibility:value.profileVisibility==='connections'?'Solo conexiones':'Todos',planVisibility:value.plansVisibility==='connections'?'Solo conexiones':'Todos',locationSharing:value.location==='never'?'Nunca':value.location==='always'?'Siempre':'Al usar la app',messagePermission:value.messages==='everyone'?'Todos':'Solo conexiones',connectionRequests:value.requests==='nobody'?'Nadie':'Todos'};
-}
 function mergeProfilePrivacy(row:ProfilePrivacyRow,current:PrivacySettings):PrivacySettings{return {...current,profileVisibility:row.profile_visibility==='connections'||row.profile_visibility==='private'?'Solo conexiones':'Todos',locationSharing:row.show_location===false?'Nunca':current.locationSharing==='Nunca'?'Al usar la app':current.locationSharing,messagePermission:row.allow_messages==='everyone'?'Todos':'Solo conexiones'};}
 function profilePayload(settings:PrivacySettings){return {profile_visibility:settings.profileVisibility==='Todos'?'public':'connections',show_location:settings.locationSharing!=='Nunca',allow_messages:settings.messagePermission==='Todos'?'everyone':'connections'};}
 

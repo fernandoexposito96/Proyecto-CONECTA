@@ -72,8 +72,10 @@ function privacyToBackend(value:PrivacySettings){
   };
 }
 
-function privacyFromBackend(value:unknown):PrivacySettings|undefined{
+export function privacyFromBackend(value:unknown):PrivacySettings|undefined{
   if(!isObject(value))return undefined;
+  const choices:Record<string,readonly string[]>={profileVisibility:['everyone','connections'],plansVisibility:['everyone','connections'],location:['never','always','while_using'],messages:['everyone','connections'],requests:['everyone','nobody']};
+  if(!Object.entries(choices).every(([key,options])=>typeof value[key]==='string'&&options.includes(value[key] as string)))return undefined;
   const profileVisibility=value.profileVisibility==='connections'?'Solo conexiones':'Todos';
   const planVisibility=value.plansVisibility==='connections'?'Solo conexiones':'Todos';
   const locationSharing=value.location==='never'?'Nunca':value.location==='always'?'Siempre':'Al usar la app';

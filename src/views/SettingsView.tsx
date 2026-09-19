@@ -28,6 +28,11 @@ export function SettingsView(){
   const [toggles,setToggles]=useState<Record<ToggleKey,boolean>>(()=>loadStored(storageKeys.notificationToggles,defaultToggles));
   const [frequency,setFrequency]=useState<NotificationFrequency>(()=>loadStored(storageKeys.notificationFrequency,'daily'));
   const [theme,setTheme]=useState<Theme>(()=>loadStored(storageKeys.theme,'Sistema'));
+  const [accent,setAccent]=useState(()=>loadStored(storageKeys.accent,'Violeta'));
+  const [largeText,setLargeText]=useState(()=>loadStored(storageKeys.largeText,false));
+  const [highContrast,setHighContrast]=useState(()=>loadStored(storageKeys.highContrast,false));
+  const [compactView,setCompactView]=useState(()=>loadStored(storageKeys.compactView,false));
+  const [reducedMotion,setReducedMotion]=useState(()=>loadStored(storageKeys.reducedMotion,false));
   const [language,setLanguage]=useState<Language>(()=>loadStored(storageKeys.language,'Español'));
   const [premiumStarted,setPremiumStarted]=useState(()=>loadStored(storageKeys.premiumRequested,false));
   const [helpItem,setHelpItem]=useState<HelpItem|null>(null);
@@ -79,6 +84,11 @@ export function SettingsView(){
 
   useEffect(()=>{saveStored(storageKeys.notificationToggles,toggles)},[toggles]);
   useEffect(()=>{saveStored(storageKeys.notificationFrequency,frequency)},[frequency]);
+  useEffect(()=>{saveStored(storageKeys.accent,accent);document.documentElement.dataset.accent=accent.toLowerCase()},[accent]);
+  useEffect(()=>{saveStored(storageKeys.largeText,largeText);document.documentElement.classList.toggle('large-text',largeText)},[largeText]);
+  useEffect(()=>{saveStored(storageKeys.highContrast,highContrast);document.documentElement.classList.toggle('high-contrast',highContrast)},[highContrast]);
+  useEffect(()=>{saveStored(storageKeys.compactView,compactView);document.documentElement.classList.toggle('compact-view',compactView)},[compactView]);
+  useEffect(()=>{saveStored(storageKeys.reducedMotion,reducedMotion);document.documentElement.classList.toggle('reduced-motion',reducedMotion)},[reducedMotion]);
   useEffect(()=>{
     saveStored(storageKeys.theme,theme);
     const dark=theme==='Oscuro'||(theme==='Sistema'&&window.matchMedia?.('(prefers-color-scheme: dark)').matches);
@@ -241,9 +251,17 @@ export function SettingsView(){
     {notice&&<p className="settings-success">{notice}</p>}
   </SettingsInfoScreen>;
 
-  if(screen==='appearance')return <SettingsInfoScreen title="Apariencia" subtitle="Elige cómo quieres ver CONECTA" onBack={()=>setScreen('root')}>
+  if(screen==='appearance')return <SettingsInfoScreen title="Apariencia" subtitle="Personaliza tu CONECTA" onBack={()=>setScreen('root')}>
+    <div className="settings-section-heading"><strong>Tema</strong><small>Elige cómo quieres ver la aplicación</small></div>
     <div className="settings-choice-grid">{appearanceOptions.map(value=><button key={value} className={theme===value?'is-active':''} onClick={()=>setTheme(value)}>{value}</button>)}</div>
-    <p>Preferencia actual: <strong>{theme}</strong></p>
+    <div className="settings-section-heading"><strong>Color principal</strong><small>El color se aplica a los controles de Ajustes</small></div>
+    <div className="settings-accent-grid">{['Violeta','Azul','Rosa','Rojo','Naranja','Verde'].map(value=><button key={value} className={accent===value?'is-active':''} data-accent-choice={value.toLowerCase()} aria-label={value} title={value} onClick={()=>setAccent(value)}/>)}</div>
+    <div className="settings-block">
+      <SettingsToggleRow label="Texto grande" sublabel="Aumenta la legibilidad de la interfaz" checked={largeText} onToggle={()=>setLargeText(v=>!v)}/>
+      <SettingsToggleRow label="Alto contraste" sublabel="Refuerza bordes y contraste visual" checked={highContrast} onToggle={()=>setHighContrast(v=>!v)}/>
+      <SettingsToggleRow label="Vista compacta" sublabel="Muestra más contenido en pantalla" checked={compactView} onToggle={()=>setCompactView(v=>!v)}/>
+      <SettingsToggleRow label="Reducir animaciones" sublabel="Reduce movimientos y transiciones" checked={reducedMotion} onToggle={()=>setReducedMotion(v=>!v)}/>
+    </div>
   </SettingsInfoScreen>;
 
   if(screen==='language')return <SettingsInfoScreen title="Idioma" subtitle="Idioma de la aplicación" onBack={()=>setScreen('root')}>

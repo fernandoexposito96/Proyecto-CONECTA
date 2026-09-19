@@ -127,3 +127,18 @@ console.log('Cloud synchronization ownership and durable retry: 5 scenarios OK')
   assert.equal(writes[0].payload.appearance,'dark');
   console.log('✓ Delayed preferences remain bound to their original account');
 }
+
+{
+  const h=harness();let resolveSession;
+  h.setGetSession(()=>new Promise(resolve=>{resolveSession=resolve;}));
+  const hydration=h.api.hydrateCloudState('account-a');
+  h.api.resetCloudStateQueue();
+  h.entries.set('conecta-auth-user-v1','account-b');
+  h.entries.set(bio,JSON.stringify('account B private bio'));
+  resolveSession({data:{session:{user:{id:'account-a',email:'a@example.invalid'}}},error:null});
+  assert.equal(await hydration,false,'stale hydration must stop before reading or clearing another account');
+  assert.equal(h.entries.get('conecta-auth-user-v1'),'account-b');
+  assert.equal(h.entries.get(bio),JSON.stringify('account B private bio'));
+  assert.equal(h.calls.length,0);
+  console.log('✓ Superseded hydration cannot erase the next account local state');
+}

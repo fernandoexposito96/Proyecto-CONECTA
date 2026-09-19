@@ -22,3 +22,26 @@
 .browse-map-cta{width:100%;display:grid;grid-template-columns:38px 1fr 14px;align-items:center;gap:10px;padding:13px;border:0;border-radius:18px;background:#f3efff;color:var(--conecta-accent,#704cf6);text-align:left}.browse-map-cta>svg{width:24px}.browse-map-cta span{display:grid}.browse-map-cta small{color:#707b90;margin-top:2px}
 .rich-people-list{display:grid!important;grid-template-columns:1fr!important;gap:12px!important}.rich-people-list .home-browse-person{display:grid;grid-template-columns:minmax(145px,42%) 1fr;overflow:hidden}.rich-people-list .home-browse-person-photo{min-height:230px}.rich-people-list .home-browse-person-body{padding:15px}.rich-person-extra{display:grid;gap:5px;color:#768196;margin-top:8px}.rich-person-extra small:last-child{color:#249d61}.rich-person-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.rich-person-actions button{min-height:40px;border:1px solid #ded8fa;border-radius:12px;background:#f6f3ff;color:var(--conecta-accent,#704cf6);font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px}.rich-person-actions button:last-child{background:var(--conecta-accent,#704cf6);color:#fff;border-color:transparent}.rich-person-actions svg{width:16px}
 @media(max-width:520px){.rich-people-list .home-browse-person{grid-template-columns:42% 58%}.rich-people-list .home-browse-person-photo{min-height:250px}.rich-person-actions{grid-template-columns:1fr}.rich-card-image{min-height:230px}}
+
+/* Mobile browse repair: readable cards, chips, safe navigation spacing */
+.home-browse-page{padding-bottom:150px!important}
+.browse-smart-filters{padding-right:18px;scroll-padding-inline:2px 18px}
+.home-browse-person-tags{display:flex!important;flex-wrap:wrap;gap:6px!important;margin-top:7px}.home-browse-person-tags>span{display:inline-flex!important;width:auto!important;white-space:nowrap;padding:5px 9px;border-radius:999px;background:#f2eeff;color:var(--conecta-accent,#704cf6);font-size:11px;font-weight:800;line-height:1.15}
+.rich-browse-cards .rich-card-image{height:220px;min-height:220px}.rich-browse-cards .rich-card-copy{position:relative!important;background:#fff!important;color:#17243d!important;opacity:1!important;z-index:3}.rich-browse-cards .rich-card-copy>*{opacity:1!important}.rich-browse-cards .rich-card-copy>strong{display:block!important;color:#17243d!important;text-shadow:none!important}.rich-browse-cards .rich-card-copy>span,.rich-browse-cards .rich-card-meta span{color:#667187!important;text-shadow:none!important}.rich-browse-cards .rich-card-meta b{color:#17243d!important}
+@media(max-width:520px){
+ .home-browse-page{padding-bottom:165px!important}
+ .browse-smart-filters{margin-right:-4px;padding-bottom:12px;padding-right:24px}
+ .rich-browse-cards{display:grid!important;grid-template-columns:1fr!important;gap:14px!important}
+ .rich-browse-cards article{display:block!important;height:auto!important;min-height:0!important}
+ .rich-browse-cards .rich-card-image{height:205px!important;min-height:205px!important}
+ .rich-browse-cards .rich-card-copy{display:grid!important;padding:14px 15px 16px!important;min-height:150px!important}
+ .rich-browse-cards .rich-card-copy>strong{font-size:20px!important;line-height:1.15!important}
+ .rich-browse-cards .rich-card-copy>button{position:static!important;justify-self:stretch!important;width:100%!important;min-height:42px!important;margin-top:2px!important}
+ .rich-people-list .home-browse-person{grid-template-columns:40% minmax(0,60%)!important}
+ .rich-people-list .home-browse-person-body{min-width:0!important;padding:13px!important}
+ .rich-people-list .home-browse-person-main{gap:6px}.rich-people-list .home-browse-person-main strong{font-size:18px!important}
+ .rich-people-list .home-browse-person-tags{display:flex!important;gap:5px!important;overflow:visible!important}
+ .rich-people-list .home-browse-person-tags>span{font-size:10px!important;padding:4px 7px!important}
+ .rich-people-list .home-browse-person-body>p{font-size:12px!important;line-height:1.35!important;margin:8px 0!important}
+ .rich-person-extra small{font-size:11px!important;line-height:1.3!important}
+}

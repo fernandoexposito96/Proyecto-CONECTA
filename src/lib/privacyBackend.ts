@@ -41,10 +41,10 @@ export async function syncProfilePrivacySettings(settings:PrivacySettings){
 }
 
 function profilePatch<K extends PrivacyFieldKey>(key:K,value:PrivacySettings[K]):Record<string,unknown>|null{if(key==='profileVisibility')return {profile_visibility:value==='Todos'?'public':'connections'};if(key==='locationSharing')return {show_location:value!=='Nunca'};if(key==='messagePermission')return {allow_messages:value==='Todos'?'everyone':'connections'};return null;}
-export async function saveProfilePrivacySetting<K extends PrivacyFieldKey>(key:K,value:PrivacySettings[K]){
+export async function saveProfilePrivacySetting<K extends PrivacyFieldKey>(key:K,value:PrivacySettings[K],fallback:PrivacySettings){
   const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;if(!user)return false;
   const {data,error}=await supabase.from('user_settings').select('privacy').eq('user_id',user.id).maybeSingle();if(error)throw error;
-  const current=privacyFromBackend(data?.privacy);if(!current)return false;
+  const current=privacyFromBackend(data?.privacy)||fallback;
   const next={...current,[key]:value} as PrivacySettings;
   const patch=profilePatch(key,value);const updatedAt=new Date().toISOString();
   const writes=[supabase.from('user_settings').upsert({user_id:user.id,privacy:privacyToBackend(next),updated_at:updatedAt},{onConflict:'user_id'})];

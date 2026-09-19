@@ -2,12 +2,32 @@ import { syncSettingStorageKey } from './settingsBackend';
 
 type CloudWriter=(key:string,value:unknown)=>void|Promise<void>;
 let cloudWriter:CloudWriter|null=null;
+const pendingCloudWrites=new Map<string,unknown>();
 
 export const storageChangeEvent='conecta:storage-change';
 const backendIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function queueCloudWrite(key:string,value:unknown){
+  pendingCloudWrites.set(key,value);
+}
+
+function sendCloudWrite(writer:CloudWriter,key:string,value:unknown){
+  try{
+    void Promise.resolve(writer(key,value)).then(()=>{
+      if(pendingCloudWrites.get(key)===value)pendingCloudWrites.delete(key);
+    }).catch(()=>queueCloudWrite(key,value));
+  }catch{queueCloudWrite(key,value);}
+}
+
+function flushPendingCloudWrites(){
+  const writer=cloudWriter;
+  if(!writer)return;
+  for(const [key,value] of pendingCloudWrites)sendCloudWrite(writer,key,value);
+}
+
 export function setCloudStorageWriter(writer:CloudWriter|null){
   cloudWriter=writer;
+  if(writer)flushPendingCloudWrites();
 }
 
 export function loadStored<T>(key:string,fallback:T):T{
@@ -42,15 +62,17 @@ export function saveStored<T>(key:string,value:T){
     console.warn('CONECTA local state could not be persisted; remote sync skipped',error);
   }
 
-  // Never acknowledge/sync a value remotely when the local source of truth failed
-  // to persist it. This prevents reloads from resurrecting an older value and
-  // avoids local/cloud divergence under quota or private-storage failures.
-  if(!persisted||!cloudWriter)return;
-  void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
+  // A failed local write must never be acknowledged remotely. When cloud
+  // hydration is temporarily unavailable, keep the latest persisted edit in a
+  // session outbox and replay it as soon as the writer becomes available.
+  if(!persisted)return;
+  if(!cloudWriter){
+    queueCloudWrite(key,value);
+    return;
+  }
 
-  try{
-    void Promise.resolve(cloudWriter(key,value)).catch(()=>{});
-  }catch{}
+  void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
+  sendCloudWrite(cloudWriter,key,value);
 }
 
 export const storageKeys={

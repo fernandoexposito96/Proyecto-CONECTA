@@ -43,11 +43,12 @@ export async function discoverPeople(limit=24):Promise<PersonSearchResult[]>{
 export async function searchPeopleByName(query:string,limit=20):Promise<PersonSearchResult[]>{
   const clean=query.trim();
   if(clean.length<2)return [];
-  const escaped=clean.replace(/[%_]/g,'\\$&');
+  const pattern=clean.replace(/[\\%_]/g,'\\$&');
+  const escaped=pattern.replace(/\\/g,'\\\\').replace(/"/g,'\\"');
   const {data,error}=await supabase
     .from('profiles')
     .select(profileColumns)
-    .or(`display_name.ilike.%${escaped}%,username.ilike.%${escaped}%`)
+    .or(`display_name.ilike."%${escaped}%",username.ilike."%${escaped}%"`)
     .limit(limit);
   if(error)throw error;
   return (data||[]).map(mapPerson).filter(item=>item.id);

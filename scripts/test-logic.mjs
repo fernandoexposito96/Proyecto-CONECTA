@@ -97,5 +97,53 @@ try{
   assert.equal(nodes.filter(node=>node.tagName==='script').length,1);
   console.log('✓ Map library loads once, retries after failure and cannot remain loading forever');
 
+
+
+  // Malformed server privacy must not override authoritative private profile settings.
+  {
+    const settingsApi={},privacyApi={},writes=[];
+    let remotePrivacy={};
+    const restricted={profileVisibility:'Solo conexiones',planVisibility:'Solo conexiones',locationSharing:'Nunca',messagePermission:'Solo conexiones',connectionRequests:'Nadie'};
+    const complete={profileVisibility:'connections',plansVisibility:'connections',location:'never',messages:'connections',requests:'nobody'};
+    const client={auth:{getUser:async()=>({data:{user:{id:'privacy-test'}},error:null})},from:table=>{
+      const query={select(){return query},eq(){return query},
+        async maybeSingle(){return {data:table==='user_settings'?{privacy:remotePrivacy}:{profile_visibility:'connections',show_location:false,allow_messages:'connections'},error:null}},
+        async upsert(payload){writes.push({table,payload});return {error:null}}};
+      return query;
+    }};
+    const compile=file=>ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+    vm.runInNewContext(compile('src/lib/settingsBackend.ts'),{exports:settingsApi,console,require:()=>({supabase:client})});
+    vm.runInNewContext(compile('src/lib/privacyBackend.ts'),{exports:privacyApi,console,require:name=>name==='./settingsBackend'?settingsApi:{supabase:client}});
+    for(const invalid of [null,[],{},'public',{...complete,profileVisibility:'unexpected'},{...complete,location:false}]){
+      assert.equal(settingsApi.privacyFromBackend(invalid),undefined);
+    }
+    assert.deepEqual(JSON.parse(JSON.stringify(settingsApi.privacyFromBackend(complete))),restricted);
+    const migrated=await privacyApi.loadProfilePrivacySettings(restricted);
+    assert.deepEqual(JSON.parse(JSON.stringify(migrated)),restricted);
+    assert.equal(writes.find(write=>write.table==='profiles').payload.profile_visibility,'connections');
+    assert.equal(writes.find(write=>write.table==='profiles').payload.show_location,false);
+    remotePrivacy=complete;writes.length=0;
+    assert.deepEqual(JSON.parse(JSON.stringify(await privacyApi.loadProfilePrivacySettings(restricted))),restricted);
+    assert.equal(writes.length,0,'valid complete privacy must not be rewritten during reads');
+    console.log('✓ Incomplete privacy cannot silently make a private profile public');
+  }
+
+  // User search text remains one quoted literal in each fixed PostgREST filter.
+  {
+    const api={},filters=[];
+    const client={from:()=>{const query={select(){return query},or(filter){filters.push(filter);return query},async limit(){return {data:[],error:null}}};return query;}};
+    const compiled=ts.transpileModule(fs.readFileSync('src/lib/communityBackend.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+    vm.runInNewContext(compiled,{exports:api,console,require:()=>({supabase:client})});
+    for(const term of ['María','Doe, Jane','Ana (amiga)','a.b:c','Ana "Luz"','C:\\Users','50%_name','x),id.neq.null,username.ilike.(x']){
+      await api.searchPeopleByName(term);
+      const match=filters.at(-1).match(/^display_name\.ilike\.("(?:[^"\\]|\\.)*"),username\.ilike\.("(?:[^"\\]|\\.)*")$/);
+      assert.ok(match,'search must contain exactly two fixed quoted filters');
+      const pattern='%'+term.replace(/[\\%_]/g,'\\$&')+'%';
+      assert.equal(JSON.parse(match[1]),pattern);assert.equal(JSON.parse(match[2]),pattern);
+    }
+    const count=filters.length;await api.searchPeopleByName('a');assert.equal(filters.length,count);
+    console.log('✓ Search punctuation, quotes and wildcard characters cannot alter filter structure');
+  }
+
   console.log('Logic unit tests: OK');
 } finally {fs.rmSync(tmpDir,{recursive:true,force:true});}

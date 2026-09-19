@@ -159,7 +159,7 @@ export function SettingsView(){
   };
   const setPrivacyValue=<K extends PrivacyFieldKey>(key:K,value:PrivacySettings[K])=>{
     setPrivacy(current=>({...current,[key]:value}));
-    void saveProfilePrivacySetting(key,value).catch(error=>console.warn('CONECTA privacy save failed; local preference kept',error));
+    void saveProfilePrivacySetting(key,value,privacy).catch(error=>console.warn('CONECTA privacy save failed; local preference kept',error));
     flash('Preferencia guardada');
   };
   const unblockUser=(userId:string)=>{

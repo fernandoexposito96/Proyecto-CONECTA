@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PremiumContent } from '../components/PremiumContent';
-import { BadgeCheck, ChevronRight, CircleHelp, Database, LockKeyhole, Mail, MessageCircleMore, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, ChevronRight, CircleHelp, Database, LockKeyhole, LogOut, Mail, MapPinned, MessageCircleMore, ShieldCheck, UsersRound } from 'lucide-react';
 import { accountFromUser, demoAccount } from '../lib/identity';
 import { loadProfilePrivacySettings, removeBackendBlock, saveProfilePrivacySetting, syncBackendBlocks } from '../lib/privacyBackend';
 import { saveAccountIdentity, submitSupportRequest } from '../lib/settingsBackend';
@@ -316,8 +316,23 @@ export function SettingsView(){
 
   return <div className="page settings-page"><div className="settings-shell">
     <SettingsHeader title="Ajustes" subtitle="Personaliza tu experiencia en CONECTA"/>
+    <section className="settings-profile-hero">
+      <div className="settings-profile-avatar" aria-hidden="true">{account.name.trim().slice(0,1).toUpperCase()||'C'}</div>
+      <div className="settings-profile-copy"><strong>{account.name}</strong><small>{account.email}</small><button onClick={()=>setScreen('account')}>Ver y editar tu perfil</button></div>
+      <ChevronRight className="settings-profile-chevron"/>
+      <button className="settings-hero-premium" onClick={()=>setScreen('premium')}><span className="settings-premium-entry-card"><span className="settings-premium-entry-chip"/></span><span><strong>CONECTA Premium</strong><small>Más funciones, más planes, más conexiones</small></span><b>Ver beneficios</b></button>
+    </section>
     <div className="settings-search"><input value={settingsQuery} onChange={event=>setSettingsQuery(event.target.value)} placeholder="Buscar en ajustes..." aria-label="Buscar en ajustes"/></div>
-    <div className="settings-list-card">{rootRows.length?rootRows.map(item=><SettingsRow key={item.title} icon={item.icon} title={item.title} subtitle={item.subtitle} onClick={()=>setScreen(item.screen)}/>):<div className="settings-empty">No hay ajustes que coincidan.</div>}</div>
-    <button className="settings-premium-entry" onClick={()=>setScreen('premium')}><div className="settings-premium-entry-card"><div className="settings-premium-entry-chip"/></div><div className="settings-premium-entry-copy"><strong>Conecta Premium</strong><small>Vive más experiencias</small></div><ChevronRight/></button>
+    <div className="settings-dashboard">
+      {rootRows.length?rootRows.map(item=><SettingsRow key={item.title} icon={item.icon} title={item.title} subtitle={item.subtitle} onClick={()=>setScreen(item.screen)}/>):<div className="settings-empty">No hay ajustes que coincidan.</div>}
+      {!settingsQuery.trim()&&<>
+        <SettingsRow icon={MapPinned} title="Ubicación" subtitle="Tu ubicación en planes y mapa" onClick={()=>openPrivacyField('locationSharing')}/>
+        <SettingsRow icon={UsersRound} title="Planes y eventos" subtitle="Preferencias, intereses y disponibilidad" onClick={()=>openAction('Planes y eventos','Gestiona cómo quieres descubrir planes, tus intereses, disponibilidad y preferencias para recibir recomendaciones más relevantes.')}/>
+        <SettingsRow icon={ShieldCheck} title="Normas de la comunidad" subtitle="Uso responsable y comportamiento" onClick={()=>openHelp('Normas de la comunidad','Respeto, seguridad y convivencia. No se permite acoso, suplantación ni contenido que ponga en riesgo a otros usuarios.')}/>
+      </>}
+    </div>
+    <button className="settings-premium-entry" onClick={()=>setScreen('premium')}><div className="settings-premium-entry-card"><div className="settings-premium-entry-chip"/></div><div className="settings-premium-entry-copy"><strong>Conecta Premium</strong><small>Gestiona tu suscripción y niveles</small></div><ChevronRight/></button>
+    <button className="settings-signout-entry" disabled={signingOut} onClick={()=>{void signOutAll()}}><LogOut/><span><strong>{signingOut?'Cerrando sesión…':'Cerrar sesión'}</strong><small>Sal de tu cuenta en este dispositivo</small></span><ChevronRight/></button>
+    {notice&&<p className="settings-success">{notice}</p>}
   </div></div>;
 }

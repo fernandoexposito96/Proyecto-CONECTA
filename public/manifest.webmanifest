@@ -12,7 +12,8 @@
   "orientation":"portrait-primary",
   "categories":["social","lifestyle","travel"],
   "icons":[
-    {"src":"./IMG_4752.jpeg","sizes":"1242x1242","type":"image/jpeg","purpose":"any"}
+    {"src":"./IMG_4752.jpeg","sizes":"1289x1282","type":"image/jpeg","purpose":"any"},
+    {"src":"./icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
   ],
   "screenshots":[
     {"src":"./screenshots/mobile.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"CONECTA en móvil"},

@@ -45,10 +45,9 @@ export function saveStored<T>(key:string,value:T){
   // Never acknowledge/sync a value remotely when the local source of truth failed
   // to persist it. This prevents reloads from resurrecting an older value and
   // avoids local/cloud divergence under quota or private-storage failures.
-  if(!persisted)return;
+  if(!persisted||!cloudWriter)return;
   void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
 
-  if(!cloudWriter)return;
   try{
     void Promise.resolve(cloudWriter(key,value)).catch(()=>{});
   }catch{}

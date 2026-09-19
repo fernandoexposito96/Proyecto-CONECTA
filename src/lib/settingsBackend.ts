@@ -82,8 +82,15 @@ function privacyFromBackend(value:unknown):PrivacySettings|undefined{
   return {profileVisibility,planVisibility,locationSharing,messagePermission,connectionRequests};
 }
 
-async function upsertUserSettings(patch:Record<string,unknown>){
+async function currentStorageUser(expectedUserId:string){
   const user=await currentUser();
+  try{
+    return user?.id===expectedUserId&&window.localStorage.getItem('conecta-auth-user-v1')===expectedUserId?user:null;
+  }catch{return null;}
+}
+
+async function upsertUserSettings(patch:Record<string,unknown>,expectedUserId:string){
+  const user=await currentStorageUser(expectedUserId);
   if(!user)return false;
   const {error}=await supabase
     .from('user_settings')
@@ -101,12 +108,12 @@ function loadLocalJson(key:string):unknown{
   }
 }
 
-async function syncNotifications(){
+async function syncNotifications(expectedUserId:string){
   const toggles=loadLocalJson(notificationTogglesKey);
   const frequency=loadLocalJson(notificationFrequencyKey);
   if(!isNotificationToggles(toggles))return false;
   const safeFrequency=isFrequency(frequency)?frequency:'daily';
-  const user=await currentUser();
+  const user=await currentStorageUser(expectedUserId);
   if(!user)return false;
 
   const [{error:settingsError},{error:preferencesError}]=await Promise.all([
@@ -146,10 +153,13 @@ export async function saveAccountIdentity(account:AccountSettings){
 }
 
 export async function syncSettingStorageKey(key:string,value:unknown){
-  if(key===themeKey&&isTheme(value))return upsertUserSettings({appearance:themeToBackend[value]});
-  if(key===languageKey&&isLanguage(value))return upsertUserSettings({language:languageToBackend[value]});
-  if(key===privacyKey&&isPrivacy(value))return upsertUserSettings({privacy:privacyToBackend(value)});
-  if((key===notificationTogglesKey&&isNotificationToggles(value))||(key===notificationFrequencyKey&&isFrequency(value)))return syncNotifications();
+  let expectedUserId:string|null;
+  try{expectedUserId=window.localStorage.getItem('conecta-auth-user-v1')}catch{return false;}
+  if(!expectedUserId)return false;
+  if(key===themeKey&&isTheme(value))return upsertUserSettings({appearance:themeToBackend[value]},expectedUserId);
+  if(key===languageKey&&isLanguage(value))return upsertUserSettings({language:languageToBackend[value]},expectedUserId);
+  if(key===privacyKey&&isPrivacy(value))return upsertUserSettings({privacy:privacyToBackend(value)},expectedUserId);
+  if((key===notificationTogglesKey&&isNotificationToggles(value))||(key===notificationFrequencyKey&&isFrequency(value)))return syncNotifications(expectedUserId);
   return false;
 }
 

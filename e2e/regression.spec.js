@@ -112,3 +112,20 @@ test('unsent chat drafts stay with their own conversation',async({page})=>{
   await page.locator('.chat-list button').filter({has:page.getByText(first,{exact:true})}).click();
   await expect(page.getByRole('textbox',{name:'Escribe un mensaje',exact:true})).toHaveValue('Private draft A');
 });
+
+
+test('failed hydration cannot overwrite remote preferences when settings opens',async({page})=>{
+  await backend(page,{failPrototypeHydration:true});
+  const writes=[];
+  page.on('request',request=>{
+    if(request.method()==='POST'&&/\/rest\/v1\/(user_settings|notification_preferences)(?:\?|$)/.test(new URL(request.url()).pathname))writes.push(request.url());
+  });
+  await page.route('**/rest/v1/user_settings?**',async route=>{
+    if(route.request().method()==='GET')return route.fulfill({status:200,json:{privacy:{profileVisibility:'connections',plansVisibility:'connections',location:'never',messages:'connections',requests:'nobody'}}});
+    return route.fulfill({status:200,json:null});
+  });
+  await page.goto('/');await expect(page.locator('.app-shell')).toBeVisible({timeout:15000});
+  await nav(page,'Ajustes');
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('conecta-privacy-settings-v1')||'null')?.locationSharing)).toBe('Nunca');
+  expect(writes).toEqual([]);
+});

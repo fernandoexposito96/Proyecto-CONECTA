@@ -104,3 +104,14 @@
 .settings-dashboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.settings-dashboard .settings-row{border:1px solid #e8ebf3;border-radius:22px;min-height:112px;padding:16px;box-shadow:0 10px 28px rgba(20,40,65,.055)}.settings-dashboard .settings-row-icon{width:48px;height:48px}.settings-dashboard .settings-row-copy strong{font-size:15px}.settings-dashboard .settings-row-copy small{line-height:1.35}
 .settings-signout-entry{width:100%;border:1px solid #ffd4d9;border-radius:22px;background:linear-gradient(180deg,#fff7f8,#fff1f3);display:grid;grid-template-columns:46px minmax(0,1fr) 18px;align-items:center;gap:12px;padding:15px 16px;color:#df2638;text-align:left;cursor:pointer}.settings-signout-entry>svg:first-child{width:22px}.settings-signout-entry>svg:last-child{width:16px}.settings-signout-entry span{display:grid}.settings-signout-entry small{color:#8d6970;font-size:12px;margin-top:2px}.settings-signout-entry:disabled{opacity:.55}
 @media(max-width:520px){.settings-dashboard{gap:10px}.settings-dashboard .settings-row{grid-template-columns:44px minmax(0,1fr) 14px;gap:9px;padding:13px;min-height:106px}.settings-dashboard .settings-row-icon{width:44px;height:44px;border-radius:14px}.settings-dashboard .settings-row-copy strong{font-size:14px}.settings-dashboard .settings-row-copy small{font-size:11px}.settings-hero-premium{grid-template-columns:46px minmax(0,1fr)}.settings-hero-premium>b{grid-column:2;justify-self:start;margin-top:-4px}.settings-profile-hero{padding:17px}}
+
+/* Mobile settings readability: prevent cramped two-column cards */
+@media(max-width:520px){
+  .settings-dashboard{grid-template-columns:1fr;gap:10px}
+  .settings-dashboard .settings-row{min-height:82px;grid-template-columns:48px minmax(0,1fr) 18px;gap:13px;padding:14px 16px;border-radius:20px}
+  .settings-dashboard .settings-row-icon{width:48px;height:48px;border-radius:15px}
+  .settings-dashboard .settings-row-copy{min-width:0}
+  .settings-dashboard .settings-row-copy strong{font-size:16px;line-height:1.18;overflow-wrap:normal;word-break:normal}
+  .settings-dashboard .settings-row-copy small{font-size:12px;line-height:1.35;overflow-wrap:normal;word-break:normal}
+  .settings-dashboard .settings-row>svg:last-child{justify-self:end}
+}

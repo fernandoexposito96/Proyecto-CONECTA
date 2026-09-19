@@ -13,8 +13,8 @@ type BackendSettings={
 
 const themeToBackend:Record<Theme,'light'|'dark'|'system'>={Claro:'light',Oscuro:'dark',Sistema:'system'};
 const backendToTheme:Record<'light'|'dark'|'system',Theme>={light:'Claro',dark:'Oscuro',system:'Sistema'};
-const languageToBackend:Record<Language,'es'|'ca'|'en'>={Español:'es',Català:'ca',English:'en'};
-const backendToLanguage:Record<'es'|'ca'|'en',Language>={es:'Español',ca:'Català',en:'English'};
+const languageToBackend:Record<Language,'es'|'ca'|'en'|'fr'|'de'|'it'|'pt'>={Español:'es',Català:'ca',English:'en',Français:'fr',Deutsch:'de',Italiano:'it',Português:'pt'};
+const backendToLanguage:Record<'es'|'ca'|'en'|'fr'|'de'|'it'|'pt',Language>={es:'Español',ca:'Català',en:'English',fr:'Français',de:'Deutsch',it:'Italiano',pt:'Português'};
 
 const notificationTogglesKey='conecta-notification-toggles-v1';
 const notificationFrequencyKey='conecta-notification-frequency-v1';
@@ -46,15 +46,15 @@ function isTheme(value:unknown):value is Theme{
 }
 
 function isLanguage(value:unknown):value is Language{
-  return value==='Español'||value==='Català'||value==='English';
+  return value==='Español'||value==='Català'||value==='English'||value==='Français'||value==='Deutsch'||value==='Italiano'||value==='Português';
 }
 
 function isBackendTheme(value:unknown):value is 'light'|'dark'|'system'{
   return value==='light'||value==='dark'||value==='system';
 }
 
-function isBackendLanguage(value:unknown):value is 'es'|'ca'|'en'{
-  return value==='es'||value==='ca'||value==='en';
+function isBackendLanguage(value:unknown):value is 'es'|'ca'|'en'|'fr'|'de'|'it'|'pt'{
+  return value==='es'||value==='ca'||value==='en'||value==='fr'||value==='de'||value==='it'||value==='pt';
 }
 
 function isPrivacy(value:unknown):value is PrivacySettings{

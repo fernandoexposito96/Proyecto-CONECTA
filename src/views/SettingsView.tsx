@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { PremiumContent } from '../components/PremiumContent';
 import { BadgeCheck, ChevronRight, CircleHelp, Database, LockKeyhole, Mail, MessageCircleMore, ShieldCheck } from 'lucide-react';
 import { accountFromUser, demoAccount } from '../lib/identity';
 import { loadProfilePrivacySettings, removeBackendBlock, saveProfilePrivacySetting, syncBackendBlocks } from '../lib/privacyBackend';
@@ -9,7 +10,7 @@ import type { AccountSettings, ActionItem, BlockedUser, HelpItem, Language, Noti
 import { BlockedUsersScreen, PrivacyFieldScreen, PrivacySettingsScreen } from './settings/PrivacySettingsScreens';
 import { ChangePasswordScreen, SecuritySettingsScreen } from './settings/SecuritySettingsScreens';
 import { SettingsHeader, SettingsInfoScreen, SettingsRow, SettingsToggleRow } from './settings/SettingsPrimitives';
-import { appearanceOptions, buildRootSettingsItems, defaultPrivacy, languageOptions, notificationFrequencyOptions, premiumBenefits } from './settings/settingsCatalog';
+import { appearanceOptions, buildRootSettingsItems, defaultPrivacy, languageOptions, notificationFrequencyOptions } from './settings/settingsCatalog';
 
 const defaultToggles:Record<ToggleKey,boolean>={messages:true,requests:true,planUpdates:true,reminders:true,news:true,offers:true};
 
@@ -310,11 +311,7 @@ export function SettingsView(){
 
   if(screen==='premium')return <div className="page settings-page"><div className="settings-shell">
     <SettingsHeader title="Conecta Premium" subtitle="Más planes. Más personas. Más vida." onBack={()=>setScreen('root')}/>
-    <div className="premium-hero-card"><div className="premium-card-visual"><div className="premium-card-chip"/><div className="premium-card-brand">CONECTA</div></div><div className="premium-hero-copy"><h2>Vive más experiencias</h2><p>Conecta Premium te da acceso a más oportunidades para hacer planes y conocer gente increíble.</p></div></div>
-    <div className="premium-benefits-list">{premiumBenefits.map(([number,title,subtitle])=><div key={number} className="premium-benefit-row"><span className="premium-number">{number}</span><div><strong>{title}</strong><small>{subtitle}</small></div></div>)}</div>
-    <button className="premium-main-cta" onClick={()=>setPremiumStarted(true)}>{premiumStarted?'Solicitud iniciada':'Hazte Premium'} <ChevronRight/></button>
-    {premiumStarted&&<p className="settings-success">Perfecto. El siguiente paso será conectar aquí el pago real cuando activemos esa función.</p>}
-    <p className="premium-footnote">Desde 4,99 €/mes · Cancela cuando quieras</p>
+    <PremiumContent requested={premiumStarted} onRequest={()=>setPremiumStarted(true)}/>
   </div></div>;
 
   return <div className="page settings-page"><div className="settings-shell">

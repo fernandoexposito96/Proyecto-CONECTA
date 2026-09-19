@@ -1,7 +1,7 @@
 export type View = 'Inicio' | 'Explora' | 'Chat' | 'Perfil' | 'Ajustes' | 'Notificaciones' | 'Crear' | 'Calendario' | 'Plan' | 'HomeBrowse' | 'Mapa';
 
 export type ExploreFilter = 'all' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend' | 'week';
-export type HomeBrowseMode = 'all' | 'categories' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend' | 'escapes' | 'people';
+export type HomeBrowseMode = 'all' | 'categories' | 'near' | 'today' | 'afternoon' | 'tonight' | 'weekend' | 'escapes' | 'people' | 'when' | 'benefits' | 'premium' | 'search';
 
 export type Plan = {
   backendId?: string; creatorId?: string; organizerName?: string; organizerAvatar?: string; organizerVerified?: boolean;

@@ -54,7 +54,7 @@ for(const [width,height] of [[320,740],[390,844],[600,900],[768,1024],[844,390],
   await backend(page);await page.reload();await expect(page.locator('.app-shell')).toBeVisible();
   await page.addStyleTag({content:'*{content-visibility:visible!important;animation:none!important;transition:none!important;scroll-behavior:auto!important}'});
   const reports=[...authReports],previews=[];
-  const previewLabels=new Set(['Inicio','Planes','Crear plan','Explora','Chat / conversación','Perfil','Ajustes','Premium']);
+  const previewLabels=new Set(['Inicio','Planes','Crear plan','Explora','Chat / conversación','Perfil','Ajustes','Premium','Inicio / horarios','Inicio / ventajas','Inicio / ventaja','Inicio / Premium','Inicio / cerca','Inicio / búsqueda']);
   const check=async label=>{await page.evaluate(()=>window.scrollTo(0,0));await page.evaluate(()=>new Promise(requestAnimationFrame));reports.push(await measure(page,label));if(width===390&&previewLabels.has(label)){previews.push({label,data:(await page.screenshot({type:'jpeg',quality:65,animations:'disabled'})).toString('base64')});
     if(['Inicio','Crear plan','Perfil','Planes'].includes(label)){await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));await page.evaluate(()=>new Promise(requestAnimationFrame));previews.push({label:label+' / abajo',data:(await page.screenshot({type:'jpeg',quality:65,animations:'disabled'})).toString('base64')});await page.evaluate(()=>window.scrollTo(0,0));}}};
   const row=title=>page.locator('.settings-row').filter({has:page.getByText(title,{exact:true})});
@@ -71,7 +71,12 @@ for(const [width,height] of [[320,740],[390,844],[600,900],[768,1024],[844,390],
     if(label==='Categorías'){await page.locator('.home-browse-categories button').first().click();await check('Categoría / planes');}
     await nav(page,'Inicio');
   }
-  await page.getByTestId('map-entry').click();await check('Mapa');await nav(page,'Inicio');
+  await page.getByTestId('nearby-entry').click();await check('Inicio / cerca');await page.getByTestId('map-entry').click();await check('Mapa');await nav(page,'Inicio');
+  await page.locator('.now-section .section-head button').click();await check('Inicio / horarios');await page.getByRole('button',{name:'Volver al Inicio',exact:true}).click();
+  await page.locator('.home-benefits .home-target-head button').click();await check('Inicio / ventajas');
+  await page.locator('.home-benefit-grid button').first().click();await check('Inicio / ventaja');await page.getByRole('button',{name:'Volver al Inicio',exact:true}).click();
+  await page.locator('.premium-banner button').click();await check('Inicio / Premium');await page.getByRole('button',{name:'Volver al Inicio',exact:true}).click();
+  const search=page.locator('.desktop-search input:visible,.mobile-home-search:visible').first();await search.click();await check('Inicio / búsqueda');await page.getByRole('button',{name:'Volver al Inicio',exact:true}).click();
   await nav(page,'Explora');await check('Explora');
   await page.goto('/?shortcut=create-plan');await expect(page.locator('.cp-form')).toBeVisible();await check('Crear plan');
   await nav(page,'Chat');await check('Chat / lista');

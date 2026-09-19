@@ -16,7 +16,7 @@ export function BottomNav({view,setView,activeView=view}:{view:View;setView:(v:V
   </nav>
 }
 
-export function Sidebar({view,setView,activeView=view}:{view:View;setView:(v:View)=>void;activeView?:View}){
+export function Sidebar({view,setView,activeView=view,onPremium}:{view:View;setView:(v:View)=>void;activeView?:View;onPremium?:()=>void}){
   const items:[View,typeof Home][]=[['Inicio',Home],['Explora',Compass],['Chat',MessageCircle],['Perfil',CircleUserRound],['Ajustes',Settings]];
   return <aside className="sidebar">
     <div className="brand"><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div>
@@ -24,11 +24,11 @@ export function Sidebar({view,setView,activeView=view}:{view:View;setView:(v:Vie
       const active=label==='Inicio'?isHomeFlow(activeView):activeView===label;
       return <button type="button" key={label} className={active?'active':''} onClick={()=>setView(label)}><Icon/><span>{label}</span></button>;
     })}</nav>
-    <div className="premium-box"><Crown/><strong>CONECTA Premium</strong><span>Más planes. Más personas. Más vida.</span><button type="button" onClick={()=>setView('Ajustes')}>Ver Premium</button></div>
+    <div className="premium-box"><Crown/><strong>CONECTA Premium</strong><span>Más planes. Más personas. Más vida.</span><button type="button" onClick={onPremium||(()=>setView('Ajustes'))}>Ver Premium</button></div>
   </aside>
 }
 
-export function Header({view,setView,unreadNotifications=0}:{view:View;setView:(v:View)=>void;unreadNotifications?:number}){
+export function Header({view,setView,unreadNotifications=0,onSearch}:{view:View;setView:(v:View)=>void;unreadNotifications?:number;onSearch?:()=>void}){
   const isHome=view==='Inicio';
   const [profileName,setProfileName]=useState(demoAccount.name);
   const [profileAvatar,setProfileAvatar]=useState(demoAvatar);
@@ -47,7 +47,7 @@ export function Header({view,setView,unreadNotifications=0}:{view:View;setView:(
     return ()=>{active=false};
   },[]);
 
-  const openSearch=()=>setView('Explora');
+  const openSearch=()=>{if(onSearch)onSearch();else setView('Explora')};
 
   return <header className={`topbar ${isHome?'topbar-home':'topbar-compact'}`}>
     {isHome&&<div className="mobile-brand"><i className="brand-orb"/><div><strong>CONECTA</strong><span>Planes reales, gente compatible</span></div></div>}

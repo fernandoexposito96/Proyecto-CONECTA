@@ -131,6 +131,7 @@ export function resetCloudStateQueue(){
 export async function hydrateCloudState(expectedUserId?:string){
   const generation=syncGeneration;
   const {data:{session},error:sessionError}=await supabase.auth.getSession();
+  if(generation!==syncGeneration)return false;
   if(sessionError)throw sessionError;
   if(!session)return false;
   if(expectedUserId&&session.user.id!==expectedUserId)return false;

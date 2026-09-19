@@ -2,12 +2,46 @@ import { syncSettingStorageKey } from './settingsBackend';
 
 type CloudWriter=(key:string,value:unknown)=>void|Promise<void>;
 let cloudWriter:CloudWriter|null=null;
+type PendingCloudWrite={owner:string;key:string;value:unknown};
+const pendingCloudWrites=new Map<string,PendingCloudWrite>();
 
 export const storageChangeEvent='conecta:storage-change';
 const backendIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function localCloudOwner(){
+  try{return window.localStorage.getItem('conecta-auth-user-v1')}catch{return null;}
+}
+
+function queueCloudWrite(key:string,value:unknown){
+  const owner=localCloudOwner();
+  if(!owner)return null;
+  const pending={owner,key,value};
+  pendingCloudWrites.set(JSON.stringify([owner,key]),pending);
+  return pending;
+}
+
+function sendCloudWrite(writer:CloudWriter,pending:PendingCloudWrite){
+  if(writer!==cloudWriter||localCloudOwner()!==pending.owner)return;
+  const id=JSON.stringify([pending.owner,pending.key]);
+  try{
+    void Promise.all([
+      syncSettingStorageKey(pending.key,pending.value),
+      Promise.resolve(writer(pending.key,pending.value)),
+    ]).then(()=>{
+      if(pendingCloudWrites.get(id)===pending)pendingCloudWrites.delete(id);
+    }).catch(()=>{});
+  }catch{}
+}
+
+function flushPendingCloudWrites(){
+  const writer=cloudWriter;
+  if(!writer)return;
+  for(const pending of pendingCloudWrites.values())sendCloudWrite(writer,pending);
+}
+
 export function setCloudStorageWriter(writer:CloudWriter|null){
   cloudWriter=writer;
+  if(writer)flushPendingCloudWrites();
 }
 
 export function loadStored<T>(key:string,fallback:T):T{
@@ -42,16 +76,12 @@ export function saveStored<T>(key:string,value:T){
     console.warn('CONECTA local state could not be persisted; remote sync skipped',error);
   }
 
-  // Never acknowledge/sync a value remotely when the local source of truth failed
-  // to persist it. This prevents reloads from resurrecting an older value and
-  // avoids local/cloud divergence under quota or private-storage failures.
+  // A failed local write must never be acknowledged remotely. When cloud
+  // hydration is temporarily unavailable, keep the latest persisted edit in a
+  // session outbox and replay it as soon as the writer becomes available.
   if(!persisted)return;
-  void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
-
-  if(!cloudWriter)return;
-  try{
-    void Promise.resolve(cloudWriter(key,value)).catch(()=>{});
-  }catch{}
+  const pending=queueCloudWrite(key,value);
+  if(cloudWriter&&pending)sendCloudWrite(cloudWriter,pending);
 }
 
 export const storageKeys={

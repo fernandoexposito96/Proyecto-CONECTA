@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
 
 const root=process.cwd();
 const failures=[];
@@ -23,8 +24,11 @@ for(const file of files){
 
 const swPath=path.join(root,'public','sw.js');
 if(fs.existsSync(swPath)){
-  const sw=fs.readFileSync(swPath,'utf8');
-  if(!sw.includes("request.method!=='GET'")||!sw.includes('url.origin!==self.location.origin'))failures.push('public/sw.js: debe excluir métodos no GET y orígenes externos');
+  const result=spawnSync(process.execPath,[path.join(root,'scripts','test-service-worker.mjs')],{encoding:'utf8'});
+  if(result.status!==0){
+    failures.push('public/sw.js: fallan las pruebas de aislamiento y funcionamiento de la caché');
+    console.error(result.stdout||'',result.stderr||'',result.error?.message||'');
+  }
 }
 
 if(failures.length){

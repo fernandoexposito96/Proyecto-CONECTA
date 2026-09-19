@@ -115,3 +115,12 @@
   .settings-dashboard .settings-row-copy small{font-size:12px;line-height:1.35;overflow-wrap:normal;word-break:normal}
   .settings-dashboard .settings-row>svg:last-child{justify-self:end}
 }
+
+/* Rich settings controls */
+.settings-language-list{display:grid;border:1px solid #e7ebf2;border-radius:18px;overflow:hidden;background:#fff}
+.settings-language-list button{display:grid;grid-template-columns:30px minmax(0,1fr) 24px;align-items:center;gap:10px;min-height:52px;padding:10px 14px;border:0;border-bottom:1px solid #edf1f6;background:#fff;text-align:left;cursor:pointer;color:#1b2f47}
+.settings-language-list button:last-child{border-bottom:0}.settings-language-list button span{font-size:21px}.settings-language-list button strong{font-size:14px}.settings-language-list button i{font-style:normal;font-weight:900;color:#6b4df3;text-align:center}.settings-language-list button.is-active{background:#f6f2ff}
+[data-theme="dark"] .settings-page{color:#eef2ff}.settings-page,.settings-row,.settings-block,.settings-list-card,.settings-info-card,.settings-search,.settings-choice-grid button,.settings-language-list,.settings-language-list button,.settings-back{transition:background .2s ease,color .2s ease,border-color .2s ease}
+[data-theme="dark"] .settings-row,[data-theme="dark"] .settings-block,[data-theme="dark"] .settings-list-card,[data-theme="dark"] .settings-info-card,[data-theme="dark"] .settings-language-list,[data-theme="dark"] .settings-language-list button,[data-theme="dark"] .settings-choice-grid button,[data-theme="dark"] .settings-back,[data-theme="dark"] .settings-search{background:#172033;border-color:#29344a;color:#eef2ff}
+[data-theme="dark"] .settings-row-copy strong,[data-theme="dark"] .settings-toggle-copy strong,[data-theme="dark"] .settings-language-list button strong{color:#eef2ff}
+[data-theme="dark"] .settings-row-copy small,[data-theme="dark"] .settings-toggle-copy small,[data-theme="dark"] .settings-header-copy p{color:#aab5c7}

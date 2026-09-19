@@ -13,3 +13,10 @@
 @import './error-boundary.css';
 @import './responsive.css';
 @import './home-browse.css';
+/* Global user experience preferences from Settings */
+:root{--conecta-accent:#704cf6}
+:root[data-accent="azul"]{--conecta-accent:#1687f8}:root[data-accent="rosa"]{--conecta-accent:#ef4fa3}:root[data-accent="rojo"]{--conecta-accent:#ef4452}:root[data-accent="naranja"]{--conecta-accent:#f08a24}:root[data-accent="verde"]{--conecta-accent:#20ad65}
+.large-text body{font-size:112%}.large-text button,.large-text input,.large-text textarea,.large-text select{font-size:1em}
+.high-contrast body{filter:contrast(1.08)}.high-contrast button,.high-contrast input,.high-contrast textarea,.high-contrast select{outline-color:currentColor}
+.compact-view .content{--settings-density:.88}.compact-view .card{padding-top:12px;padding-bottom:12px}
+.reduced-motion *,.reduced-motion *::before,.reduced-motion *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}

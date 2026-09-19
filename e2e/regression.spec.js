@@ -125,7 +125,8 @@ test('failed hydration cannot overwrite remote preferences when settings opens',
     return route.fulfill({status:200,json:null});
   });
   await page.goto('/');await expect(page.locator('.app-shell')).toBeVisible({timeout:15000});
-  await nav(page,'Ajustes');
+  await nav(page,'Perfil');
+  await page.getByRole('button',{name:'Más opciones',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('conecta-privacy-settings-v1')||'null')?.locationSharing)).toBe('Nunca');
   expect(writes).toEqual([]);
 });

@@ -86,7 +86,7 @@ export function SettingsView(){
   },[theme]);
   useEffect(()=>{
     saveStored(storageKeys.language,language);
-    document.documentElement.lang=language==='Català'?'ca':language==='English'?'en':'es';
+    const langMap:Record<Language,string>={Español:'es',Català:'ca',English:'en',Français:'fr',Deutsch:'de',Italiano:'it',Português:'pt'}; document.documentElement.lang=langMap[language];
   },[language]);
   useEffect(()=>{saveStored(storageKeys.premiumRequested,premiumStarted)},[premiumStarted]);
   useEffect(()=>{saveStored(storageKeys.settingsAccount,account)},[account]);
@@ -247,7 +247,7 @@ export function SettingsView(){
   </SettingsInfoScreen>;
 
   if(screen==='language')return <SettingsInfoScreen title="Idioma" subtitle="Idioma de la aplicación" onBack={()=>setScreen('root')}>
-    <div className="settings-choice-grid">{languageOptions.map(value=><button key={value} className={language===value?'is-active':''} onClick={()=>setLanguage(value)}>{value}</button>)}</div>
+    <div className="settings-language-list">{languageOptions.map(value=><button key={value} className={language===value?'is-active':''} onClick={()=>setLanguage(value)}><span>{value==='Español'?'🇪🇸':value==='Català'?'🏴':value==='English'?'🇬🇧':value==='Français'?'🇫🇷':value==='Deutsch'?'🇩🇪':value==='Italiano'?'🇮🇹':'🇵🇹'}</span><strong>{value}</strong><i aria-hidden="true">{language===value?'✓':''}</i></button>)}</div>
     <p>Idioma seleccionado: <strong>{language}</strong></p>
     <p>La preferencia se conserva en tu experiencia de CONECTA.</p>
   </SettingsInfoScreen>;

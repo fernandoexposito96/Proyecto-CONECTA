@@ -84,6 +84,7 @@ console.log('Cloud synchronization ownership and durable retry: 5 scenarios OK')
   assert.equal(entries.get(key),JSON.stringify('Oscuro'),'offline edits remain local');
   assert.equal(events.length,1);
   assert.equal(settingsCalls.length,0,'failed or unfinished hydration must not write settings remotely');
+  entries.set('conecta-auth-user-v1','account-a');
   storageExports.setCloudStorageWriter((key,value)=>cloudCalls.push({key,value}));
   storageExports.saveStored(key,'Claro');
   assert.equal(settingsCalls.length,1);assert.equal(cloudCalls.length,1);
@@ -91,7 +92,20 @@ console.log('Cloud synchronization ownership and durable retry: 5 scenarios OK')
   assert.equal(settingsCalls.length,1);assert.equal(cloudCalls.length,1);
   storageExports.setCloudStorageWriter(null);quota=false;storageExports.saveStored(key,'Oscuro');
   assert.equal(settingsCalls.length,1,'logout disables every automatic remote writer');
-  console.log('✓ Preference writes wait for hydration and successful local persistence');
+  await new Promise(setImmediate);
+  entries.set('conecta-auth-user-v1','account-b');
+  storageExports.setCloudStorageWriter((key,value)=>cloudCalls.push({key,value}));
+  assert.equal(cloudCalls.length,1,'pending account A changes must not be replayed under account B');
+  storageExports.setCloudStorageWriter(null);
+  entries.set('conecta-auth-user-v1','account-a');
+  storageExports.setCloudStorageWriter((key,value)=>cloudCalls.push({key,value}));
+  assert.equal(cloudCalls.length,2,'owned pending changes resume only for their own account');
+  assert.equal(cloudCalls.at(-1).value,'Oscuro');
+  assert.equal(settingsCalls.length,2,'pending preferences use both remote persistence paths');
+  await new Promise(setImmediate);
+  storageExports.setCloudStorageWriter((key,value)=>cloudCalls.push({key,value}));
+  assert.equal(cloudCalls.length,2,'acknowledged changes must not replay again');
+  console.log('✓ Preference writes wait for hydration, preserve pending changes and isolate accounts');
 }
 {
   const entries=new Map([['conecta-auth-user-v1','account-a']]),writes=[];

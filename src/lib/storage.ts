@@ -33,11 +33,19 @@ export function loadStored<T>(key:string,fallback:T):T{
 }
 
 export function saveStored<T>(key:string,value:T){
+  let persisted=false;
   try{
     window.localStorage.setItem(key,JSON.stringify(value));
+    persisted=true;
     window.dispatchEvent(new CustomEvent(storageChangeEvent,{detail:{key,value}}));
-  }catch{}
+  }catch(error){
+    console.warn('CONECTA local state could not be persisted; remote sync skipped',error);
+  }
 
+  // Never acknowledge/sync a value remotely when the local source of truth failed
+  // to persist it. This prevents reloads from resurrecting an older value and
+  // avoids local/cloud divergence under quota or private-storage failures.
+  if(!persisted)return;
   void syncSettingStorageKey(key,value).catch(error=>console.warn('CONECTA settings backend sync failed; local state kept',error));
 
   if(!cloudWriter)return;

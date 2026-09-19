@@ -25,7 +25,7 @@ export function buildRootSettingsItems(theme:Theme,language:Language):RootSettin
 }
 
 export const appearanceOptions = ['Claro','Oscuro','Sistema'] as const satisfies readonly Theme[];
-export const languageOptions = ['Español','Català','English'] as const satisfies readonly Language[];
+export const languageOptions = ['Español','Català','English','Français','Deutsch','Italiano','Português'] as const satisfies readonly Language[];
 
 export const notificationFrequencyOptions = [
   ['daily','Resumen diario','Recibe un resumen al final del día'],

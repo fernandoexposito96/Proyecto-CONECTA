@@ -5,7 +5,7 @@ import vm from 'node:vm';
 const source=fs.readFileSync('public/sw.js','utf8');
 const scope='https://example.test/Proyecto-CONECTA/';
 const prefix=`conecta-runtime:${encodeURIComponent(scope)}:`;
-const current=`${prefix}v10`;
+const current=`${prefix}v11`;
 
 function harness(){
   const listeners=new Map(), stores=new Map(), calls=[], posted=[], opened=[];
@@ -71,6 +71,8 @@ function harness(){
     {method:'GET',url:'https://backend.test/private',destination:'script'},
     {method:'GET',url:scope+'sw.js',destination:'script'},
     {method:'GET',url:scope+'api/private',destination:''},
+    {method:'GET',url:'https://example.test/another-app/index.html',mode:'navigate'},
+    {method:'GET',url:'https://example.test/Proyecto-CONECTA-other/app.js',destination:'script'},
   ])assert.equal(await h.dispatch('fetch',{request}),undefined);
   assert.equal(h.calls.length,0);
   console.log('✓ Non-GET, external, worker and API requests bypass the cache');
@@ -115,3 +117,28 @@ function harness(){
   console.log('✓ Notifications cannot navigate outside the application');
 }
 console.log('CONECTA service worker behavior tests: OK');
+
+{
+  const h=harness(),cache=await h.caches.open(current);
+  await cache.put('./index.html',new Response('working application'));
+  for(const path of ['offline.html','help.html']){
+    h.setNetwork(async()=>new Response('auxiliary document'));
+    const response=await h.dispatch('fetch',{request:{method:'GET',mode:'navigate',url:scope+path}});
+    assert.equal(await response.text(),'auxiliary document');
+    assert.equal(await (await cache.match('./index.html')).text(),'working application');
+  }
+  h.setNetwork(async()=>{const response=new Response('redirect destination');Object.defineProperty(response,'redirected',{value:true});return response;});
+  await h.dispatch('fetch',{request:{method:'GET',mode:'navigate',url:scope}});
+  assert.equal(await (await cache.match('./index.html')).text(),'working application');
+  h.setNetwork(async()=>{throw new Error('offline');});
+  assert.equal(await (await h.dispatch('fetch',{request:{method:'GET',mode:'navigate',url:scope+'?shortcut=chat'}})).text(),'working application');
+  console.log('✓ Auxiliary pages and redirects cannot replace the offline application');
+}
+{
+  const h=harness();
+  const html='<script src="../another-app/private.js"></script><script src="./assets/index-abcdefgh.js"></script>';
+  h.setNetwork(async request=>new Response(typeof request==='string'?'asset':html));
+  await h.dispatch('fetch',{request:{method:'GET',mode:'navigate',url:scope}});
+  assert.equal(h.calls.some(url=>url.includes('/another-app/')),false);
+  console.log('✓ Application precaching cannot fetch resources belonging to other applications');
+}

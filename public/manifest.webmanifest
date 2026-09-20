@@ -7,13 +7,13 @@
   "scope":"./",
   "display":"standalone",
   "background_color":"#ffffff",
-  "theme_color":"#0b3150",
+  "theme_color":"#6f46ff",
   "lang":"es",
   "orientation":"portrait-primary",
   "categories":["social","lifestyle","travel"],
   "icons":[
-    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
-    {"src":"./icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+    {"src":"./IMG_4752.jpeg","sizes":"1242x1242","type":"image/jpeg","purpose":"any"},
+    {"src":"./IMG_4752.jpeg","sizes":"1242x1242","type":"image/jpeg","purpose":"maskable"}
   ],
   "screenshots":[
     {"src":"./screenshots/mobile.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"CONECTA en móvil"},

@@ -19,7 +19,7 @@ export function BottomNav({view,setView,activeView=view}:{view:View;setView:(v:V
 export function Sidebar({view,setView,activeView=view,onPremium}:{view:View;setView:(v:View)=>void;activeView?:View;onPremium?:()=>void}){
   const items:[View,typeof Home][]=[['Inicio',Home],['Explora',Compass],['Chat',MessageCircle],['Perfil',CircleUserRound],['Ajustes',Settings]];
   return <aside className="sidebar">
-    <div className="brand brand-image-only"><img className="brand-logo" src="./IMG_4752.jpeg" alt="CONECTA"/></div>
+    <div className="brand brand-image-only"><img className="brand-logo" src="./IMG_4799.png" alt="CONECTA"/></div>
     <nav aria-label="Navegación lateral">{items.map(([label,Icon])=>{
       const active=label==='Inicio'?isHomeFlow(activeView):activeView===label;
       return <button type="button" key={label} className={active?'active':''} onClick={()=>setView(label)}><Icon/><span>{label}</span></button>;
@@ -50,7 +50,7 @@ export function Header({view,setView,unreadNotifications=0,onSearch}:{view:View;
   const openSearch=()=>{if(onSearch)onSearch();else setView('Explora')};
 
   return <header className={`topbar ${isHome?'topbar-home':'topbar-compact'}`}>
-    {isHome&&<div className="mobile-brand mobile-brand-image-only"><img className="brand-logo" src="./IMG_4752.jpeg" alt="CONECTA"/></div>}
+    {isHome&&<div className="mobile-brand mobile-brand-image-only"><img className="brand-logo" src="./IMG_4799.png" alt="CONECTA"/></div>}
     <div className="desktop-search"><Search/><input readOnly value="" placeholder="¿Qué te apetece hacer hoy?" aria-label="Abrir búsqueda de planes" onFocus={openSearch} onClick={openSearch} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openSearch()}}}/></div>
     <div className="top-actions">
       {isHome&&<button type="button" className="mobile-home-search" aria-label="Buscar planes" onClick={openSearch}><Search/></button>}

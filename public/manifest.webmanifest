@@ -1,27 +1,89 @@
 {
-  "id":"./",
-  "name":"CONECTA Premium Max",
-  "short_name":"CONECTA",
-  "description":"CONECTA — Planes reales, gente compatible",
-  "start_url":"./",
-  "scope":"./",
-  "display":"standalone",
-  "background_color":"#ffffff",
-  "theme_color":"#6f46ff",
-  "lang":"es",
-  "orientation":"portrait-primary",
-  "categories":["social","lifestyle","travel"],
-  "icons":[
-    {"src":"./IMG_4752.jpeg","sizes":"512x512","type":"image/jpeg","purpose":"any"},
-    {"src":"./IMG_4752.jpeg","sizes":"512x512","type":"image/jpeg","purpose":"maskable"}
+  "id": "./",
+  "name": "CONECTA Premium Max",
+  "short_name": "CONECTA",
+  "description": "CONECTA — Planes reales, gente compatible",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6f46ff",
+  "lang": "es",
+  "orientation": "portrait-primary",
+  "categories": [
+    "social",
+    "lifestyle",
+    "travel"
   ],
-  "screenshots":[
-    {"src":"./screenshots/mobile.png","sizes":"390x844","type":"image/png","form_factor":"narrow","label":"CONECTA en móvil"},
-    {"src":"./screenshots/wide.png","sizes":"1440x900","type":"image/png","form_factor":"wide","label":"CONECTA en escritorio"}
+  "icons": [
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
-  "shortcuts":[
-    {"name":"Crear plan","short_name":"Crear plan","description":"Crear un nuevo plan en CONECTA","url":"./?shortcut=create-plan","icons":[{"src":"./IMG_4752.jpeg","sizes":"1242x1242","type":"image/jpeg"}]},
-    {"name":"Modo Ahora","short_name":"Ahora","description":"Abrir planes para ahora mismo","url":"./?shortcut=now","icons":[{"src":"./IMG_4752.jpeg","sizes":"1242x1242","type":"image/jpeg"}]},
-    {"name":"Chat","short_name":"Chat","description":"Abrir tus conversaciones","url":"./?shortcut=chat","icons":[{"src":"./IMG_4752.jpeg","sizes":"1242x1242","type":"image/jpeg"}]}
+  "screenshots": [
+    {
+      "src": "./screenshots/mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "CONECTA en móvil"
+    },
+    {
+      "src": "./screenshots/wide.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "CONECTA en escritorio"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Crear plan",
+      "short_name": "Crear plan",
+      "description": "Crear un nuevo plan en CONECTA",
+      "url": "./?shortcut=create-plan",
+      "icons": [
+        {
+          "src": "./icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Modo Ahora",
+      "short_name": "Ahora",
+      "description": "Abrir planes para ahora mismo",
+      "url": "./?shortcut=now",
+      "icons": [
+        {
+          "src": "./icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "short_name": "Chat",
+      "description": "Abrir tus conversaciones",
+      "url": "./?shortcut=chat",
+      "icons": [
+        {
+          "src": "./icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

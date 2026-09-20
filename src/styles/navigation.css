@@ -35,3 +35,6 @@
   .topbar-home{height:calc(64px + env(safe-area-inset-top));min-height:calc(64px + env(safe-area-inset-top))}
   .bottom-nav{bottom:calc(2px + env(safe-area-inset-bottom));height:66px;padding-bottom:5px}
 }
+
+/* Logo CONECTA: la imagen ya contiene nombre y lema; no duplicar texto. */
+.brand-image-only{display:block}.brand-image-only .brand-logo{width:72px;height:72px}.mobile-brand-image-only{display:flex;align-items:center}.mobile-brand-image-only .brand-logo{width:38px;height:38px}@media(max-width:390px){.mobile-brand-image-only .brand-logo{width:34px;height:34px}}

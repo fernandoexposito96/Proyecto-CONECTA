@@ -1,6 +1,6 @@
 /* CONECTA — service worker seguro. */
 const CACHE_PREFIX=`conecta-runtime:${encodeURIComponent(self.registration.scope)}:`;
-const CACHE_NAME=`${CACHE_PREFIX}v12`;
+const CACHE_NAME=`${CACHE_PREFIX}v11`;
 const MAX_RUNTIME_ENTRIES=160;
 const appScope=new URL(self.registration.scope);
 const inAppScope=url=>url.origin===appScope.origin&&url.pathname.startsWith(appScope.pathname);

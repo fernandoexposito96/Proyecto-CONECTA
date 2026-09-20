@@ -122,7 +122,7 @@ export function AuthGate({children}:{children:ReactNode}){
 
   return <main className="auth-page">
     <section className="auth-card">
-      <div className="auth-brand"><img src="./IMG_4752.jpeg" alt="CONECTA" style={{width:54,height:54,borderRadius:16,objectFit:'cover',flex:'0 0 54px'}}/><div><strong>CONECTA</strong><small>Planes reales · gente compatible</small></div></div>
+      <div className="auth-brand"><img src="./IMG_4752.jpeg" alt="CONECTA" style={{width:110,height:110,borderRadius:28,objectFit:'cover',display:'block'}}/></div>
       <div className="auth-copy"><h1>{mode==='login'?'Bienvenido de nuevo':'Crea tu cuenta'}</h1><p>Tu cuenta sincroniza planes y preferencias entre dispositivos mediante el backend de CONECTA.</p>{invitePending&&<p><strong>Tienes una invitación a un plan.</strong> Entra o crea tu cuenta y te llevaremos directamente al plan.</p>}</div>
       <form onSubmit={submit} className="auth-form">
         <label>Correo electrónico<input type="email" autoComplete="email" value={email} onChange={event=>setEmail(event.target.value)} placeholder="tu@email.com" required/></label>

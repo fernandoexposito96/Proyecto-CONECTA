@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { Eye, EyeOff, LockKeyhole, Mail, ArrowRight } from 'lucide-react';
+import { Apple, Eye, EyeOff, LockKeyhole, Mail, ArrowRight } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import { clearLocalUserState, hydrateCloudState, queueCloudStateSave, resetCloudStateQueue } from '../lib/cloud';
 import { setCloudStorageWriter } from '../lib/storage';
@@ -136,7 +136,7 @@ export function AuthGate({children}:{children:ReactNode}){
         <button className="auth-submit" type="submit" disabled={busy}><span>{busy?'Procesando…':mode==='login'?'Entrar':'Crear cuenta'}</span>{!busy&&<ArrowRight size={24}/>}</button>
       </form>
       <div className="auth-divider"><span>o continúa con</span></div>
-      <div className="auth-social" aria-label="Opciones de acceso"><button type="button" aria-label="Continuar con Google">G</button><button type="button" aria-label="Continuar con Apple">●</button><button type="button" aria-label="Continuar con correo"><Mail size={23}/></button></div>
+      <div className="auth-social" aria-label="Opciones de acceso"><button type="button" aria-label="Continuar con Google">G</button><button type="button" aria-label="Continuar con Apple"><Apple size={25} fill="currentColor"/></button><button type="button" aria-label="Continuar con correo"><Mail size={23}/></button></div>
       <div className="auth-account-row"><span>{mode==='login'?'¿No tienes cuenta?':'¿Ya tienes cuenta?'}</span><button className="auth-switch" type="button" onClick={()=>{setMode(current=>current==='login'?'signup':'login');setMessage('')}}>{mode==='login'?'Crear una cuenta':'Iniciar sesión'} <ArrowRight size={19}/></button></div>
     </section>
   </main>;

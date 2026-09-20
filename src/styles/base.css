@@ -178,3 +178,6 @@ img{display:block;max-width:100%}
 .auth-social-two{gap:18px}
 .auth-social-two button{width:58px;height:48px}
 .auth-social-two button:nth-child(2){color:#6f3ff5}
+
+/* Official Google multicolor G artwork; do not recolor. */
+.google-official-mark{display:block;width:22px;height:22px;flex:none}

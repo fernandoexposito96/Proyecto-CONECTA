@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { Apple, Eye, EyeOff, LockKeyhole, Mail, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, LockKeyhole, Mail, ArrowRight } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import { clearLocalUserState, hydrateCloudState, queueCloudStateSave, resetCloudStateQueue } from '../lib/cloud';
 import { setCloudStorageWriter } from '../lib/storage';
@@ -91,6 +91,42 @@ export function AuthGate({children}:{children:ReactNode}){
     };
   },[]);
 
+  const googleLogin=async()=>{
+    setBusy(true);
+    setMessage('');
+    try{
+      const {error}=await supabase.auth.signInWithOAuth({
+        provider:'google',
+        options:{redirectTo:new URL('.',document.baseURI).href},
+      });
+      if(error)throw error;
+    }catch(error){
+      setMessage(error instanceof Error?error.message:'No se ha podido iniciar sesión con Google.');
+      setBusy(false);
+    }
+  };
+
+  const resetPassword=async()=>{
+    const cleanEmail=email.trim();
+    if(!cleanEmail){
+      setMessage('Escribe primero tu correo electrónico para recuperar la contraseña.');
+      return;
+    }
+    setBusy(true);
+    setMessage('');
+    try{
+      const {error}=await supabase.auth.resetPasswordForEmail(cleanEmail,{
+        redirectTo:new URL('.',document.baseURI).href,
+      });
+      if(error)throw error;
+      setMessage('Te hemos enviado un correo para recuperar tu contraseña.');
+    }catch(error){
+      setMessage(error instanceof Error?error.message:'No se ha podido enviar el correo de recuperación.');
+    }finally{
+      setBusy(false);
+    }
+  };
+
   const submit=async(event:FormEvent)=>{
     event.preventDefault();
     const cleanEmail=email.trim();
@@ -131,12 +167,12 @@ export function AuthGate({children}:{children:ReactNode}){
       <form onSubmit={submit} className="auth-form auth-form-premium">
         <label className="auth-field"><Mail size={22}/><input aria-label="Correo electrónico" type="email" autoComplete="email" value={email} onChange={event=>setEmail(event.target.value)} placeholder="Correo electrónico" required/></label>
         <label className="auth-field"><LockKeyhole size={22}/><input aria-label="Contraseña" type={showPassword?'text':'password'} autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={event=>setPassword(event.target.value)} minLength={mode==='signup'?8:undefined} placeholder={mode==='signup'?'Mínimo 8 caracteres':'Tu contraseña'} required/><button className="auth-eye" type="button" aria-label={showPassword?'Ocultar contraseña':'Mostrar contraseña'} onClick={()=>setShowPassword(value=>!value)}>{showPassword?<EyeOff size={21}/>:<Eye size={21}/>}</button></label>
-        {mode==='login'&&<div className="auth-options"><label className="auth-remember"><input type="checkbox" checked={remember} onChange={event=>setRemember(event.target.checked)}/><span>Recordarme</span></label><button type="button" className="auth-forgot" onClick={()=>setMessage('Para recuperar tu contraseña, usa el correo asociado a tu cuenta.')}>¿Has olvidado tu contraseña?</button></div>}
+        {mode==='login'&&<div className="auth-options"><label className="auth-remember"><input type="checkbox" checked={remember} onChange={event=>setRemember(event.target.checked)}/><span>Recordarme</span></label><button type="button" className="auth-forgot" onClick={()=>void resetPassword()}>¿Has olvidado tu contraseña?</button></div>}
         {message&&<div className="auth-message" role="status">{message}</div>}
         <button className="auth-submit" type="submit" disabled={busy}><span>{busy?'Procesando…':mode==='login'?'Entrar':'Crear cuenta'}</span>{!busy&&<ArrowRight size={24}/>}</button>
       </form>
       <div className="auth-divider"><span>o continúa con</span></div>
-      <div className="auth-social" aria-label="Opciones de acceso"><button type="button" aria-label="Google"><span className="google-mark" aria-hidden="true"><i>G</i></span></button><button type="button" aria-label="Apple"><Apple size={25} fill="currentColor"/></button><button type="button" aria-label="Mensajes"><Mail size={25}/></button></div>
+      <div className="auth-social auth-social-two" aria-label="Opciones de acceso"><button type="button" aria-label="Continuar con Google" disabled={busy} onClick={()=>void googleLogin()}><span className="google-mark" aria-hidden="true"><i>G</i></span></button><button type="button" aria-label="Continuar con correo" onClick={()=>document.querySelector<HTMLInputElement>('.auth-field input[type="email"]')?.focus()}><Mail size={25}/></button></div>
       <div className="auth-account-row"><span>{mode==='login'?'¿No tienes cuenta?':'¿Ya tienes cuenta?'}</span><button className="auth-switch" type="button" onClick={()=>{setMode(current=>current==='login'?'signup':'login');setMessage('')}}>{mode==='login'?'Crear una cuenta':'Iniciar sesión'} <ArrowRight size={19}/></button></div>
     </section>
   </main>;

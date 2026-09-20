@@ -172,3 +172,9 @@ img{display:block;max-width:100%}
 .auth-social button:nth-child(3){color:#6f3ff5}
 .google-mark{position:relative;display:grid;place-items:center;width:25px;height:25px;font-family:Arial,sans-serif;font-size:21px;font-weight:800;line-height:1;background:conic-gradient(from -45deg,#4285f4 0 25%,#34a853 0 42%,#fbbc05 0 66%,#ea4335 0 83%,#4285f4 0);-webkit-background-clip:text;background-clip:text;color:transparent}
 .google-mark i{font-style:normal}
+
+
+/* Google + email only */
+.auth-social-two{gap:18px}
+.auth-social-two button{width:58px;height:48px}
+.auth-social-two button:nth-child(2){color:#6f3ff5}

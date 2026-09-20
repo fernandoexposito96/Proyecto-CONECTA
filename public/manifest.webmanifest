@@ -17,13 +17,13 @@
   ],
   "icons": [
     {
-      "src": "./icon-512.png",
+      "src": "./IMG_4799.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-maskable-512.png",
+      "src": "./IMG_4799.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -53,7 +53,7 @@
       "url": "./?shortcut=create-plan",
       "icons": [
         {
-          "src": "./icon-512.png",
+          "src": "./IMG_4799.png",
           "sizes": "512x512",
           "type": "image/png"
         }
@@ -66,7 +66,7 @@
       "url": "./?shortcut=now",
       "icons": [
         {
-          "src": "./icon-512.png",
+          "src": "./IMG_4799.png",
           "sizes": "512x512",
           "type": "image/png"
         }
@@ -79,7 +79,7 @@
       "url": "./?shortcut=chat",
       "icons": [
         {
-          "src": "./icon-512.png",
+          "src": "./IMG_4799.png",
           "sizes": "512x512",
           "type": "image/png"
         }

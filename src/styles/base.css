@@ -108,3 +108,20 @@ img{display:block;max-width:100%}
 }
 
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Premium auth — clean CONECTA prototype */
+.auth-page-premium{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;padding:34px 18px;background:radial-gradient(circle at 50% 10%,#fff 0,#f8f5ff 38%,#eee8ff 100%)}
+.auth-page-premium:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(145deg,rgba(255,255,255,.7),transparent 48%)}
+.auth-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(.2px);background:linear-gradient(145deg,#b998ff,#7544ff);box-shadow:inset -14px -16px 28px rgba(74,31,183,.18),0 22px 50px rgba(107,65,230,.12)}
+.auth-orb-one{width:210px;height:210px;left:-145px;top:11%}.auth-orb-two{width:130px;height:130px;right:-82px;bottom:9%;opacity:.75}
+.auth-hero-logo{position:relative;z-index:1}.auth-hero-logo img{display:block;width:142px;height:142px;object-fit:cover;border-radius:34px;box-shadow:0 20px 45px rgba(81,39,186,.24)}
+.auth-card-premium{position:relative;z-index:1;width:min(520px,100%);padding:30px 28px 26px;border:1px solid rgba(223,214,249,.9);border-radius:34px;background:rgba(255,255,255,.86);backdrop-filter:blur(18px);box-shadow:0 30px 70px rgba(76,51,139,.14)}
+.auth-copy-centered{text-align:center}.auth-copy-centered h1{font-size:34px}.auth-copy-centered p{margin:9px 0 24px}
+.auth-form-premium{gap:13px}.auth-field{height:58px!important;display:flex!important;align-items:center;gap:12px!important;padding:0 17px;border:1px solid #ded6f4;border-radius:18px;background:rgba(255,255,255,.9);color:#62579a;font-weight:400!important}.auth-field:focus-within{border-color:#8158ff;box-shadow:0 0 0 3px rgba(113,72,255,.09)}.auth-field input{height:54px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;font-size:16px;min-width:0}.auth-eye{display:grid;place-items:center;padding:6px;border:0;background:transparent;color:#766da0}
+.auth-options{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px}.auth-remember{display:flex!important;grid-template-columns:none!important;align-items:center;gap:7px!important;color:#27314b!important;font-weight:700!important}.auth-remember input{width:18px!important;height:18px!important;accent-color:#7047ff}.auth-forgot{padding:5px 0;border:0;background:transparent;color:#6d42f5;text-decoration:underline;font-weight:700}
+.auth-submit{display:flex;align-items:center;justify-content:center;gap:12px;height:58px!important;border-radius:18px!important;font-size:17px}
+.auth-divider{display:flex;align-items:center;gap:14px;margin:21px 0 16px;color:#81799e;font-size:13px}.auth-divider:before,.auth-divider:after{content:"";height:1px;flex:1;background:#ded7ef}
+.auth-social{display:flex;justify-content:center;gap:18px}.auth-social button{width:66px;height:54px;border:1px solid #ebe6f6;border-radius:17px;background:#fff;color:#6239ef;font-size:22px;font-weight:900;box-shadow:0 8px 20px rgba(61,40,117,.06)}
+.auth-account-row{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:22px;padding:12px 14px;border-radius:16px;background:#f4efff;color:#5f577a;font-size:14px}.auth-account-row .auth-switch{width:auto;margin:0;padding:4px;display:inline-flex;align-items:center;gap:5px;font-size:14px}
+@media(max-width:560px){.auth-page-premium{justify-content:flex-start;gap:16px;padding:38px 16px 26px}.auth-hero-logo img{width:116px;height:116px;border-radius:28px}.auth-card-premium{padding:25px 20px 22px;border-radius:29px}.auth-copy-centered h1{font-size:29px}.auth-copy-centered p{font-size:14px;margin-bottom:20px}.auth-field{height:54px!important}.auth-submit{height:54px!important}.auth-options{font-size:12px}.auth-account-row{flex-wrap:wrap}.auth-orb-one{width:170px;height:170px;left:-120px}.auth-orb-two{width:110px;height:110px;right:-70px}.auth-desktop-break{display:none}}

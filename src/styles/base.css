@@ -158,3 +158,9 @@ img{display:block;max-width:100%}
   .auth-card-premium{padding-left:18px;padding-right:18px}
   .auth-account-row{font-size:10.5px}.auth-account-row .auth-switch{font-size:10.5px}
 }
+
+
+/* Real provider marks */
+.google-mark{font-family:Arial,sans-serif;font-size:21px;font-weight:800;color:#4285f4}
+.auth-social button:nth-child(2){color:#000}
+.auth-social button:disabled{opacity:.55;cursor:wait}

@@ -91,6 +91,20 @@ export function AuthGate({children}:{children:ReactNode}){
     };
   },[]);
 
+  const socialLogin=async(provider:'google'|'apple')=>{
+    setBusy(true);setMessage('');
+    try{
+      const {error}=await supabase.auth.signInWithOAuth({
+        provider,
+        options:{redirectTo:new URL('./',window.location.href).href},
+      });
+      if(error)throw error;
+    }catch(error){
+      setMessage(error instanceof Error?error.message:'No se ha podido iniciar el acceso social.');
+      setBusy(false);
+    }
+  };
+
   const submit=async(event:FormEvent)=>{
     event.preventDefault();
     const cleanEmail=email.trim();
@@ -136,7 +150,7 @@ export function AuthGate({children}:{children:ReactNode}){
         <button className="auth-submit" type="submit" disabled={busy}><span>{busy?'Procesando…':mode==='login'?'Entrar':'Crear cuenta'}</span>{!busy&&<ArrowRight size={24}/>}</button>
       </form>
       <div className="auth-divider"><span>o continúa con</span></div>
-      <div className="auth-social" aria-label="Opciones de acceso"><button type="button" aria-label="Continuar con Google">G</button><button type="button" aria-label="Continuar con Apple"><Apple size={25} fill="currentColor"/></button><button type="button" aria-label="Continuar con correo"><Mail size={23}/></button></div>
+      <div className="auth-social" aria-label="Opciones de acceso"><button type="button" aria-label="Continuar con Google" disabled={busy} onClick={()=>void socialLogin('google')}><span className="google-mark" aria-hidden="true">G</span></button><button type="button" aria-label="Continuar con Apple" disabled={busy} onClick={()=>void socialLogin('apple')}><Apple size={25} fill="currentColor"/></button><button type="button" aria-label="Continuar con correo" onClick={()=>document.querySelector<HTMLInputElement>('.auth-field input[type="email"]')?.focus()}><Mail size={23}/></button></div>
       <div className="auth-account-row"><span>{mode==='login'?'¿No tienes cuenta?':'¿Ya tienes cuenta?'}</span><button className="auth-switch" type="button" onClick={()=>{setMode(current=>current==='login'?'signup':'login');setMessage('')}}>{mode==='login'?'Crear una cuenta':'Iniciar sesión'} <ArrowRight size={19}/></button></div>
     </section>
   </main>;

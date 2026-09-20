@@ -1,11 +1,11 @@
 /* CONECTA — service worker seguro. */
 const CACHE_PREFIX=`conecta-runtime:${encodeURIComponent(self.registration.scope)}:`;
-const CACHE_NAME=`${CACHE_PREFIX}v11`;
+const CACHE_NAME=`${CACHE_PREFIX}v12`;
 const MAX_RUNTIME_ENTRIES=160;
 const appScope=new URL(self.registration.scope);
 const inAppScope=url=>url.origin===appScope.origin&&url.pathname.startsWith(appScope.pathname);
 const isAppDocument=url=>url.pathname===appScope.pathname||url.pathname===`${appScope.pathname}index.html`;
-const SHELL=['./','./index.html','./offline.html','./image-fallback.svg','./icon.svg','./icon-maskable.svg','./manifest.webmanifest','./apple-touch-icon.png','./apple-touch-icon-120.png','./apple-touch-icon-152.png','./apple-touch-icon-167.png'];
+const SHELL=['./','./index.html','./offline.html','./image-fallback.svg','./icon.svg','./icon-maskable.svg','./icon-512.png','./icon-maskable-512.png','./manifest.webmanifest','./apple-touch-icon.png','./apple-touch-icon-120.png','./apple-touch-icon-152.png','./apple-touch-icon-167.png'];
 const shellUrls=new Set(SHELL.map(path=>new URL(path,self.location.href).href));
 async function trimCache(cache,maxEntries){const keys=await cache.keys();const disposable=keys.filter(request=>!shellUrls.has(request.url)&&!/\.(?:js|css)$/.test(new URL(request.url).pathname));await Promise.all(disposable.slice(0,Math.max(0,keys.length-maxEntries)).map(request=>cache.delete(request)))}
 async function cacheDocument(cache,response){const html=await response.clone().text();const assets=[...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css)(?:\?[^"']*)?)["']/g)].map(match=>new URL(match[1],self.registration.scope)).filter(inAppScope);await Promise.all(assets.map(async url=>{if(/\/assets\/[^/]+-[A-Za-z0-9_-]{8,}\.(?:js|css)$/.test(url.pathname)&&await cache.match(url.href))return;const asset=await fetch(url.href,{cache:'no-store'});if(!asset.ok)throw new Error('Application asset unavailable');await cache.put(url.href,asset)}));await cache.put('./index.html',response.clone())}

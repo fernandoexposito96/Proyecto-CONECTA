@@ -161,7 +161,7 @@ export function AuthGate({children}:{children:ReactNode}){
 
   return <main className="auth-page auth-page-premium">
     <div className="auth-orb auth-orb-one" aria-hidden="true"/><div className="auth-orb auth-orb-two" aria-hidden="true"/>
-    <div className="auth-hero-logo"><img src="./IMG_4752.jpeg" alt="CONECTA"/></div>
+    <div className="auth-hero-logo"><img src="./IMG_4799.png" alt="CONECTA"/></div>
     <section className="auth-card auth-card-premium">
       <div className="auth-copy auth-copy-centered"><h1>{mode==='login'?'Bienvenido de nuevo':'Crea tu cuenta'}</h1><p>Tu cuenta sincroniza planes y preferencias<br className="auth-desktop-break"/> en todos tus dispositivos.</p>{invitePending&&<p><strong>Tienes una invitación a un plan.</strong> Entra o crea tu cuenta y te llevaremos directamente al plan.</p>}</div>
       <form onSubmit={submit} className="auth-form auth-form-premium">

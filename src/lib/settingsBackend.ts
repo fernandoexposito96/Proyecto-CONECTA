@@ -59,7 +59,11 @@ function isBackendLanguage(value:unknown):value is 'es'|'ca'|'en'|'fr'|'de'|'it'
 
 function isPrivacy(value:unknown):value is PrivacySettings{
   if(!isObject(value))return false;
-  return typeof value.profileVisibility==='string'&&typeof value.planVisibility==='string'&&typeof value.locationSharing==='string'&&typeof value.messagePermission==='string'&&typeof value.connectionRequests==='string';
+  return (value.profileVisibility==='Todos'||value.profileVisibility==='Solo conexiones')
+    &&(value.planVisibility==='Todos'||value.planVisibility==='Solo conexiones')
+    &&(value.locationSharing==='Siempre'||value.locationSharing==='Al usar la app'||value.locationSharing==='Nunca')
+    &&(value.messagePermission==='Todos'||value.messagePermission==='Solo conexiones')
+    &&(value.connectionRequests==='Todos'||value.connectionRequests==='Nadie');
 }
 
 function privacyToBackend(value:PrivacySettings){
@@ -74,14 +78,24 @@ function privacyToBackend(value:PrivacySettings){
 
 export function privacyFromBackend(value:unknown):PrivacySettings|undefined{
   if(!isObject(value))return undefined;
-  const choices:Record<string,readonly string[]>={profileVisibility:['everyone','connections'],plansVisibility:['everyone','connections'],location:['never','always','while_using'],messages:['everyone','connections'],requests:['everyone','nobody']};
-  if(!Object.entries(choices).every(([key,options])=>typeof value[key]==='string'&&options.includes(value[key] as string)))return undefined;
-  const profileVisibility=value.profileVisibility==='connections'?'Solo conexiones':'Todos';
-  const planVisibility=value.plansVisibility==='connections'?'Solo conexiones':'Todos';
-  const locationSharing=value.location==='never'?'Nunca':value.location==='always'?'Siempre':'Al usar la app';
-  const messagePermission=value.messages==='everyone'?'Todos':'Solo conexiones';
-  const connectionRequests=value.requests==='nobody'?'Nadie':'Todos';
-  return {profileVisibility,planVisibility,locationSharing,messagePermission,connectionRequests};
+  const read=(key:string,legacyKey?:string)=>value[key]??(legacyKey?value[legacyKey]:undefined);
+  const profile=read('profileVisibility','profile_visibility');
+  const plans=read('plansVisibility','planVisibility');
+  const location=read('location','locationSharing');
+  const messages=read('messages','messagePermission');
+  const requests=read('requests','connectionRequests');
+  if(!['everyone','connections'].includes(String(profile)))return undefined;
+  if(!['everyone','connections'].includes(String(plans)))return undefined;
+  if(!['never','always','while_using'].includes(String(location)))return undefined;
+  if(!['everyone','connections'].includes(String(messages)))return undefined;
+  if(!['everyone','nobody'].includes(String(requests)))return undefined;
+  return {
+    profileVisibility:profile==='connections'?'Solo conexiones':'Todos',
+    planVisibility:plans==='connections'?'Solo conexiones':'Todos',
+    locationSharing:location==='never'?'Nunca':location==='always'?'Siempre':'Al usar la app',
+    messagePermission:messages==='everyone'?'Todos':'Solo conexiones',
+    connectionRequests:requests==='nobody'?'Nadie':'Todos',
+  };
 }
 
 async function currentStorageUser(expectedUserId:string){

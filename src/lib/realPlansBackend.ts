@@ -14,6 +14,7 @@ type RealPlanRow={
   image_url:string|null;
   visibility:string|null;
   share_slug:string|null;
+  description?:string|null;
 };
 
 type MemberRow={plan_id:string;user_id:string;status:string|null};
@@ -28,9 +29,9 @@ function formatStartsAt(value:string|null){if(!value)return 'Fecha por confirmar
 function validCoordinate(value:unknown,min:number,max:number){if((typeof value!=='number'&&typeof value!=='string')||(typeof value==='string'&&!value.trim()))return undefined;const number=typeof value==='number'?value:Number(value);return Number.isFinite(number)&&number>=min&&number<=max?number:undefined}
 function basePlan(row:RealPlanRow):Plan{
  const latitude=validCoordinate(row.latitude,-90,90);const longitude=validCoordinate(row.longitude,-180,180);
- return {backendId:row.id,creatorId:row.creator_id,title:row.title,image:row.image_url||fallbackImage,time:formatStartsAt(row.starts_at),startsAt:row.starts_at||undefined,place:row.location_name||'Lugar por confirmar',distance:latitude!==undefined&&longitude!==undefined?'Ubicación disponible':'Ubicación por confirmar',spots:row.max_people?`${row.max_people} plazas`:'Plazas abiertas',category:row.category||'Plan',latitude,longitude,visibility:row.visibility==='connections'?'Solo conexiones':'Todos',shareSlug:row.share_slug||undefined};
+ return {backendId:row.id,creatorId:row.creator_id,title:row.title,image:row.image_url||fallbackImage,time:formatStartsAt(row.starts_at),startsAt:row.starts_at||undefined,place:row.location_name||'Lugar por confirmar',distance:latitude!==undefined&&longitude!==undefined?'Ubicación disponible':'Ubicación por confirmar',spots:row.max_people?`${row.max_people} plazas`:'Plazas abiertas',category:row.category||'Plan',latitude,longitude,visibility:row.visibility==='connections'?'Solo conexiones':'Todos',shareSlug:row.share_slug||undefined,description:row.description||undefined};
 }
-const planColumns='id,creator_id,title,category,location_name,latitude,longitude,starts_at,max_people,image_url,visibility,share_slug';
+const planColumns='id,creator_id,title,description,category,location_name,latitude,longitude,starts_at,max_people,image_url,visibility,share_slug';
 export async function fetchRealPlans():Promise<Plan[]>{
  const now=new Date().toISOString();const {data,error}=await supabase.from('plans').select(planColumns).in('status',['published','full']).gte('starts_at',now).order('starts_at',{ascending:true,nullsFirst:false}).limit(100);if(error)throw error;
  const rows=(data||[]) as unknown as RealPlanRow[];if(!rows.length)return [];const planIds=rows.map(row=>row.id);let members:MemberRow[]=[];
@@ -43,6 +44,6 @@ export async function fetchRealPlans():Promise<Plan[]>{
 export async function createRealPlan(plan:Plan):Promise<Plan>{
  const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;if(!user)throw new Error('Necesitas iniciar sesión para publicar un plan.');if(!plan.startsAt)throw new Error('Selecciona una fecha y hora válidas para publicar el plan.');
  const maxPeople=Math.max(2,Math.min(50,Number.parseInt(plan.spots,10)||6));const visibility=plan.visibility==='Solo conexiones'?'connections':'public';const latitude=validCoordinate(plan.latitude,-90,90);const longitude=validCoordinate(plan.longitude,-180,180);
- const {data,error}=await supabase.from('plans').insert({creator_id:user.id,title:plan.title,description:'Plan creado desde CONECTA.',category:plan.category,location_name:plan.place,latitude:latitude??null,longitude:longitude??null,starts_at:plan.startsAt,max_people:maxPeople,image_url:plan.image,visibility,status:'published',meeting_safety:'public_place'}).select(planColumns).single();if(error)throw error;
+ const {data,error}=await supabase.from('plans').insert({creator_id:user.id,title:plan.title,description:plan.description||'Plan creado desde CONECTA.',category:plan.category,location_name:plan.place,latitude:latitude??null,longitude:longitude??null,starts_at:plan.startsAt,max_people:maxPeople,image_url:plan.image,visibility,status:'published',meeting_safety:'public_place'}).select(planColumns).single();if(error)throw error;
  const created=basePlan(data as unknown as RealPlanRow);created.organizerName='Tú';created.participantNames=[];created.participantAvatars=[];created.participantCount=0;return created;
 }

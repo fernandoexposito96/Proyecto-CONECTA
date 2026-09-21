@@ -15,3 +15,22 @@
 
 /* Functional Explore controls */
 .explore-search-real{height:46px;margin:0 0 14px;padding:0 13px;display:flex;align-items:center;gap:9px;border:1px solid #e7e2f6;border-radius:16px;background:#fff;box-shadow:0 5px 18px rgba(49,38,105,.05)}.explore-search-real svg{width:18px;color:#7048ff}.explore-search-real input{width:100%;border:0;outline:0;background:transparent;color:#18203b;font:inherit}.explore-categories button.active{outline:3px solid #7048ff;outline-offset:2px}.explore-categories button.active:after{background:linear-gradient(180deg,rgba(112,72,255,.08),rgba(57,32,132,.8))}
+
+/* Explora móvil: las imágenes se muestran completas dentro de su sección.
+   En pantalla pequeña no dejamos tarjetas cortadas por los laterales. */
+@media(max-width:520px){
+  .explore-live{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+  .status-zone .live-statuses{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 5px;overflow:visible;padding:2px 0 0}
+  .status-zone .live-status{width:100%;min-width:0;flex:initial;gap:4px}
+  .status-zone .live-status i{width:58px;height:58px}
+  .status-zone .live-status>b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .status-zone .live-status>small{max-width:100%;white-space:nowrap}
+  .profile-posts-zone .live-stories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible;padding:2px 0 0}
+  .profile-posts-zone .profile-post{min-width:0;width:100%;height:252px;flex:initial}
+  .connect-people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible;padding:2px 0 0}
+  .connect-card{min-width:0;width:100%;flex:initial}
+  .trending-plans{display:grid;grid-template-columns:minmax(0,1fr);overflow:visible;padding:2px 0 0}
+  .trending-plans>button{width:100%;min-width:0;flex:initial}
+  .explore-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;overflow:visible;padding:2px 0}
+  .explore-categories button{width:100%;min-width:0;flex:initial}
+}

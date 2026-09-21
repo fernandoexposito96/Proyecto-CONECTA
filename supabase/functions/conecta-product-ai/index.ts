@@ -67,7 +67,8 @@ Deno.serve(async (request: Request) => {
 
     const key = Deno.env.get("OPENAI_API_KEY") ?? "";
     if (!key) return json(fallback(task, input));
-    const model = Deno.env.get("PRODUCT_AI_MODEL") || Deno.env.get("ROBOT_AI_MODEL") || "gpt-5.4";
+    // Keep the model configurable per deployment while defaulting to Astra.
+    const model = Deno.env.get("PRODUCT_AI_MODEL") || Deno.env.get("ROBOT_AI_MODEL") || "gpt-6-astra";
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },

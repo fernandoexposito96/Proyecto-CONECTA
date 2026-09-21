@@ -8,7 +8,7 @@ export type Plan = {
   participantNames?: string[]; participantAvatars?: string[]; participantCount?: number;
   title:string; image:string; time:string; startsAt?:string; place:string; distance:string; spots:string; category:string;
   latitude?:number; longitude?:number;
-  visibility?:'Todos'|'Solo conexiones'; shareSlug?:string; description?:string; cost?:string; level?:string; materialNotes?:string; transportNotes?:string;
+  visibility?:'Todos'|'Solo conexiones'; shareSlug?:string; description?:string; level?:string;
 };
 export type PeopleFilter='near'|'match'|'age'|'interests';
 export type Person={userId?:string;name:string;age:number;distance:string;match:string;bio:string;job:string;tags:string[];image:string;gallery:string[]};

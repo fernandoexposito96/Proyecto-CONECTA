@@ -20,8 +20,9 @@
    En pantalla pequeña no dejamos tarjetas cortadas por los laterales. */
 @media(max-width:520px){
   .explore-live{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
-  .status-zone .live-statuses{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 5px;overflow:visible;padding:2px 0 0}
-  .status-zone .live-status{width:100%;min-width:0;flex:initial;gap:4px}
+  .status-zone .live-statuses{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 4px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .status-zone .live-statuses::-webkit-scrollbar{display:none}
+  .status-zone .live-status{width:auto;min-width:64px;flex:0 0 64px;gap:4px;scroll-snap-align:start}
   .status-zone .live-status i{width:58px;height:58px}
   .status-zone .live-status>b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .status-zone .live-status>small{max-width:100%;white-space:nowrap}

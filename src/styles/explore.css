@@ -35,3 +35,13 @@
   .explore-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;overflow:visible;padding:2px 0}
   .explore-categories button{width:100%;min-width:0;flex:initial}
 }
+
+
+/* Explora prototype — 2026-09-24: visual background, no category navigation */
+.explore-live{position:relative;background:linear-gradient(180deg,#f5efff 0%,#fbf9ff 42%,#f1edff 100%);border-radius:0 0 28px 28px}
+.explore-live:before{content:'';position:absolute;z-index:-1;inset:-18px -22px auto;height:250px;background:linear-gradient(180deg,rgba(113,72,255,.20),rgba(224,197,255,.12),transparent);pointer-events:none}
+.explore-visual-hero{min-height:112px;margin:-4px -16px 14px;padding:20px 20px 16px;display:flex;align-items:flex-end;border-radius:0 0 26px 26px;color:#fff;background:linear-gradient(110deg,rgba(75,45,188,.78),rgba(196,89,220,.38)),url('../assets/images/photo-1519046904884-53103b34b206.jpg') center 48%/cover;box-shadow:0 10px 28px rgba(80,49,161,.14)}
+.explore-visual-hero h1{margin:0;font-size:36px;line-height:1;letter-spacing:-.04em}.explore-visual-hero p{margin:7px 0 0;font-size:12px;font-weight:650;opacity:.95}
+.status-zone,.profile-posts-zone,.explore-live>.explore-live-section:not(.status-zone):not(.profile-posts-zone){background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 28px rgba(72,49,135,.07);backdrop-filter:blur(10px)}
+.explore-live>.explore-live-section:not(.status-zone):not(.profile-posts-zone){padding:14px 12px;border-radius:24px;margin-left:-6px;margin-right:-6px}
+@media(max-width:520px){.explore-visual-hero{margin-left:-16px;margin-right:-16px}.explore-visual-hero h1{font-size:34px}.profile-posts-zone .live-stories{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:2px 1px 5px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.profile-posts-zone .profile-post{flex:0 0 150px;width:150px}.connect-people{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:2px 1px 5px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.connect-card{flex:0 0 142px;width:142px}}

@@ -75,3 +75,17 @@
 .explore-visual-hero h1{font-size:40px;line-height:.98;font-weight:850}.explore-visual-hero p{max-width:330px;margin-top:9px;font-size:14px;line-height:1.35;font-weight:650}
 .explore-search-real{position:relative;z-index:2;margin-top:-2px;background:rgba(255,255,255,.94);border-color:rgba(255,255,255,.98);box-shadow:0 10px 28px rgba(72,44,145,.10)}
 @media(max-width:520px){.explore-visual-hero{min-height:170px;margin-left:-16px;margin-right:-16px;padding:27px 20px 22px}.explore-visual-hero h1{font-size:39px}.explore-visual-hero p{font-size:13px}}
+
+
+/* Explora iPhone viewport fix — 2026-09-24
+   Prevent the page itself from becoming a tall rounded panel and keep bottom-nav clearance stable. */
+.explore-live{min-height:100%;height:auto!important;overflow:visible!important;border-radius:0!important;padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))!important;background:
+ radial-gradient(circle at 14% 18%,rgba(173,126,255,.20),transparent 29%),
+ radial-gradient(circle at 88% 42%,rgba(236,183,255,.22),transparent 32%),
+ linear-gradient(180deg,#f6f0ff 0%,#fbf9ff 45%,#eee7ff 100%)!important}
+@media(max-width:520px){
+ .explore-live{min-height:100dvh!important;height:auto!important;overflow:visible!important;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}
+ .explore-live>.explore-live-section:last-of-type{margin-bottom:0}
+ .profile-posts-zone{margin-bottom:14px!important}
+ .connect-people{padding-bottom:6px}
+}

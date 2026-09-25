@@ -4,6 +4,7 @@ type CloudWriter=(key:string,value:unknown)=>void|Promise<void>;
 let cloudWriter:CloudWriter|null=null;
 type PendingCloudWrite={owner:string;key:string;value:unknown};
 const pendingCloudWrites=new Map<string,PendingCloudWrite>();
+const cloudOutboxKey='conecta-cloud-outbox-v1';
 
 export const storageChangeEvent='conecta:storage-change';
 const backendIdPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -12,23 +13,50 @@ function localCloudOwner(){
   try{return window.localStorage.getItem('conecta-auth-user-v1')}catch{return null;}
 }
 
+function pendingId(owner:string,key:string){return JSON.stringify([owner,key]);}
+
+function persistCloudOutbox(){
+  try{
+    const values=[...pendingCloudWrites.values()];
+    if(values.length)window.localStorage.setItem(cloudOutboxKey,JSON.stringify(values));
+    else window.localStorage.removeItem(cloudOutboxKey);
+  }catch{}
+}
+
+function restoreCloudOutbox(){
+  try{
+    const raw=window.localStorage.getItem(cloudOutboxKey);
+    if(!raw)return;
+    const parsed:unknown=JSON.parse(raw);
+    if(!Array.isArray(parsed))return;
+    for(const item of parsed){
+      if(!item||typeof item!=='object')continue;
+      const pending=item as Partial<PendingCloudWrite>;
+      if(typeof pending.owner!=='string'||typeof pending.key!=='string')continue;
+      pendingCloudWrites.set(pendingId(pending.owner,pending.key),{owner:pending.owner,key:pending.key,value:pending.value});
+    }
+  }catch{}
+}
+restoreCloudOutbox();
+
 function queueCloudWrite(key:string,value:unknown){
   const owner=localCloudOwner();
   if(!owner)return null;
   const pending={owner,key,value};
-  pendingCloudWrites.set(JSON.stringify([owner,key]),pending);
+  pendingCloudWrites.set(pendingId(owner,key),pending);
+  persistCloudOutbox();
   return pending;
 }
 
 function sendCloudWrite(writer:CloudWriter,pending:PendingCloudWrite){
   if(writer!==cloudWriter||localCloudOwner()!==pending.owner)return;
-  const id=JSON.stringify([pending.owner,pending.key]);
+  const id=pendingId(pending.owner,pending.key);
   try{
     void Promise.all([
       syncSettingStorageKey(pending.key,pending.value),
       Promise.resolve(writer(pending.key,pending.value)),
     ]).then(()=>{
-      if(pendingCloudWrites.get(id)===pending)pendingCloudWrites.delete(id);
+      if(pendingCloudWrites.get(id)===pending){pendingCloudWrites.delete(id);persistCloudOutbox();}
     }).catch(()=>{});
   }catch{}
 }
@@ -36,7 +64,8 @@ function sendCloudWrite(writer:CloudWriter,pending:PendingCloudWrite){
 function flushPendingCloudWrites(){
   const writer=cloudWriter;
   if(!writer)return;
-  for(const pending of pendingCloudWrites.values())sendCloudWrite(writer,pending);
+  const owner=localCloudOwner();
+  for(const pending of pendingCloudWrites.values())if(pending.owner===owner)sendCloudWrite(writer,pending);
 }
 
 export function setCloudStorageWriter(writer:CloudWriter|null){
@@ -59,7 +88,7 @@ export function loadStored<T>(key:string,fallback:T):T{
       if(key!==storageKeys.createdPlans&&key!==storageKeys.blockedUsers&&!parsed.every(item=>typeof item==='string'))return fallback;
       if(key===storageKeys.connections)return parsed.filter(item=>typeof item==='string'&&!backendIdPattern.test(item)) as T;
     }
-    if(key===storageKeys.chatMessages&&!Object.values(parsed as object).every(item=>Array.isArray(item)&&item.every(message=>typeof message==='string')))return fallback;
+    if(key===storageKeys.chatMessages&&(!parsed||typeof parsed!=='object'||Array.isArray(parsed)||!Object.values(parsed as object).every(item=>Array.isArray(item)&&item.every(message=>typeof message==='string'))))return fallback;
     return parsed as T;
   }catch{
     return fallback;
@@ -76,9 +105,6 @@ export function saveStored<T>(key:string,value:T){
     console.warn('CONECTA local state could not be persisted; remote sync skipped',error);
   }
 
-  // A failed local write must never be acknowledged remotely. When cloud
-  // hydration is temporarily unavailable, keep the latest persisted edit in a
-  // session outbox and replay it as soon as the writer becomes available.
   if(!persisted)return;
   const pending=queueCloudWrite(key,value);
   if(cloudWriter&&pending)sendCloudWrite(cloudWriter,pending);

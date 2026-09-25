@@ -7,10 +7,13 @@ import type { View } from '../types';
 const isHomeFlow=(view:View)=>view==='Inicio'||view==='HomeBrowse';
 
 export function BottomNav({view,setView,activeView=view}:{view:View;setView:(v:View)=>void;activeView?:View}){
+  // Crear is a focused, full-screen form with its own back action and submit CTA.
+  // Hiding the fixed mobile nav here prevents it from covering fields and the Crear plan button.
+  if(activeView==='Crear')return null;
   return <nav className="bottom-nav" aria-label="Navegación principal">
     <button type="button" className={isHomeFlow(activeView)?'active':''} onClick={()=>setView('Inicio')}><Home/><span>Inicio</span></button>
     <button type="button" className={activeView==='Explora'?'active':''} onClick={()=>setView('Explora')}><Search/><span>Explora</span></button>
-    <button type="button" className={`create ${activeView==='Crear'?'active':''}`} aria-label="Crear plan" onClick={()=>setView('Crear')}><Plus/></button>
+    <button type="button" className="create" aria-label="Crear plan" onClick={()=>setView('Crear')}><Plus/></button>
     <button type="button" className={activeView==='Chat'?'active':''} onClick={()=>setView('Chat')}><MessageCircle/><span>Chat</span></button>
     <button type="button" className={activeView==='Perfil'||activeView==='Ajustes'?'active':''} onClick={()=>setView('Perfil')}><CircleUserRound/><span>Perfil</span></button>
   </nav>
@@ -57,5 +60,5 @@ export function Header({view,setView,unreadNotifications=0,onSearch}:{view:View;
       <button type="button" aria-label={unreadNotifications?`Abrir notificaciones, ${unreadNotifications} sin leer`:'Abrir notificaciones'} onClick={()=>setView('Notificaciones')}><Bell/>{unreadNotifications>0&&<i/>}</button>
       <button type="button" className="top-avatar" aria-label="Abrir perfil" onClick={()=>setView('Perfil')}><img decoding="async" src={profileAvatar} alt={profileName}/></button>
     </div>
-  </header>
+  </header>;
 }

@@ -3,6 +3,7 @@ import { Bell, CheckCircle2, CheckCheck, MessageCircle } from 'lucide-react';
 import { fetchBackendNotifications, markAllBackendNotificationsRead, markBackendNotificationRead } from '../lib/notificationsBackend';
 import { loadStored, storageChangeEvent, storageKeys } from '../lib/storage';
 import type { ToggleKey } from '../types';
+import { supabase } from '../lib/supabase';
 
 const defaultToggles:Record<ToggleKey,boolean>={messages:true,requests:true,planUpdates:true,reminders:true,news:true,offers:true};
 
@@ -33,7 +34,7 @@ export function NotificationsView({onUnreadCountChange,onOpenPlanChat}:{onUnread
 
   useEffect(()=>{let active=true;void fetchBackendNotifications().then(rows=>{if(!active)return;if(rows.length){setItems(rows.map(row=>({id:row.id,toggleKey:toggleForType(row.type),backendType:row.type,title:row.title,body:row.body,time:relativeTime(row.createdAt),read:row.read,backend:true,entityType:row.entityType,entityId:row.entityId} satisfies NotificationItem)));setUsingDemo(false);}else{setItems(demoNotifications);setUsingDemo(true);}setError('');}).catch(loadError=>{if(!active)return;console.warn('CONECTA notifications load failed; demo fallback kept',loadError);setItems(demoNotifications);setUsingDemo(true);setError('No se han podido actualizar las notificaciones reales. Mostramos el demo como respaldo.');}).finally(()=>{if(active)setLoading(false)});return()=>{active=false};},[]);
 
-  useEffect(()=>{void refreshUnreadCount().catch(countError=>console.warn('CONECTA unread notification count refresh failed',countError));return()=>{unreadRequestVersion.current+=1};},[refreshUnreadCount]);
+  useEffect(()=>{void refreshUnreadCount().catch(countError=>console.warn('CONECTA unread notification count refresh failed',countError));const channel=supabase.channel('notifications-live').on('postgres_changes',{event:'*',schema:'public',table:'notifications'},()=>{void refreshUnreadCount().catch(countError=>console.warn('CONECTA realtime unread notification refresh failed',countError));}).subscribe();return()=>{unreadRequestVersion.current+=1;void supabase.removeChannel(channel);};},[refreshUnreadCount]);
 
   const visible=useMemo(()=>items.filter(item=>toggles[item.toggleKey]),[items,toggles]);
   const hasUnreadBackendItems=useMemo(()=>visible.some(item=>item.backend&&!item.read),[visible]);

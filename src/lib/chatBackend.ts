@@ -4,6 +4,8 @@ export type BackendChatPreview={conversationId:string;userId?:string;planId?:str
 export type BackendChatMessage={id:string;content:string;senderId:string;createdAt:string;};
 type LatestMessage={content:string;createdAt:string};
 const FALLBACK_CONCURRENCY=8;
+const MAX_CHAT_CONVERSATIONS=250;
+const MAX_MESSAGE_LENGTH=4000;
 
 export async function backendCurrentUserId(){const {data:{user},error}=await supabase.auth.getUser();if(error)throw error;return user?.id||null;}
 
@@ -29,7 +31,7 @@ async function loadLatestMessages(conversationIds:string[]){
 
 export async function loadBackendChats():Promise<BackendChatPreview[]>{
   const userId=await backendCurrentUserId();if(!userId)return [];
-  const {data:ownMemberships,error:membershipError}=await supabase.from('conversation_members').select('conversation_id').eq('user_id',userId);if(membershipError)throw membershipError;
+  const {data:ownMemberships,error:membershipError}=await supabase.from('conversation_members').select('conversation_id').eq('user_id',userId).limit(MAX_CHAT_CONVERSATIONS);if(membershipError)throw membershipError;
   const conversationIds=[...new Set((ownMemberships||[]).map(row=>String(row.conversation_id||'')).filter(Boolean))];if(!conversationIds.length)return [];
   const [{data:conversations,error:conversationError},{data:members,error:membersError},latestByConversation]=await Promise.all([supabase.from('conversations').select('id,type,title,plan_id,created_at').in('id',conversationIds),supabase.from('conversation_members').select('conversation_id,user_id').in('conversation_id',conversationIds),loadLatestMessages(conversationIds)]);if(conversationError)throw conversationError;if(membersError)throw membersError;
   const membersByConversation=new Map<string,string[]>();for(const member of members||[]){const conversationId=String(member.conversation_id||'');const memberId=String(member.user_id||'');if(!conversationId||!memberId)continue;const list=membersByConversation.get(conversationId)||[];list.push(memberId);membersByConversation.set(conversationId,list);}
@@ -40,4 +42,4 @@ export async function loadBackendChats():Promise<BackendChatPreview[]>{
 }
 
 export async function loadBackendMessages(conversationId:string,limit=100):Promise<BackendChatMessage[]>{if(!conversationId)return [];const safeLimit=Math.max(1,Math.min(limit,200));const {data,error}=await supabase.from('messages').select('id,sender_id,content,created_at').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(safeLimit);if(error)throw error;return (data||[]).map(message=>({id:String(message.id||''),content:String(message.content||''),senderId:String(message.sender_id||''),createdAt:String(message.created_at||'')})).reverse();}
-export async function sendBackendMessage(conversationId:string,content:string){const clean=content.trim();if(!conversationId||!clean)return false;const userId=await backendCurrentUserId();if(!userId)return false;const {error}=await supabase.from('messages').insert({conversation_id:conversationId,sender_id:userId,content:clean,kind:'text'});if(error)throw error;return true;}
+export async function sendBackendMessage(conversationId:string,content:string){const clean=content.trim();if(!conversationId||!clean)return false;if(clean.length>MAX_MESSAGE_LENGTH)throw new Error(`El mensaje no puede superar ${MAX_MESSAGE_LENGTH} caracteres.`);const userId=await backendCurrentUserId();if(!userId)return false;const {error}=await supabase.from('messages').insert({conversation_id:conversationId,sender_id:userId,content:clean,kind:'text'});if(error)throw error;return true;}

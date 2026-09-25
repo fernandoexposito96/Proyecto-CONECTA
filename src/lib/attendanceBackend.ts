@@ -1,40 +1,8 @@
 import { supabase } from './supabase';
-
 const activeStatuses=['attending','requested','waitlist','attended'];
-
-export async function joinPlan(planId:string){
-  const {data:{user},error:userError}=await supabase.auth.getUser();
-  if(userError)throw userError;
-  if(!user)throw new Error('Necesitas iniciar sesión para unirte a un plan.');
-  const {data,error}=await supabase.rpc('join_plan_atomic',{p_plan_id:planId});
-  if(error)throw error;
-  return String(data||'attending');
-}
-
-export async function leavePlan(planId:string){
-  const {data:{user},error:userError}=await supabase.auth.getUser();
-  if(userError)throw userError;
-  if(!user)throw new Error('Necesitas iniciar sesión para salir de un plan.');
-  const {error}=await supabase.rpc('leave_plan_atomic',{p_plan_id:planId});
-  if(error)throw error;
-}
-
-export async function getPlanMembershipStatus(planId:string):Promise<string|null>{
-  const {data:{user},error:userError}=await supabase.auth.getUser();
-  if(userError)throw userError;
-  if(!user)return null;
-  const {data,error}=await supabase.from('plan_members').select('status').eq('plan_id',planId).eq('user_id',user.id).maybeSingle();
-  if(error)throw error;
-  return data&&activeStatuses.includes(String(data.status||''))?String(data.status):null;
-}
-
+function requirePlanId(planId:string){const clean=planId.trim();if(!clean)throw new Error('Plan no válido.');return clean;}
+export async function joinPlan(planId:string){const cleanPlanId=requirePlanId(planId);const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;if(!user)throw new Error('Necesitas iniciar sesión para unirte a un plan.');const {data,error}=await supabase.rpc('join_plan_atomic',{p_plan_id:cleanPlanId});if(error)throw error;return String(data||'attending');}
+export async function leavePlan(planId:string){const cleanPlanId=requirePlanId(planId);const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;if(!user)throw new Error('Necesitas iniciar sesión para salir de un plan.');const {error}=await supabase.rpc('leave_plan_atomic',{p_plan_id:cleanPlanId});if(error)throw error;}
+export async function getPlanMembershipStatus(planId:string):Promise<string|null>{const cleanPlanId=requirePlanId(planId);const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;if(!user)return null;const {data,error}=await supabase.from('plan_members').select('status').eq('plan_id',cleanPlanId).eq('user_id',user.id).maybeSingle();if(error)throw error;return data&&activeStatuses.includes(String(data.status||''))?String(data.status):null;}
 export async function isPlanJoined(planId:string):Promise<boolean>{return Boolean(await getPlanMembershipStatus(planId))}
-
-export async function countMyPlanMemberships():Promise<number>{
-  const {data:{user},error:userError}=await supabase.auth.getUser();
-  if(userError)throw userError;
-  if(!user)return 0;
-  const {count,error}=await supabase.from('plan_members').select('plan_id',{count:'exact',head:true}).eq('user_id',user.id).in('status',activeStatuses);
-  if(error)throw error;
-  return count||0;
-}
+export async function countMyPlanMemberships():Promise<number>{const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;if(!user)return 0;const {count,error}=await supabase.from('plan_members').select('plan_id',{count:'exact',head:true}).eq('user_id',user.id).in('status',activeStatuses);if(error)throw error;return count||0;}
